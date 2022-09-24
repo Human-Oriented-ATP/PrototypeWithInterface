@@ -1,0 +1,7 @@
+@font-face {
+    font-family: "Computer Modern";
+    src: url('cmunss.otf');
+}
+body{
+    font-family: "Computer Modern", sans-serif;
+}

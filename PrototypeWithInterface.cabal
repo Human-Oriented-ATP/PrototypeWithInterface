@@ -1,0 +1,132 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           PrototypeWithInterface
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/PrototypeWithInterface#readme>
+homepage:       https://github.com/githubuser/PrototypeWithInterface#readme
+bug-reports:    https://github.com/githubuser/PrototypeWithInterface/issues
+author:         Wills Wynn Thomas & Bhavik Mehta
+maintainer:     willswynnthomas@gmail.com
+copyright:      2022 Wills Wynn Thomas
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/PrototypeWithInterface
+
+library
+  exposed-modules:
+      APICode.CorsBoilerplate
+      APICode.FunctionCaller
+      APICode.HTMLGeneration
+      APICode.JSONTypes
+      Lib
+      Robot.Automation
+      Robot.BasicMoveHelpers
+      Robot.BasicMoves
+      Robot.ExistentialMoves
+      Robot.HoleExpr
+      Robot.Lib
+      Robot.LibraryMoves
+      Robot.Parser
+      Robot.Poset
+      Robot.PPrinting
+      Robot.Prisoner
+      Robot.TableauFoundation
+      Robot.Testing
+  other-modules:
+      Paths_PrototypeWithInterface
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html >=0.9
+    , blaze-markup
+    , bytestring
+    , containers
+    , hashable
+    , http-types
+    , megaparsec
+    , mtl
+    , parser-combinators
+    , scotty >=0.12
+    , split
+    , text
+    , unordered-containers
+    , wai
+    , wai-cors
+    , wai-extra
+    , wai-middleware-static
+  default-language: Haskell2010
+
+executable PrototypeWithInterface-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_PrototypeWithInterface
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      PrototypeWithInterface
+    , aeson
+    , base >=4.7 && <5
+    , blaze-html >=0.9
+    , blaze-markup
+    , bytestring
+    , containers
+    , hashable
+    , http-types
+    , megaparsec
+    , mtl
+    , parser-combinators
+    , scotty >=0.12
+    , split
+    , text
+    , unordered-containers
+    , wai
+    , wai-cors
+    , wai-extra
+    , wai-middleware-static
+  default-language: Haskell2010
+
+test-suite PrototypeWithInterface-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_PrototypeWithInterface
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      PrototypeWithInterface
+    , aeson
+    , base >=4.7 && <5
+    , blaze-html >=0.9
+    , blaze-markup
+    , bytestring
+    , containers
+    , hashable
+    , http-types
+    , megaparsec
+    , mtl
+    , parser-combinators
+    , scotty >=0.12
+    , split
+    , text
+    , unordered-containers
+    , wai
+    , wai-cors
+    , wai-extra
+    , wai-middleware-static
+  default-language: Haskell2010

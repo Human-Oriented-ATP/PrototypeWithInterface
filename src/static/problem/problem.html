@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html onclick="clickAnywhere(event)">
+	<head>
+        <title>Interactive Theorem Prover</title>
+        <meta charset="UTF-8">
+        <link rel ="stylesheet" href="style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1">
+        <script src="nestedFlexResizer.js" type="text/javascript"></script>
+        <script src="settingsBox.js" type="text/javascript"></script>
+        <script src="script.js" type="text/javascript"></script>
+	</head>
+<body onload="setUpOnLoad()">
+
+<div id="box_wrapper"></div>
+
+
+<div id="action_panel_wrapper">
+
+
+<span id="settings_banner">
+<span id="settings_banner_text">Choose move</span>
+<img src="resources/settings_icon.svg" id="settings_button" onclick="toggleSettings()">
+</span>
+<div id="settings">
+<span id="expression_label_switch_row">
+<span id="expression_label_switch_text">Expression labels</span>
+<label onclick="updateExpressionLabels()" id="expression_label_switch" class="switch">
+        <input type="checkbox" id="expression_label_input">
+        <span class="slider round"></span>
+</label>
+</span>
+
+<span id="font_size_controller_row">
+<span id="font_size_controller_text">Font size</span>
+<img src="resources/minus_icon.svg" id="font_size_controller_minus_button" onclick="decreaseFontSize()">
+<img src="resources/plus_icon.svg" id="font_size_controller_plus_button" onclick="increaseFontSize()">
+</span>
+
+</div>
+
+<input type="text" id="manual_function_input" oninput="manualFunctionInput(event)">
+</div>
+</body>
+</html>
