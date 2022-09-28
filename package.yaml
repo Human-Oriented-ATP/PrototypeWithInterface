@@ -1,6 +1,6 @@
 name:                PrototypeWithInterface
 version:             0.1.0.0
-github:              "https://github.com/Human-Oriented-ATP/PrototypeWithInterface"
+github:              "Human-Oriented-ATP/PrototypeWithInterface"
 license:             BSD3
 author:              "Wills Wynn Thomas & Bhavik Mehta"
 maintainer:          "willswynnthomas@gmail.com"

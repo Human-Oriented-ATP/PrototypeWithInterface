@@ -16,13 +16,13 @@ data ProblemState = ProblemState {
     , getTabHtml :: LT.Text
     , getAllowedActions :: [String]
     , getProofHistory :: [(Tableau, String)]}
-    deriving (Show, Generic)
+    deriving (Show, Generic, Read)
 
 type Action = String
 data ActionState = ActionState {
     getAction :: Action,
     getProblemState :: ProblemState
-    } deriving (Show, Generic)
+    } deriving (Show, Generic, Read)
 instance ToJSON ActionState
 instance FromJSON ActionState
 

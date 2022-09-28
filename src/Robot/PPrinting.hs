@@ -143,6 +143,7 @@ pprintExprM (TApp "function" f x y) = do
   return $ fOut ++ ":" ++ xOut ++ "\8594" ++ yOut
 -- constants that can be displayed more nicely
 pprintExprM (Con "naturals") = do return "\8469"
+pprintExprM (Con "0") = do return "0"
 
 -- General patterns
 pprintExprM t@(App _ _) = do
@@ -155,11 +156,17 @@ pprintExprM (Free x) = do
   let name = getExternalName $ m M.! x
   let htmlCode = name `M.lookup` htmlEntityCodes
   return $ case htmlCode of
-    Just something -> something
-    _ -> name
-pprintExprM (Con s) = return s
+    Just something -> handleUnderscores something
+    _ -> handleUnderscores name
+pprintExprM (Con s) = return $ "\\texttt{" ++ s ++ "}"
 pprintExprM (Abs sug sc) = pprintBinderM "λ" sug sc
 pprintExprM (B _) = error "term not closed"
+
+
+handleUnderscores :: String -> String
+handleUnderscores str = case reverse str of
+  ('_':rest) -> reverse ("_\\"++rest)
+  normal -> reverse normal
 
 
 -- | Takes a QZone and finds a legitimate ordering of the quantified variables
@@ -226,7 +233,7 @@ pprintQZone qZone = let
   dealWithEmpty str = if str /= "" then str else "(empty)"
   dealWithHtmlCode :: String -> String
   dealWithHtmlCode str = fromMaybe str (str `M.lookup` htmlEntityCodes)
-  qListToStr = dealWithEmpty . intercalate ", " . map (\qVar -> (if qVarGetQuantifier qVar == "Forall" then "\8704" else "\8707") ++ dealWithHtmlCode (getExternalName (showMap M.! qVarGetInternalName qVar)))
+  qListToStr = dealWithEmpty . intercalate ", " . map (\qVar -> (if qVarGetQuantifier qVar == "Forall" then "\8704" else "\8707") ++ handleUnderscores (dealWithHtmlCode (getExternalName (showMap M.! qVarGetInternalName qVar))))
   in qListToStr $ orderQZone qZone
 
 -- | PPrints a QZone with dependencies
@@ -236,7 +243,7 @@ pprintQZoneDeps qZone@(Poset set rel) = let
   dealWithEmpty str = if str /= "" then str else "(empty)"
   dealWithHtmlCode :: String -> String
   dealWithHtmlCode str = fromMaybe str (str `M.lookup` htmlEntityCodes)
-  depsStr = dealWithEmpty . intercalate ", " $ map (\(q1, q2) -> dealWithHtmlCode (getExternalName (showMap M.! qVarGetInternalName q1)) ++ "<" ++ dealWithHtmlCode (getExternalName (showMap M.! qVarGetInternalName q2))) rel
+  depsStr = dealWithEmpty . intercalate ", " $ map (\(q1, q2) -> handleUnderscores (dealWithHtmlCode (getExternalName (showMap M.! qVarGetInternalName q1))) ++ "<" ++ handleUnderscores (dealWithHtmlCode (getExternalName (showMap M.! qVarGetInternalName q2)))) rel
   in depsStr
 
 -- | PPrints a BoxNumber

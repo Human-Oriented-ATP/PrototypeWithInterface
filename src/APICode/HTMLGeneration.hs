@@ -15,7 +15,7 @@ targHtml :: BoxNumber -> Int -> Targ String -> H.Html
 targHtml boxNumber targInd (PureTarg str) = H.div H.! A.class_ "targ_container" $ H.div H.! A.class_ "targ" H.! A.id (H.toValue (show (boxNumber, targInd))) $
     do
         H.span H.! A.class_ "expression_label" $ H.toHtml (boxNumberToStr boxNumber++"."++show targInd++": ")
-        H.toHtml str
+        H.toHtml $ "\\(" ++ str ++ "\\)"
 targHtml boxNumber targInd (BoxTarg box) = boxHtml (boxNumber++[targInd]) box
 
 generateHypsHtml :: BoxNumber -> [String] -> H.Html
@@ -28,13 +28,13 @@ generateHypsHtml boxNumber (firstHyp:rest) =  do
     H.div H.! A.class_ "hyp" H.! A.id (H.toValue (show (boxNumber, 0 :: Int))) $
         do
             H.span H.! A.class_ "expression_label" $ H.toHtml (boxNumberToStr boxNumber++".0: ")
-            H.toHtml firstHyp
+            H.toHtml $ "\\(" ++ firstHyp ++ "\\)"
     for_ (zip [1..] rest) $ \(hypInd, hyp) -> do
         H.br
         H.div H.! A.class_ "hyp" H.! A.id (H.toValue (show (boxNumber, hypInd))) $
             do
                 H.span H.! A.class_ "expression_label" $ H.toHtml (boxNumberToStr boxNumber++"."++show hypInd++": ")
-                H.toHtml hyp
+                H.toHtml $ "\\(" ++ hyp ++ "\\)"
 
 generateTargsHtml :: BoxNumber -> [Targ String] -> H.Html
 generateTargsHtml _ [] = H.div H.! A.class_ "targ" $ H.toHtml ("(empty)" :: T.Text)
@@ -54,5 +54,5 @@ boxHtml boxNumber (Box hyps targs) = do
 
 generateTabHtml :: PrettyTableau -> H.Html
 generateTabHtml (PrettyTableau qZone rootBox) = do
-    H.div H.! A.id "qZone" $ H.toHtml qZone
+    H.div H.! A.id "qZone" $ H.toHtml $ "\\(" ++ qZone ++ "\\)"
     boxHtml [] rootBox

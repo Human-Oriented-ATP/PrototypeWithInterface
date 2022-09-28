@@ -123,7 +123,7 @@ removeAllTargs boxNumber (Tableau qZone boxes) = do
 -- and otherwise return Nothing
 removeFromListMaybe :: [a] -> Int -> Maybe [a]
 removeFromListMaybe l i
-    | i < 0 || i <= length l = Nothing
+    | i < 0 || i >= length l = Nothing
     | otherwise = let
         (as, _:bs) = splitAt i l
         in Just $ as++bs
@@ -271,3 +271,26 @@ checkHypsExistCompatibly hypsToFind tab@(Tableau qZone rootBox@(Box rootHyps roo
     rootZipper = (rootBox, [])
 
     in exploreBranches (([], rootZipper), remainingHyps)
+
+-- Given a list of targets, we want to find a subset of those targets s.t. none of the
+-- targs in the given list lie below them in the tree. This returns a list of subsets
+-- satisfying this constraint.
+getDeepestTargFromList :: [Expr] -> Tableau -> [([(Expr, Int)], BoxNumber)]
+getDeepestTargFromList targsToFind tab@(Tableau qZone rootBox@(Box rootHyps rootTargs)) = let
+    getDeepestTargZipper :: [Expr] -> BoxNumber -> BoxZipper Expr -> [([(Expr, Int)], BoxNumber)]
+    getDeepestTargZipper targsToFind boxNumber boxZipper@(Box hyps targs, _) = let
+        targsAtThisLevel = mapMaybe (\targInd -> case targs!!targInd of
+            BoxTarg _ -> Nothing
+            PureTarg targ -> if targ `elem` targsToFind then Just (targ, targInd)
+                else Nothing)
+            [0..length targs-1]
+        deeperTargs = filter (not . null) $ map (\targInd -> case toBoxNumberFromZipper [targInd] boxZipper of
+            Nothing -> []
+            Just newZipper ->
+                getDeepestTargZipper targsToFind (boxNumber++[targInd]) newZipper)
+            [0..length targs-1]
+        in if null deeperTargs then [(targsAtThisLevel, boxNumber)]
+        else concat deeperTargs
+    
+    in getDeepestTargZipper targsToFind [] (rootBox, [])
+

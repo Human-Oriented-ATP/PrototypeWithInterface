@@ -8,9 +8,10 @@
         <script src="nestedFlexResizer.js" type="text/javascript"></script>
         <script src="settingsBox.js" type="text/javascript"></script>
         <script src="script.js" type="text/javascript"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 	</head>
 <body onload="setUpOnLoad()">
-
 <div id="box_wrapper"></div>
 
 
@@ -29,7 +30,6 @@
         <span class="slider round"></span>
 </label>
 </span>
-
 <span id="font_size_controller_row">
 <span id="font_size_controller_text">Font size</span>
 <img src="resources/minus_icon.svg" id="font_size_controller_minus_button" onclick="decreaseFontSize()">
@@ -37,6 +37,14 @@
 </span>
 
 </div>
+
+<button class="action_button" id="tidyEverything" onclick="actionButton(event)">Tidy everything</button>
+<button class="action_button" id="peelExistentialTarg" onclick="actionButton(event)">Peel existential targ</button>
+<button class="action_button" id="peelUniversalHyp" onclick="actionButton(event)">Peel universal hyp</button>
+<button class="action_button" id="commitToHypothesis" onclick="actionButton(event)">Commit to hyp</button>
+<button class="action_button" id="modusPonens" onclick="actionButton(event)">Modus ponens</button>
+<button class="action_button" id="modusPonensRaw" onclick="actionButton(event)">Modus ponens raw</button>
+
 
 <input type="text" id="manual_function_input" oninput="manualFunctionInput(event)">
 </div>

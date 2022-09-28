@@ -8,12 +8,8 @@ All interesting content is found in the src directory
 - src/Lib.hs is the beating heart of the server and is where the code runs for the server is actually called and runs
 
 ## To-do
-- Fix library equivalence move to allow conditions to lie below the expression being changed.
-- Implement backwards library reasoning with nested boxes.
-- Implement quality of life "tidyEverything" move with nested boxes.
-
-- Think about/start implementing a type system (I'm increasingly thinking it is necessary).
 - Think about library search and implement a simple system.
+- Existence moves
 - Think about how the interface will work with library search and start implementing.
 
 - Write some basic template code to choose moves automatically and start playing with move scoring.

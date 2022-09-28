@@ -226,3 +226,4 @@ xTab = Tableau xQZone (Box [xhh1, xhh2, xhh3] [PureTarg xtt1])
 Just a' = Just 0
 Just b' = Just 0
 
+

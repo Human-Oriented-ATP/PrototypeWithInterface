@@ -24,20 +24,26 @@ const postJSON = async (jsonToSend, url) => {
     return data;
 }
 
+
+saveProblemStateInLocalMachine = async function(){
+	postJSON(globalProblemState, "http://localhost:3000/save")
+}
+
 var globalProblemState = 0;
 
 setUpProblem = async function(){
-	const a = localStorage.getItem("problemState");
-	const b = JSON.parse(a);
-	globalProblemState = b;
-	//await getInitialProblemState();
+	//const a = localStorage.getItem("problemState");
+	//const b = JSON.parse(a);
+	//globalProblemState = b;
+	await getInitialProblemState();
 	
 	showProblemState();
+	MathJax.typeset()
 }
 
 
 getInitialProblemState = async function(){
-  const data = await getJSON("http://localhost:3000/users/1");
+  const data = await getJSON("http://localhost:3000/teststate");
   globalProblemState = data;
 }
 
@@ -55,6 +61,7 @@ applyFunctionToTab = function(app){
     box_wrapper.innerHTML = data.getTabHtml;
 
 	globalProblemState = data;
+	MathJax.typeset()
   }).catch(error => {
   console.error(error);
   });
@@ -86,13 +93,15 @@ const argsToWaitForInfo = {
 	"peelUniversalTarg": [1],
 	"peelExistentialTarg": [1],
 	"peelUniversalHyp": [0],
-	"peelUniversalHyp": [0],
+	"peelExistentialHyp": [0],
 
 	"tidyImplInTarg": [1],
 	"commitToHypothesis": [0],
 
 	"tidyAndInHyp": [0],
 	"tidyAndInTarg": [0],
+
+	"tidyEverything": [],
 
 	"modusPonens": [0,0],
 	"modusPonensRaw": [0,0],
@@ -124,6 +133,10 @@ resetGlobalClickState = function(){
 	}
 }
 
+manualFunctionInput = function(e){
+	// Function which is called when the manualFunctionInput is typed in
+	return;
+}
 
 setUpManualFunctionInputListener = function(){
 document.getElementById("manual_function_input").addEventListener("keypress", function(e){
@@ -137,14 +150,30 @@ if (e.key == "Enter") {
 		globalArgsToWaitFor = argsToWaitForInfoCopy[val];
 		globalArgsReceived = [];
 		globalFunctionToCall = val;
+
+		if(globalArgsToWaitFor.length == 0){
+			applyFunctionToTab(globalFunctionToCall)
+			resetGlobalClickState()
+		}
 	}
 }
 })}
 
 
-manualFunctionInput = function(e){
-	// Function which is called when the manualFunctionInput is typed in
-	return;
+actionButton = function(e){
+	const buttonClicked = e.target.id
+	const argsToWaitForInfoCopy = JSON.parse(JSON.stringify(argsToWaitForInfo));
+	if(argsToWaitForInfoCopy[buttonClicked] != undefined){{
+		globalArgsToWaitFor = argsToWaitForInfoCopy[buttonClicked];
+		globalArgsReceived = [];
+		globalFunctionToCall = buttonClicked;
+
+		if(globalArgsToWaitFor.length == 0){
+			applyFunctionToTab(globalFunctionToCall)
+			resetGlobalClickState()
+		}
+	}
+}
 }
 
 
@@ -155,12 +184,13 @@ clickAnywhere = function(e){
 	// Handle settings box (make disappear if we want it to)
 	const settings_panel = document.getElementById("settings")
 	if(settings_panel.style.display == "block") handleSettingsBox(e)
-
+	console.log(e.target)
 	// If we aren't expecting arguments then do nothing
 	if(globalArgsToWaitFor == -1) return; 
 
-	// And if we clicked on something that isn't a hyp/targ then reset the state and do nothing
-	if(!e.target.classList.contains("hyp") && !e.target.classList.contains("targ")){
+	// And if we clicked on something that isn't a hyp/targ/button then reset the state and do nothing
+	if(!e.target.classList.contains("hyp") && !e.target.classList.contains("targ")
+		&& !e.target.classList.contains("action_button")){
 		resetGlobalClickState()
 		return;
 	}
@@ -176,6 +206,7 @@ clickAnywhere = function(e){
 	e.target.style.backgroundColor = "#ffffcc"
 	globalArgsToWaitFor.shift();
 	globalArgsReceived.push(exprLoc);
+	
 
 	// Now if there are no arguments left to get, then we actually call the function.
 	if(globalArgsToWaitFor.length == 0){

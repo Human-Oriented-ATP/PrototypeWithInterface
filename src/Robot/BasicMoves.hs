@@ -13,7 +13,8 @@ import Robot.Poset
 import Robot.BasicMoveHelpers
 
 import Control.Monad
-
+import Data.Maybe
+import Debug.Trace
 
 
 -- <<< FOUNDATIONAL CODE >>>
@@ -187,77 +188,53 @@ commitToHypothesis (boxNumber, hypInd) tab@(Tableau qZone rootBox) = do
     removeAllTargs boxNumber tab >>= addPureTarg boxNumber p >>= addBoxTarg boxNumber targsWithQ
 
 
-{-
--- <<< QUALITY OF LIFE MOVES (IMPLEMENTED QUESTIONABLY) >>>
+-- <<< QUALITY OF LIFE MOVES >>>
 
--- Repeat a hyp-index receiving move on a box as many times as possible
-repeatAsMuchAsPossibleOnHyps :: (Int -> Move) -> Move
-repeatAsMuchAsPossibleOnHyps move qBox@(qZone, box@(Box hyps targs)) =
-    let applyOnce = mapMaybe (\i -> move i qBox) [0..(length hyps) - 1]
-    in if null applyOnce then Just qBox else repeatAsMuchAsPossibleOnHyps move $ head applyOnce
+-- | To "tidy everything" we will simply repeat all the tidying moves until none of
+-- them can be done. The tidying moves are:
+-- peelUniversalTarg, peelExistentialHyp, tidyImplInTarg, tidyAndInHyp, tidyAndInTarg
 
-repeatAsMuchAsPossibleOnTargs :: (Int -> Move) -> Move
-repeatAsMuchAsPossibleOnTargs move qBox@(qZone, box@(Box hyps targs)) =
-    let applyOnce = mapMaybe (\i -> move i qBox) [0..(length targs) - 1]
-    in if null applyOnce then Just qBox else repeatAsMuchAsPossibleOnTargs move $ head applyOnce
+getAllHypInds :: Tableau -> [(BoxNumber, Int)]
+getAllHypInds tab@(Tableau qZone rootBox) = let
+    getAllHypIndsFromZipper :: BoxZipper Expr -> BoxNumber -> [(BoxNumber, Int)]
+    getAllHypIndsFromZipper zipper@(Box hyps targs, _) boxNumber =
+        zip (repeat boxNumber) [0..length hyps-1] ++
+        concatMap (\targInd -> case toBoxNumberFromZipper [targInd] zipper of
+            Just newZipper -> getAllHypIndsFromZipper newZipper (boxNumber++[targInd])
+            Nothing -> []) [0..length targs-1]
+    in getAllHypIndsFromZipper (rootBox, []) []
 
--- Repeats a Move until the result is the same twice in a row or we can't perform the move again
-repeatAsMuchAsPossible :: Move -> Move
-repeatAsMuchAsPossible move qBox = repeatUntilFP move (Just (Poset [] [], Box [] [])) (Just qBox)
-    where
-        repeatUntilFP :: Move -> Maybe (Box Expr) -> Maybe (Box Expr) -> Maybe (Box Expr)
-        repeatUntilFP move' last current =
-            if last == current then current else case current of
-                Just something -> repeatUntilFP move' current (move' something)
-                _ -> last
+getAllTargInds :: Tableau -> [(BoxNumber, Int)]
+getAllTargInds tab@(Tableau qZone rootBox) = let
+    getAllTargIndsFromZipper :: BoxZipper Expr -> BoxNumber -> [(BoxNumber, Int)]
+    getAllTargIndsFromZipper zipper@(Box hyps targs, _) boxNumber = let
+        pureTargs = mapMaybe (\targInd -> case targs!!targInd of
+            PureTarg _ -> Just targInd
+            _ -> Nothing) [0..length targs-1]
+        pureTargInds = zip (repeat boxNumber) pureTargs
+        in pureTargInds ++
+            concatMap (\targInd -> case toBoxNumberFromZipper [targInd] zipper of
+                Just newZipper -> getAllTargIndsFromZipper newZipper (boxNumber++[targInd])
+                Nothing -> []) [0..length targs-1]
+    in getAllTargIndsFromZipper (rootBox, []) []
 
-tidySweep :: Move
-tidySweep qBox = (repeatAsMuchAsPossibleOnTargs peelUniversalTargBox) qBox
-    >>= (repeatAsMuchAsPossibleOnHyps peelExistentialHypBox)
-    >>= (repeatAsMuchAsPossibleOnTargs tidyAndInTargBox)
-    >>= (repeatAsMuchAsPossibleOnHyps tidyAndInHypBox)
-
-tidyEverythingBox :: Move
-tidyEverythingBox = repeatAsMuchAsPossible tidySweep
-
-tidyTabImplOnce :: Move
-tidyTabImplOnce tab@(Tableau qZone boxes) = let
-    boxAndTargInds = concatMap (\boxInd -> let
-        Box hyps targs = boxes!!boxInd
-        in [(boxInd, targInd) | targInd <- [0..length targs-1]]
-        ) [0..length boxes - 1]
-    results = mapMaybe (\(boxInd, targInd) -> tidyImplInTarg targInd boxInd tab) boxAndTargInds
-    in if null results then Just tab else Just $ head results
-
-tidyTabOnBoxesOnce :: Move
-tidyTabOnBoxesOnce tab@(Tableau qZone boxes) = let
-    results = mapMaybe (\boxInd -> let
-        result = tidyEverythingBox (qZone, boxes!!boxInd)
-        in case result of
-            Just something -> if something == (qZone, boxes!!boxInd) then Nothing else Just (boxInd, something)
-            _ -> Nothing
-        ) [0..length boxes-1]
-    in if null results then Just tab else let
-        (boxInd, (newQZone, newBox)) = head results
-        (as, ourBox:bs) = splitAt boxInd boxes
-        newBoxes = as ++ (newBox:bs)
-        in Just (Tableau newQZone newBoxes)
-
-tidyTabOnce :: Move
-tidyTabOnce tab = tidyTabOnBoxesOnce tab >>= tidyTabImplOnce
-
+-- As horrific as this looks, I think laziness means it's not too bad actually
 tidyEverything :: Move
-tidyEverything = repeatAsMuchAsPossibleTab tidyTabOnce
-
-repeatAsMuchAsPossibleTab :: Move -> Move
-repeatAsMuchAsPossibleTab tabMove tab = repeatUntilFP tabMove (Just $ Tableau (Poset [] []) []) (Just tab)
-    where
-        repeatUntilFP :: Move -> Maybe Tableau -> Maybe Tableau -> Maybe Tableau
-        repeatUntilFP move' last current =
-            if last == current then current else case current of
-                Just something -> repeatUntilFP move' current (move' something)
-                _ -> last
-
-
-
--}
+tidyEverything tab = let
+    repeatOnce :: Move
+    repeatOnce tab' = let
+        allHypInds = getAllHypInds tab'
+        allTargInds = getAllTargInds tab'
+        universalTargPeels = mapMaybe (\i -> peelUniversalTarg i tab') allTargInds
+        existentialHypPeels = mapMaybe (\i -> peelExistentialHyp i tab') allHypInds
+        implPeels = mapMaybe (\i -> tidyImplInTarg i tab') allTargInds
+        andHypPeels = mapMaybe (\i -> tidyAndInHyp i tab') allHypInds
+        andTargPeels = mapMaybe (\i -> tidyAndInTarg i tab') allTargInds
+        concated = universalTargPeels ++ existentialHypPeels ++ implPeels ++
+            andHypPeels ++ andTargPeels
+        in case concated of
+            [] -> Nothing
+            (res:_) -> Just res
+    in case repeatOnce tab of
+        Just newTab -> tidyEverything newTab
+        Nothing -> Just tab

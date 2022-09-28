@@ -49,6 +49,10 @@ performFunctionOnProblemState str (ProblemState tab _ _ _) =
             [exprLoc] <- Just rest
             fmap TableauOut (tidyAndInTarg (read exprLoc :: (BoxNumber, Int)) tab)
         
+        "tidyEverything" -> do
+            [] <- Just rest
+            fmap TableauOut (tidyEverything tab)
+        
         "modusPonens" -> do
             [h1, h2] <- Just rest
             fmap TableauOut (modusPonens (read h1 :: (BoxNumber, Int)) (read h2 :: (BoxNumber, Int)) tab)
@@ -64,12 +68,24 @@ performFunctionOnProblemState str (ProblemState tab _ _ _) =
             [libEquivStr, swapToDo, exprLoc] <- Just rest
             libEquiv <- libEquivFromString libEquivStr
             fmap TableauOut (libEquivTarg libEquiv (read swapToDo :: (Int, Int)) (read exprLoc :: (BoxNumber, Int)) tab)
+        "libForwardReasoning" -> do
+            [libImplStr] <- Just rest
+            libImpl <- libImplFromString libImplStr
+            fmap TableauOut (libForwardReasoning libImpl tab)
+        "libBackwardReasoning" -> do
+            [libImplStr] <- Just rest
+            libImpl <- libImplFromString libImplStr
+            fmap TableauOut (libBackwardReasoning libImpl tab)
         "instantiateExistential" -> do
             let exprs = splitOn "->" $ unwords rest
             [varA, varB] <- Just exprs
             fmap TableauOut (instantiateExistential varA varB tab)
         _ -> Nothing
 
+libImplFromString :: String -> Maybe LibraryImplication
+libImplFromString "triIneq" = Just triIneq
+libImplFromString "lesserThanTrans" = Just lesserThanTrans
+libImplFromString _ = Nothing
 
 libEquivFromString :: String -> Maybe LibraryEquivalence
 libEquivFromString "continuousDef" = Just continuousDef
@@ -80,5 +96,4 @@ libEquivFromString _ = Nothing
 
 testState :: ProblemState
 testState = ProblemState { getTab = gTab, getTabHtml = renderHtml $ generateTabHtml $ prettifyTab gTab, getAllowedActions = [], getProofHistory = []}
-
 
