@@ -109,7 +109,9 @@ const argsToWaitForInfo = {
 	"libEquivHyp": [2, 2, 0],
 	"libEquivTarg": [2, 2, 1],
 
-	"instantiateExistential": [2, 2]
+	"instantiateExistential": [2, 2],
+
+	"waterfall": []
 }
 
 
