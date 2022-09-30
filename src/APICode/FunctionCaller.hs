@@ -4,6 +4,7 @@ import Robot.Lib
 import Robot.TableauFoundation
 import Robot.LibraryMoves
 import Robot.BasicMoves
+import Robot.Automation
 import Robot.Testing
 import Robot.ExistentialMoves
 import Robot.PPrinting
@@ -80,6 +81,11 @@ performFunctionOnProblemState str (ProblemState tab _ _ _) =
             let exprs = splitOn "->" $ unwords rest
             [varA, varB] <- Just exprs
             fmap TableauOut (instantiateExistential varA varB tab)
+
+        "waterfall" -> do
+            [] <- Just rest
+            fmap TableauOut (waterfall tab)
+            
         _ -> Nothing
 
 libImplFromString :: String -> Maybe LibraryImplication

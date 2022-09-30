@@ -19,3 +19,6 @@ import Data.Maybe
 import Data.List
 import Control.Monad
 import Debug.Trace
+
+autPeelUniversalTarg :: Tableau -> Maybe Tableau
+autPeelUniversalTarg tab = Nothing

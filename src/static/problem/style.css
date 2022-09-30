@@ -350,6 +350,11 @@ body{
     left: 55%;
 }
 
+#waterfall {
+    top: 42%;
+    left: 30%
+}
+
 #manual_function_input{
     position: absolute;
     left: 2%;
