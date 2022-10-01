@@ -135,6 +135,20 @@ resetGlobalClickState = function(){
 	}
 }
 
+function undo() {
+	if (globalProblemState && globalProblemState.getProofHistory) {
+		// newest problem state at head of proof history
+		[tab, autData, tabHtml] = globalProblemState.getProofHistory.shift();
+		globalProblemState.getTab = tab;
+		globalProblemState.getAutData = autData;
+		globalProblemState.getTabHtml = tabHtml;
+
+		showProblemState();
+		MathJax.typeset();
+	}
+	resetGlobalClickState();
+}
+
 manualFunctionInput = function(e){
 	// Function which is called when the manualFunctionInput is typed in
 	return;

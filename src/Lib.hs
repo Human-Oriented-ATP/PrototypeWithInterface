@@ -30,13 +30,14 @@ libMain = do
             json testState
 
         post "/move" $ do
-            ActionState action problemState@(ProblemState _ autData _ allowedActions proofHistory) <- jsonData :: ActionM ActionState
+            ActionState action problemState@(ProblemState tab autData tabHtml allowedActions proofHistory) <- jsonData :: ActionM ActionState
             let result = performFunctionOnProblemState action problemState
             case result of
-                Just (TableauOut newTab) -> json (ProblemState newTab autData (renderHtml $ generateTabHtml $ prettifyTab newTab) allowedActions proofHistory)
+                Just (TableauOut newTab) -> json (ProblemState newTab autData (renderHtml $ generateTabHtml $ prettifyTab newTab) allowedActions
+                    ((tab, autData, tabHtml):proofHistory))
                 Just (TabAndAutDataOut newAutData newTab) -> json (
-                    ProblemState newTab newAutData (renderHtml $ generateTabHtml $ prettifyTab newTab) allowedActions proofHistory
-                    )
+                    ProblemState newTab newAutData (renderHtml $ generateTabHtml $ prettifyTab newTab) allowedActions
+                    ((tab, autData, tabHtml):proofHistory))
                 _ -> json problemState
 
         post "/save" $ do

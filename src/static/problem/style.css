@@ -355,6 +355,11 @@ body{
     left: 30%
 }
 
+#undo {
+    top: 72%;
+    left: 30%
+}
+
 #manual_function_input{
     position: absolute;
     left: 2%;

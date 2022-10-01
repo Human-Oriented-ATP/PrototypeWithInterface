@@ -17,7 +17,7 @@ data ProblemState = ProblemState {
     , getAutData :: AutData
     , getTabHtml :: LT.Text
     , getAllowedActions :: [String]
-    , getProofHistory :: [(Tableau, String)]}
+    , getProofHistory :: [(Tableau, AutData, LT.Text)]}
     deriving (Show, Generic, Read)
 
 type Action = String
