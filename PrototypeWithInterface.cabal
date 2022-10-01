@@ -31,6 +31,7 @@ library
       APICode.JSONTypes
       Lib
       Robot.Automation
+      Robot.AutomationData
       Robot.BasicMoveHelpers
       Robot.BasicMoves
       Robot.ExistentialMoves

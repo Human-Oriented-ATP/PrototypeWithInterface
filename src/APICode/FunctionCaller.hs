@@ -8,6 +8,7 @@ import Robot.Automation
 import Robot.Testing
 import Robot.ExistentialMoves
 import Robot.PPrinting
+import Robot.AutomationData
 
 import APICode.JSONTypes
 import APICode.HTMLGeneration
@@ -16,11 +17,11 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import Data.List.Split
 
-data AcceptableOutput = TableauOut Tableau | ExprOut Expr
+data AcceptableOutput = TableauOut Tableau | TabAndAutDataOut AutData Tableau | ExprOut Expr
 
 performFunctionOnProblemState :: String -> ProblemState -> Maybe AcceptableOutput
 performFunctionOnProblemState "" _ = Nothing
-performFunctionOnProblemState str (ProblemState tab _ _ _) =
+performFunctionOnProblemState str (ProblemState tab autData _ _ _) =
     let (functionToApply:rest) = words str
     in case functionToApply of
         "peelUniversalTarg" -> do
@@ -53,7 +54,6 @@ performFunctionOnProblemState str (ProblemState tab _ _ _) =
         "tidyEverything" -> do
             [] <- Just rest
             fmap TableauOut (tidyEverything tab)
-        
         "modusPonens" -> do
             [h1, h2] <- Just rest
             fmap TableauOut (modusPonens (read h1 :: (BoxNumber, Int)) (read h2 :: (BoxNumber, Int)) tab)
@@ -84,7 +84,9 @@ performFunctionOnProblemState str (ProblemState tab _ _ _) =
 
         "waterfall" -> do
             [] <- Just rest
-            fmap TableauOut (waterfall tab)
+            case waterfall autData tab of
+                Just (newAutData, newTab) -> Just $ TabAndAutDataOut newAutData newTab
+                Nothing -> Nothing
             
         _ -> Nothing
 
@@ -101,5 +103,7 @@ libEquivFromString _ = Nothing
 
 
 testState :: ProblemState
-testState = ProblemState { getTab = gTab, getTabHtml = renderHtml $ generateTabHtml $ prettifyTab gTab, getAllowedActions = [], getProofHistory = []}
+testState = ProblemState { getTab = gTab, getAutData = startAutData,
+    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab gTab,
+    getAllowedActions = [], getProofHistory = []}
 

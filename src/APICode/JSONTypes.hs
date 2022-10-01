@@ -3,6 +3,7 @@
 module APICode.JSONTypes where
 
 import Robot.TableauFoundation
+import Robot.AutomationData
 
 import Data.Aeson (FromJSON, ToJSON)
 
@@ -13,6 +14,7 @@ import qualified Data.Text.Internal.Lazy as LT
 type Move = String
 data ProblemState = ProblemState {
       getTab :: Tableau
+    , getAutData :: AutData
     , getTabHtml :: LT.Text
     , getAllowedActions :: [String]
     , getProofHistory :: [(Tableau, String)]}

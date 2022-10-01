@@ -14,6 +14,7 @@ import Robot.Poset
 import Robot.PPrinting
 import Robot.BasicMoves
 import Robot.LibraryMoves
+import Robot.AutomationData
 
 import Data.Maybe
 import Data.List
@@ -21,16 +22,22 @@ import Control.Monad
 import Control.Applicative
 import Debug.Trace
 
-waterfall :: Move
-waterfall tab = autPeelUniversalTarg tab
-            <|> autTidyImplInTarg tab
-            <|> autPeelExistentialHyp tab
-            <|> autPeelExistentialTarg tab
-            -- <|> autPeelUniversalHyp tab
-            -- currently peeling universal hypothesis gets us stuck in
-            -- a loop as the original hypothesis is maintained
-            <|> autTidyAndInTarg tab
-            <|> autTidyAndInHyp tab
+-- An Automatic move is a move which has AutData as extra state
+type AutMove = AutData -> Tableau -> Maybe (AutData, Tableau)
+
+liftMove :: Move -> AutMove
+liftMove move autData tab = case move tab of 
+    Just newTab -> Just (autData, newTab) 
+    Nothing -> Nothing
+
+waterfall :: AutMove
+waterfall autData tab = autPeelUniversalTarg autData tab
+                    <|> autTidyImplInTarg autData tab
+                    <|> autPeelExistentialHyp autData tab
+                    <|> autPeelExistentialTarg autData tab
+                    <|> autPeelUniversalHyp autData tab
+                    <|> autTidyAndInTarg autData tab
+                    <|> autTidyAndInHyp autData tab
 
 -- Enum data type: Targets or Hypotheses
 data ExprType = T | H
@@ -49,23 +56,32 @@ autBase exprType move tab =
             Nothing -> tryMove es tab in
     tryMove exprs tab
 
-autPeelUniversalTarg :: Move
-autPeelUniversalTarg = autBase T peelUniversalTarg
+autPeelUniversalTarg :: AutMove
+autPeelUniversalTarg = liftMove $ autBase T peelUniversalTarg
 
-autPeelExistentialTarg :: Move
-autPeelExistentialTarg = autBase T peelExistentialTarg
+autPeelExistentialHyp :: AutMove
+autPeelExistentialHyp = liftMove $ autBase H peelExistentialHyp
 
-autPeelExistentialHyp :: Move
-autPeelExistentialHyp = autBase H peelExistentialHyp
+autPeelExistentialTarg :: AutMove
+autPeelExistentialTarg = liftMove $ autBase T peelExistentialTarg
 
-autPeelUniversalHyp :: Move
-autPeelUniversalHyp = autBase H peelUniversalHyp
+autTidyImplInTarg :: AutMove
+autTidyImplInTarg = liftMove $ autBase T tidyImplInTarg
 
-autTidyImplInTarg :: Move
-autTidyImplInTarg = autBase T tidyImplInTarg
+autTidyAndInHyp :: AutMove
+autTidyAndInHyp = liftMove $ autBase H tidyAndInHyp
 
-autTidyAndInHyp :: Move
-autTidyAndInHyp = autBase H tidyAndInHyp
+autTidyAndInTarg :: AutMove
+autTidyAndInTarg = liftMove $ autBase T tidyAndInTarg
 
-autTidyAndInTarg :: Move
-autTidyAndInTarg = autBase T tidyAndInTarg
+autPeelUniversalHyp :: AutMove
+autPeelUniversalHyp autData tab =
+    let hyps = getAllHypInds tab
+        tryMove :: [(BoxNumber, Int)] -> Tableau -> Maybe (AutData, Tableau)
+        tryMove []     _   = Nothing
+        tryMove (h:hs) tab = case peelUniversalHyp h tab of
+            Just newTab -> if h `elem` getPeeledUniversalHyps autData
+                then tryMove hs tab
+                else Just (addPeeledUniversalHyp h autData, newTab)
+            Nothing -> tryMove hs tab in
+    tryMove hyps tab
