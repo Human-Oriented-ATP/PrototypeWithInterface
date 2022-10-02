@@ -39,7 +39,7 @@ openSetDefe' = holeFreeVars $ forall (Just $ ExternalName "x") 0 $
     Implies (BApp "element_of" (Free 2) (Free (-1))) $
     Implies (BApp "real_lesser_than" (App (App (Free (-2)) (Free 0)) (Free 2)) (Free 1)) $
     BApp "element_of" (Free 2) (Free (-3))
-openSetDefinition = LibraryEquivalence openSetDefQZone [openSetDefH1] [openSetDefe, openSetDefe']
+openSetDef = LibraryEquivalence openSetDefQZone [openSetDefH1] [openSetDefe, openSetDefe']
 
 intersectionDefQZone = Poset [ QVar "forall" (Just $ ExternalName "x") (-1)
     , QVar "forall" (Just $ ExternalName "A") (-2)
@@ -82,7 +82,7 @@ Just fResult = Just 0
 Just sequenceOfFunctionsQZone = parseQZone "forall X, forall Y, forall f_"
 Just sequenceOfFunctionsT1 = parseWithQZone sequenceOfFunctionsQZone "sequence_of_functions(f_, X, Y)"
 Just sequenceOfFunctionsT2 = parseWithQZone sequenceOfFunctionsQZone "forall n, implies(element_of(n, naturals), function(f_(n), X, Y))"
-sequenceOfFunctions = LibraryEquivalence sequenceOfFunctionsQZone
+sequenceOfFunctionsDef = LibraryEquivalence sequenceOfFunctionsQZone
     (map holeFreeVars [])
     (map holeFreeVars [sequenceOfFunctionsT1, sequenceOfFunctionsT2])
 
@@ -162,16 +162,16 @@ Just gResult = peelUniversalTarg ([], 0) gTab >>= peelUniversalTarg ([], 0) >>= 
     >>= peelExistentialTarg ([], 0) >>= tidyAndInTarg ([], 0)
     >>= peelUniversalTarg ([], 1) >>= tidyImplInTarg ([], 1)
     >>= tidyImplInTarg ([1], 0) >>= libEquivHyp uniformLimDef (0, 1) ([], 2)
-    >>= peelUniversalHyp ([], 2) >>= commitToHypothesis ([], 8)
+    >>= peelUniversalHyp ([], 2) >>= commitToHyp ([], 8)
     >>= peelExistentialHyp ([1], 0) >>= tidyAndInHyp ([1], 0) >>= peelUniversalHyp ([1], 1)
-    >>= commitToHypothesis ([1], 2) >>= modusPonens ([1,1], 0) ([1,1,1], 0)
+    >>= commitToHyp ([1], 2) >>= modusPonens ([1,1], 0) ([1,1,1], 0)
     >>= modusPonens ([1,1], 0) ([], 6) >>= peelUniversalHyp ([], 1)
-    >>= commitToHypothesis ([], 9) >>= libEquivHyp sequenceOfFunctions (0, 1) ([], 3)
-    >>= peelUniversalHyp ([], 3) >>= commitToHypothesis ([], 10)
+    >>= commitToHyp ([], 9) >>= libEquivHyp sequenceOfFunctionsDef (0, 1) ([], 3)
+    >>= peelUniversalHyp ([], 3) >>= commitToHyp ([], 10)
     >>= instantiateExistential "b" "a"
     >>= libEquivHyp continuousDef (0, 1) ([1, 1], 0)
     >>= modusPonens ([1,1], 0) ([], 6) >>= peelUniversalHyp ([1,1], 1)
-    >>= commitToHypothesis ([1,1], 2) >>= peelExistentialHyp ([1,1,1], 0) >>= tidyAndInHyp ([1,1,1], 0)
+    >>= commitToHyp ([1,1], 2) >>= peelExistentialHyp ([1,1,1], 0) >>= tidyAndInHyp ([1,1,1], 0)
     >>= modusPonens ([1,1,1], 1) ([1,1,1,1,1,1], 0) >>= instantiateExistential "delta" "c"
     >>= rawModusPonens ([1,1,1,1,1,1], 3) ([1,1,1,1,1,1], 1)
     >>= instantiateExistential "a" "n" >>= libForwardReasoning triIneq

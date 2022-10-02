@@ -38,7 +38,10 @@ setUpProblem = async function(){
 	await getInitialProblemState();
 	
 	showProblemState();
-	MathJax.typeset()
+	MathJax.texReset();
+	MathJax.typesetClear();
+	MathJax.typeset();
+
 }
 
 

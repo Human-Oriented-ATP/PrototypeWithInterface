@@ -164,8 +164,8 @@ rawModusPonens (boxNumber1, hypInd1) (boxNumber2, hypInd2) tab@(Tableau qZone ro
 -- hyp i  : P \implies Q
 -- targ j : Q
 -- replace targ j with P
-backwardsReasoningHyp :: (BoxNumber, Int) -> (BoxNumber, Int) -> Move
-backwardsReasoningHyp (boxNumber1, hypInd) (boxNumber2, targInd) tab@(Tableau qZone rootBox) = do
+backwardReasoningHyp :: (BoxNumber, Int) -> (BoxNumber, Int) -> Move
+backwardReasoningHyp (boxNumber1, hypInd) (boxNumber2, targInd) tab@(Tableau qZone rootBox) = do
     guard $ isPrefix boxNumber1 boxNumber2
 
     expr@(Implies p q) <- getHyp (boxNumber1, hypInd) tab
@@ -180,8 +180,8 @@ backwardsReasoningHyp (boxNumber1, hypInd) (boxNumber2, targInd) tab@(Tableau qZ
 -- hyp i : P \implies Q
 -- add a new box with only target P and all hypotheses except i
 -- replace hyp i in this box with Q
-commitToHypothesis :: (BoxNumber, Int) -> Move
-commitToHypothesis (boxNumber, hypInd) tab@(Tableau qZone rootBox) = do
+commitToHyp :: (BoxNumber, Int) -> Move
+commitToHyp (boxNumber, hypInd) tab@(Tableau qZone rootBox) = do
     Implies p q <- getHyp (boxNumber, hypInd) tab
     Box hyps targs <- getBox boxNumber rootBox
     let targsWithQ = Box [q] targs

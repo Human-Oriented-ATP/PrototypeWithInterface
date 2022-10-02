@@ -40,9 +40,9 @@ performFunctionOnProblemState str (ProblemState tab autData _ _ _) =
         "tidyImplInTarg" -> do
             [exprLoc] <- Just rest
             fmap TableauOut (tidyImplInTarg (read exprLoc :: (BoxNumber, Int)) tab)
-        "commitToHypothesis" -> do
+        "commitToHyp" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (commitToHypothesis (read exprLoc :: (BoxNumber, Int)) tab)
+            fmap TableauOut (commitToHyp (read exprLoc :: (BoxNumber, Int)) tab)
         
         "tidyAndInHyp" -> do
             [exprLoc] <- Just rest
@@ -98,7 +98,9 @@ libImplFromString _ = Nothing
 libEquivFromString :: String -> Maybe LibraryEquivalence
 libEquivFromString "continuousDef" = Just continuousDef
 libEquivFromString "uniformLimDef" = Just uniformLimDef
-libEquivFromString "sequenceOfFunctions" = Just sequenceOfFunctions
+libEquivFromString "sequenceOfFunctionsDef" = Just sequenceOfFunctionsDef
+libEquivFromString "openSetDef" = Just openSetDef
+libEquivFromString "intersectionDef" = Just intersectionDef
 libEquivFromString _ = Nothing
 
 
