@@ -32,7 +32,7 @@ liftMove move autData tab = case move tab of
     Nothing -> Nothing
 
 storedLibEquivs :: [LibraryEquivalence]
-storedLibEquivs = [continuousDef, uniformLimDef, sequenceOfFunctionsDef, openSetDef, intersectionDef]
+storedLibEquivs = [continuousDef, uniformLimDef, sequenceOfFunctionsDef, openSetDef, intersectionDef, mimplies, mforall]
 
 storedLibImpls :: [LibraryImplication]
 storedLibImpls = [triIneq, lesserThanTrans]

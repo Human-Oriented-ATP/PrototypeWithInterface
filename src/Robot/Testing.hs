@@ -226,4 +226,22 @@ xTab = Tableau xQZone (Box [xhh1, xhh2, xhh3] [PureTarg xtt1])
 Just a' = Just 0
 Just b' = Just 0
 
+-- Library definitions for testing purposes only (created by Matei for
+-- testing the tracking system)
 
+-- an alias for implication that forces us to use a library equivalence
+Just mimpliesQZone = parseQZone "forall A, forall B"
+Just mimpliese = parseWithQZone mimpliesQZone "mimplies(A, B)"
+Just mimpliese' = parseWithQZone mimpliesQZone "implies(A, B)"
+mimplies = LibraryEquivalence mimpliesQZone []
+    (map holeFreeVars [mimpliese, mimpliese'])
+
+-- an alias for quantification that forces us to use a library equivalence
+Just mforallQZone = parseQZone "forall P"
+Just mforalle = parseWithQZone mforallQZone "mforall(B)"
+Just mforalle' = parseWithQZone mforallQZone "forall x, P(x)"
+mforall = LibraryEquivalence mforallQZone []
+    (map holeFreeVars [mforalle, mforalle'])
+
+Just mProblem = parseSimple parseExpr "implies(forall x, Q(x), and(mimplies(mforall(P), mforall(Q)), implies(forall x, P(x), forall x, Q(x))))"
+mTab = Tableau (Poset [] []) (Box [] [PureTarg mProblem])

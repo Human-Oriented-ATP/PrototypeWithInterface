@@ -27,7 +27,7 @@ libMain = do
         middleware $ staticPolicy (noDots >-> addBase "static")
 
         get "/teststate" $ do
-            json testState
+            json testState --change this for an alternative problem, e.g. mTestState
 
         post "/move" $ do
             ActionState action problemState@(ProblemState tab autData tabHtml allowedActions proofHistory) <- jsonData :: ActionM ActionState
