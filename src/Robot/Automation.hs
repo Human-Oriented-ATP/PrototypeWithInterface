@@ -104,9 +104,11 @@ autPeelUniversalHyp autData tab =
         tryMove :: [(BoxNumber, Int)] -> Tableau -> Maybe (AutData, Tableau)
         tryMove []     _   = Nothing
         tryMove (h:hs) tab = case peelUniversalHyp h tab of
-            Just newTab -> if h `elem` getPeeledUniversalHyps autData
-                then tryMove hs tab
-                else Just (addPeeledUniversalHyp h autData, newTab)
+            Just newTab -> case getHypID h autData of
+                Just hid -> if hid `elem` getPeeledUniversalHyps autData
+                    then tryMove hs tab
+                    else Just (addPeeledUniversalHyp h autData, newTab)
+                Nothing -> Just (addPeeledUniversalHyp h autData, newTab)
             Nothing -> tryMove hs tab in
     tryMove hyps tab
 
@@ -116,9 +118,11 @@ autModusPonens autData tab =
         tryMove :: [((BoxNumber, Int), (BoxNumber, Int))] -> Tableau -> Maybe (AutData, Tableau)
         tryMove []     _   = Nothing
         tryMove ((h1, h2):hs) tab = case modusPonens h1 h2 tab of
-            Just newTab -> if (h1, h2) `elem` getModusPonensPairs autData
-                then tryMove hs tab
-                else Just (addModusPonensPair h1 h2 autData, newTab)
+            Just newTab -> case (getHypID h1 autData, getHypID h2 autData) of
+                (Just h1id, Just h2id) -> if (h1id, h2id) `elem` getModusPonensPairs autData
+                    then tryMove hs tab
+                    else Just (addModusPonensPair h1 h2 autData, newTab)
+                _ -> Just (addModusPonensPair h1 h2 autData, newTab)
             Nothing -> tryMove hs tab in
     tryMove tryOn tab
 
@@ -128,9 +132,11 @@ autRawModusPonens autData tab =
         tryMove :: [((BoxNumber, Int), (BoxNumber, Int))] -> Tableau -> Maybe (AutData, Tableau)
         tryMove []     _   = Nothing
         tryMove ((h1, h2):hs) tab = case rawModusPonens h1 h2 tab of
-            Just newTab -> if (h1, h2) `elem` getRawModusPonensPairs autData
-                then tryMove hs tab
-                else Just (addRawModusPonensPair h1 h2 autData, newTab)
+            Just newTab -> case (getHypID h1 autData, getHypID h2 autData) of
+                (Just h1id, Just h2id) -> if (h1id, h2id) `elem` getRawModusPonensPairs autData
+                    then tryMove hs tab
+                    else Just (addRawModusPonensPair h1 h2 autData, newTab)
+                _ -> Just (addRawModusPonensPair h1 h2 autData, newTab)
             Nothing -> tryMove hs tab in
     tryMove tryOn tab
 
@@ -150,9 +156,11 @@ autCommitToHyp autData tab =
         tryMove :: [(BoxNumber, Int)] -> Tableau -> Maybe (AutData, Tableau)
         tryMove []     _   = Nothing
         tryMove (h:hs) tab = case commitToHyp h tab of
-            Just newTab -> if h `elem` getCommittedToHyps autData
-                then tryMove hs tab
-                else Just (addCommittedToHyps h autData, newTab)
+            Just newTab -> case getHypID h autData of
+                Just hid -> if hid `elem` getCommittedToHyps autData
+                    then tryMove hs tab
+                    else Just (addCommittedToHyps h autData, newTab)
+                Nothing -> Just (addCommittedToHyps h autData, newTab)
             Nothing -> tryMove hs tab in
     tryMove hyps tab
 
@@ -163,9 +171,11 @@ autLibEquivHypWithEquiv libEquiv@(LibraryEquivalence _ _ equivalents) autData ta
         tryMove :: [(BoxNumber, Int)] -> Tableau -> (Int, Int) -> Maybe (AutData, Tableau)
         tryMove []     _   _   = Nothing
         tryMove (h:hs) tab (i, j) = case libEquivHyp libEquiv (i, j) h tab of
-            Just newTab -> if h `elem` getLibEquivHyps autData
-                then tryMove hs tab (i, j)
-                else Just (addLibEquivHyp h autData, newTab)
+            Just newTab -> case getHypID h autData of
+                Just hid -> if hid `elem` getLibEquivHyps autData
+                    then tryMove hs tab (i, j)
+                    else Just (addLibEquivHyp h autData, newTab)
+                Nothing -> Just (addLibEquivHyp h autData, newTab)
             Nothing -> tryMove hs tab (i, j)
         viableSwaps = [(i, j)
             | i <- [0..length equivalents-1], j <- [0..length equivalents-1], i /= j]
@@ -188,9 +198,11 @@ autLibEquivTargWithEquiv libEquiv@(LibraryEquivalence _ _ equivalents) autData t
         tryMove :: [(BoxNumber, Int)] -> Tableau -> (Int, Int) -> Maybe (AutData, Tableau)
         tryMove []     _   _   = Nothing
         tryMove (t:ts) tab (i, j) = case libEquivTarg libEquiv (i, j) t tab of
-            Just newTab -> if t `elem` getLibEquivTargs autData
-                then tryMove ts tab (i, j)
-                else Just (addLibEquivTarg t autData, newTab)
+            Just newTab -> case getTargID t autData of
+                Just tid -> if tid `elem` getLibEquivTargs autData
+                    then tryMove ts tab (i, j)
+                    else Just (addLibEquivTarg t autData, newTab)
+                Nothing -> Just (addLibEquivTarg t autData, newTab)
             Nothing -> tryMove ts tab (i, j)
         viableSwaps = [(i, j)
             | i <- [0..length equivalents-1], j <- [0..length equivalents-1], i /= j]
