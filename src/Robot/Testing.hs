@@ -229,6 +229,8 @@ Just b' = Just 0
 -- Library definitions for testing purposes only (created by Matei for
 -- testing the tracking system)
 
+-- Testing tracking of tidyImplInTarg
+
 -- an alias for implication that forces us to use a library equivalence
 Just mimpliesQZone = parseQZone "forall A, forall B"
 Just mimpliese = parseWithQZone mimpliesQZone "mimplies(A, B)"
@@ -238,10 +240,14 @@ mimplies = LibraryEquivalence mimpliesQZone []
 
 -- an alias for quantification that forces us to use a library equivalence
 Just mforallQZone = parseQZone "forall P"
-Just mforalle = parseWithQZone mforallQZone "mforall(B)"
+Just mforalle = parseWithQZone mforallQZone "mforall(P)"
 Just mforalle' = parseWithQZone mforallQZone "forall x, P(x)"
 mforall = LibraryEquivalence mforallQZone []
     (map holeFreeVars [mforalle, mforalle'])
 
 Just mProblem = parseSimple parseExpr "implies(forall x, Q(x), and(mimplies(mforall(P), mforall(Q)), implies(forall x, P(x), forall x, Q(x))))"
 mTab = Tableau (Poset [] []) (Box [] [PureTarg mProblem])
+
+-- Testing tracking of commitToHyp
+Just nProblem = parseSimple parseExpr "implies(and(implies(P, forall x, Q(x)), implies(P, R)), S)"
+nTab = Tableau (Poset [] []) (Box [] [PureTarg nProblem])

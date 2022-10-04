@@ -114,3 +114,7 @@ mTestState = ProblemState { getTab = mTab, getAutData = startAutData,
     getTabHtml = renderHtml $ generateTabHtml $ prettifyTab mTab,
     getAllowedActions = [], getProofHistory = []}
 
+nTestState :: ProblemState
+nTestState = ProblemState { getTab = nTab, getAutData = startAutData,
+    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab nTab,
+    getAllowedActions = [], getProofHistory = []}
