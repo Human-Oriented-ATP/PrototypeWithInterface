@@ -148,3 +148,22 @@ targDeletionHypTracker (delBoxNumber, delInt) (trackBoxNumber, trackInt) =
 
 targDeletionTracker :: (BoxNumber, Int) -> Tracker
 targDeletionTracker t = (targDeletionHypTracker t, targDeletionTargTracker t)
+
+-- Trackers for when there is further nesting
+-- i.e. boxNumber -> boxNumber ++ [index]
+nestHypTracker :: BoxNumber -> Int -> HypTracker
+nestHypTracker boxNumber index (trackBoxNumber, trackInt) =
+    case getPrefixDiff trackBoxNumber boxNumber of
+        Just suffix -> case suffix of
+            [] -> Just (trackBoxNumber, trackInt)
+            _ -> Just (boxNumber++index:suffix, trackInt)
+        Nothing -> Just (trackBoxNumber, trackInt)
+
+nestTargTracker :: BoxNumber -> Int -> TargTracker
+nestTargTracker boxNumber index (trackBoxNumber, trackInt) =
+    case getPrefixDiff trackBoxNumber boxNumber of
+        Just suffix -> Just (boxNumber++index:suffix, trackInt)
+        Nothing -> Just (trackBoxNumber, trackInt)
+
+nestTracker :: BoxNumber -> Int -> Tracker
+nestTracker boxNumber index = (nestHypTracker boxNumber index, nestTargTracker boxNumber index)

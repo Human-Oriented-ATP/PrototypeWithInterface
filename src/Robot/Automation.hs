@@ -32,7 +32,7 @@ liftMove move autData tab = case move tab of
     Nothing -> Nothing
 
 storedLibEquivs :: [LibraryEquivalence]
-storedLibEquivs = [continuousDef, uniformLimDef, sequenceOfFunctionsDef, openSetDef, intersectionDef, mimplies, mforall]
+storedLibEquivs = [continuousDef, uniformLimDef, sequenceOfFunctionsDef, openSetDef, intersectionDef]
 
 storedLibImpls :: [LibraryImplication]
 storedLibImpls = [triIneq, lesserThanTrans]
@@ -147,20 +147,6 @@ autBackwardReasoningHyp autData tab =
             Nothing -> tryMove rest tab in
     tryMove tryOn tab
 
-autCommitToHyp :: AutMove
-autCommitToHyp autData tab =
-    let hyps = getAllHypInds tab
-        tryMove :: [(BoxNumber, Int)] -> Tableau -> Maybe (AutData, Tableau)
-        tryMove []     _   = Nothing
-        tryMove (h:hs) tab = case commitToHyp h tab of
-            Just newTab -> case getHypID h autData of
-                Just hid -> if hid `elem` getCommittedToHyps autData
-                    then tryMove hs tab
-                    else Just (addCommittedToHyps h autData, newTab)
-                Nothing -> Just (addCommittedToHyps h autData, newTab)
-            Nothing -> tryMove hs tab in
-    tryMove hyps tab
-
 
 autLibEquivHypWithEquiv :: LibraryEquivalence -> AutMove
 autLibEquivHypWithEquiv libEquiv@(LibraryEquivalence _ _ equivalents) autData tab =
@@ -255,3 +241,22 @@ autTidyImplInTarg autData tab =
             Just newTab -> Just (trackTidyImplInTarg tab t autData, newTab)
             Nothing -> tryMove ts in
     tryMove targs
+
+-- The way commitToHyp is written, the box always becomes nested at index 1
+trackCommitToHyp :: BoxNumber -> AutData -> AutData
+trackCommitToHyp boxNumber autData = applyTracker autData $ nestTracker boxNumber 1
+
+autCommitToHyp :: AutMove
+autCommitToHyp autData tab =
+    let hyps = getAllHypInds tab
+        tryMove :: [(BoxNumber, Int)] -> Tableau -> Maybe (AutData, Tableau)
+        tryMove []     _   = Nothing
+        tryMove (h:hs) tab = let autData' = trackCommitToHyp (fst h) autData in
+            case commitToHyp h tab of
+            Just newTab -> case getHypID h autData of
+                Just hid -> if hid `elem` getCommittedToHyps autData
+                    then tryMove hs tab
+                    else Just (addCommittedToHyps h autData', newTab)
+                Nothing -> Just (addCommittedToHyps h autData', newTab)
+            Nothing -> tryMove hs tab in
+    tryMove hyps tab
