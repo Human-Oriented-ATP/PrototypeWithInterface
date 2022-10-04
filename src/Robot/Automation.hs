@@ -87,9 +87,6 @@ autPeelExistentialHyp = liftMove $ autBase H peelExistentialHyp
 autPeelExistentialTarg :: AutMove
 autPeelExistentialTarg = liftMove $ autBase T peelExistentialTarg
 
-autTidyImplInTarg :: AutMove
-autTidyImplInTarg = liftMove $ autBase T tidyImplInTarg
-
 autTidyAndInHyp :: AutMove
 autTidyAndInHyp = liftMove $ autBase H tidyAndInHyp
 
@@ -239,8 +236,22 @@ autLibBackwardReasoning autData tab = let
         (res:_) -> Just res
         _ -> Nothing
 
-{-
+-- moves that require tracking
 
+trackTidyImplInTarg :: Tableau -> (BoxNumber, Int) -> AutData -> AutData
+trackTidyImplInTarg tab targ@(boxNumber, _) autData =
+    case getBox boxNumber (getRootBox tab) of
+        Just (Box hyps targs) -> if length targs == 1 then
+            autData else
+            applyTracker autData (targDeletionTracker targ)
+        _ -> autData -- Couldn't find box: leave autData unchanged
 
-
--}
+autTidyImplInTarg :: AutMove
+autTidyImplInTarg autData tab =
+    let targs = getAllTargInds tab
+        tryMove :: [(BoxNumber, Int)] -> Maybe (AutData, Tableau)
+        tryMove []     = Nothing
+        tryMove (t:ts) = case tidyImplInTarg t tab of
+            Just newTab -> Just (trackTidyImplInTarg tab t autData, newTab)
+            Nothing -> tryMove ts in
+    tryMove targs

@@ -6,6 +6,7 @@ import Robot.TableauFoundation
 
 import GHC.Generics
 import Data.Aeson (FromJSON, ToJSON)
+import Data.Maybe
 
 type HypID = Int
 type TargID = Int
@@ -101,6 +102,23 @@ instance FromJSON AutData
 type HypTracker = (BoxNumber, Int) -> Maybe (BoxNumber, Int)
 type TargTracker = (BoxNumber, Int) -> Maybe (BoxNumber, Int)
 type Tracker = (HypTracker, TargTracker)
+
+applyTracker :: AutData -> Tracker -> AutData
+applyTracker autData (hypTracker, targTracker) =
+    let (hypLookup, hypCounter) = getHypLookupTable autData
+        (targLookup, targCounter) = getTargLookupTable autData
+        newHypLookup = mapMaybe (
+            \(hyp, id) -> case hypTracker hyp of
+                Just hyp' -> Just (hyp', id)
+                Nothing -> Nothing
+            ) hypLookup
+        newTargLookup = mapMaybe(
+            \(targ, id) -> case targTracker targ of
+                Just targ' -> Just (targ', id)
+                Nothing -> Nothing
+            ) targLookup in
+    autData {getHypLookupTable = (newHypLookup, hypCounter),
+            getTargLookupTable = (newTargLookup, targCounter)}
 
 -- Trackers for the deletion of a target
 targDeletionTargTracker :: (BoxNumber, Int) -> TargTracker
