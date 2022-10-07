@@ -19,7 +19,15 @@ import Data.List
 import Control.Monad
 import Debug.Trace
 
+-- Create a tableau with just one given target
+exprToTab :: Expr -> Tableau
+exprToTab e = Tableau (Poset [] []) (Box [] [PureTarg e])
 
+-- Parse a string as an expression then turn it into a Tableau as above
+stringToTab :: String -> Maybe Tableau
+stringToTab s = do
+    e <- parseSimple parseExpr s
+    return $ exprToTab e
 
 -- <<< MOVE TESTING >>>
 
@@ -72,9 +80,7 @@ f1 = forall (Just $ ExternalName "X") (0) $
         (TApp ( "open_in_metric") (Free 2) (Free 1) (Free 0))
         (TApp ( "open_in_metric") (Free 3) (Free 1) (Free 0))) $
     TApp ( "open_in_metric") (BApp ( "set_intersection") (Free 2) (Free 3)) (Free 1) (Free 0)
-fQZone = Poset [] []
-fBox = Box [] [PureTarg f1]
-fTab = Tableau fQZone fBox
+fTab = exprToTab f1
 
 Just fResult = Just 0
 
@@ -151,9 +157,7 @@ g1 = forall (Just $ ExternalName "X") (0) $
         (forall (Just $ ExternalName "n") (6) $ Implies (BApp ( "element_of") (Free 6) (Con $  "naturals")) (PApp ( "continuous_in_metric_space") (App (Free 5) (Free 6)) (Free 2) (Free 0) (Free 3) (Free 1))))$
     PApp ( "continuous_in_metric_space") (Free 4) (Free 2) (Free 0) (Free 3) (Free 1)
 
-gQZone = Poset [] []
-gBox = Box [] [PureTarg g1]
-gTab = Tableau gQZone gBox
+gTab = exprToTab g1
 
 Just gResult = peelUniversalTarg ([], 0) gTab >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0)
     >>= tidyImplInTarg ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0)
@@ -245,9 +249,17 @@ Just mforalle' = parseWithQZone mforallQZone "forall x, P(x)"
 mforall = LibraryEquivalence mforallQZone []
     (map holeFreeVars [mforalle, mforalle'])
 
-Just mProblem = parseSimple parseExpr "implies(forall x, Q(x), and(mimplies(mforall(P), mforall(Q)), implies(forall x, P(x), forall x, Q(x))))"
-mTab = Tableau (Poset [] []) (Box [] [PureTarg mProblem])
+Just mTab = stringToTab "implies(forall x, Q(x), and(mimplies(mforall(P), mforall(Q)), implies(forall x, P(x), forall x, Q(x))))"
+
 
 -- Testing tracking of commitToHyp
-Just nProblem = parseSimple parseExpr "implies(and(implies(P, forall x, Q(x)), implies(P, R)), S)"
-nTab = Tableau (Poset [] []) (Box [] [PureTarg nProblem])
+Just nTab = stringToTab "implies(and(implies(P, forall x, Q(x)), implies(P, R)), S)"
+
+-- Test problem state for subtask development
+
+s1 = "forall A, forall B, forall C, forall D, " ++
+    "implies(and(exists x, element_of(x, A), " ++
+                "and(forall x, implies(element_of(x, A), element_of(x, B)), " ++
+                    "forall x, implies(element_of(x, intersection(A, B)), element_of(x, C)))), " ++
+    "exists x, element_of(x, union(C, D)))"
+Just s1Tab = stringToTab s1

@@ -105,16 +105,6 @@ libEquivFromString _ = Nothing
 
 
 testState :: ProblemState
-testState = ProblemState { getTab = gTab, getAutData = startAutData,
-    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab gTab,
-    getAllowedActions = [], getProofHistory = []}
-
-mTestState :: ProblemState
-mTestState = ProblemState { getTab = mTab, getAutData = startAutData,
-    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab mTab,
-    getAllowedActions = [], getProofHistory = []}
-
-nTestState :: ProblemState
-nTestState = ProblemState { getTab = nTab, getAutData = startAutData,
-    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab nTab,
+testState = ProblemState { getTab = s1Tab, getAutData = startAutData,
+    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab s1Tab,
     getAllowedActions = [], getProofHistory = []}
