@@ -132,6 +132,22 @@ pprintExprM (And a b) = do
   outA <- pprintExprM a
   outB <- pprintExprM b
   return $ "(" ++ outA ++ " \8743 " ++ outB ++ ")"
+-- or
+pprintExprM (Or a b) = do
+  outA <- pprintExprM a
+  outB <- pprintExprM b
+  return $ "(" ++ outA ++ " \8744 " ++ outB ++ ")"
+-- union
+pprintExprM (BApp "union" a b) = do
+  outA <- pprintExprM a
+  outB <- pprintExprM b
+  return $ "(" ++ outA ++ " \8746 " ++ outB ++ ")"
+-- intersection
+pprintExprM (BApp "intersection" a b) = do
+  outA <- pprintExprM a
+  outB <- pprintExprM b
+  return $ "(" ++ outA ++ " \8745 " ++ outB ++ ")"
+
 -- constant function applications which can be displayed more nicely
 pprintExprM (BApp "element_of" a dom) = pprintWithStringBetween a dom " \8712 "
 pprintExprM (BApp "real_lesser_than" a dom) = pprintWithStringBetween a dom " < "
