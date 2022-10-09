@@ -42,6 +42,7 @@ library
       Robot.Poset
       Robot.PPrinting
       Robot.Prisoner
+      Robot.Subtasks
       Robot.TableauFoundation
       Robot.Testing
   other-modules:

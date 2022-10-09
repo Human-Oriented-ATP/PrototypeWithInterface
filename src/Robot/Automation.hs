@@ -61,9 +61,6 @@ waterfall = autTidyAndInHyp
     <|||>   autLibEquivHyp
     <|||>   autLibBackwardReasoning
 
--- Enum data type: Targets or Hypotheses
-data ExprType = T | H
-
 -- Avoid repeating code by having a function which automates trying
 -- to apply a move on all hypotheses / all targets
 autBase :: ExprType -> ((BoxNumber, Int) -> Move) -> Move

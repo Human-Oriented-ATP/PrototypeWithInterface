@@ -41,6 +41,9 @@ data Tableau = Tableau {getQZone :: QZone,
                         getRootBox :: Box Expr}
                         deriving (Eq, Read, Show, Generic)
 
+-- Enum data type: Targets or Hypotheses
+data ExprType = T | H
+
 -- | Simply for JSON requests to allow the web interface to work
 instance ToJSON (Targ Expr)
 instance ToJSON (Box Expr)

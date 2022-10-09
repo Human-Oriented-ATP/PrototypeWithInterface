@@ -7,6 +7,7 @@ import Robot.TableauFoundation
 import GHC.Generics
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Maybe
+import Data.Tuple
 
 type HypID = Int
 type TargID = Int
@@ -52,6 +53,12 @@ getHypID hyp autData = lookup hyp $ fst $ getHypLookupTable autData
 
 getTargID :: (BoxNumber, Int) -> AutData -> Maybe TargID
 getTargID targ autData = lookup targ $ fst $ getTargLookupTable autData
+
+getHypFromID :: HypID -> AutData -> Maybe (BoxNumber, Int)
+getHypFromID hypID autData = lookup hypID $ map swap $ fst $ getHypLookupTable autData
+
+getTargFromID :: TargID -> AutData -> Maybe (BoxNumber, Int)
+getTargFromID targID autData = lookup targID $ map swap $ fst $ getTargLookupTable autData
 
 -- This boilerplate code could be reduced with Lens and template Haskell but
 -- I'll avoid that for now because it's no effort to just copy paste these.
