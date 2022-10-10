@@ -42,6 +42,7 @@ library
       Robot.Poset
       Robot.PPrinting
       Robot.Prisoner
+      Robot.SubtaskLibrary
       Robot.Subtasks
       Robot.TableauFoundation
       Robot.Testing
@@ -51,7 +52,8 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      aeson
+      HUnit
+    , aeson
     , base >=4.7 && <5
     , blaze-html >=0.9
     , blaze-markup
@@ -80,7 +82,8 @@ executable PrototypeWithInterface-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      PrototypeWithInterface
+      HUnit
+    , PrototypeWithInterface
     , aeson
     , base >=4.7 && <5
     , blaze-html >=0.9
@@ -106,12 +109,14 @@ test-suite PrototypeWithInterface-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      SubtaskTests
       Paths_PrototypeWithInterface
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      PrototypeWithInterface
+      HUnit
+    , PrototypeWithInterface
     , aeson
     , base >=4.7 && <5
     , blaze-html >=0.9

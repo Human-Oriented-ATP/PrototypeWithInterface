@@ -41,6 +41,15 @@ storedLibImpls = [triIneq, lesserThanTrans]
 (<|||>) :: AutMove -> AutMove -> AutMove
 (<|||>) move1 move2 autData tab = move1 autData tab <|> move2 autData tab
 
+-- bind for AutMoves
+(>>>>=) :: Maybe (AutData, Tableau) -> AutMove -> Maybe (AutData, Tableau)
+(>>>>=) m autMove = do (autData, tab) <- m
+                       autMove autData tab
+
+repeatMove :: AutMove -> Int -> AutMove
+repeatMove _       0 autData tab = Just (autData, tab)
+repeatMove autMove n autData tab = autMove autData tab >>>>= repeatMove autMove (n-1)
+
 waterfall :: AutMove
 waterfall = autTidyAndInHyp
     <|||>   autTidyAndInTarg

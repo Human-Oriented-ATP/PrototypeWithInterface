@@ -20,6 +20,7 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/Human-Oriented-ATP/PrototypeWithInterface>
 
 dependencies:
+- HUnit
 - base >= 4.7 && < 5
 - scotty >= 0.12
 - blaze-html >= 0.9

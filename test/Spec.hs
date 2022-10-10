@@ -1,2 +1,7 @@
+import SubtaskTests
+import Test.HUnit
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = do
+    runTestTT subtaskTests
+    putStrLn "end of tests"
