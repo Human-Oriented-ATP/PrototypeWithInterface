@@ -9,11 +9,14 @@ import Robot.BasicMoveHelpers
 import Robot.HoleExpr
 
 import Data.Maybe
+import Control.Monad
 
 data SubtaskType = CreateInTarg | CreateAllInTarg | DestroyInTarg
                  | CreateInHyp | CreateAllInHyp | DestroyInHyp
+                 deriving (Eq)
 
 data SubtaskClass = Create | CreateAll | Destroy
+                 deriving (Eq)
 
 data Subtask = Subtask { getSubtaskType :: SubtaskType,
                  getExprID :: Maybe Int, -- currently HypIDs and TargIDs are Ints
@@ -77,3 +80,26 @@ matches h e = matchesAll h e || (case e of
     (App e1 e2) -> matches h e1 || matches h e2
     (Abs _ (Sc e')) -> matches h e'
     _ -> False)
+
+-- Given a general destroy subtask (target/hypothesis not specified),
+-- returns a specific destroy subtask specifying where the destruction
+-- needs to take place
+specifyDestroy :: AutData -> Tableau -> Subtask -> Maybe (AutData, Subtask)
+specifyDestroy autData tab subtask@(Subtask subtaskType exprID pattern) = do
+    guard $ isNothing exprID
+    guard $ subtaskTypeToSubtaskClass subtaskType == Destroy
+    let exprType = subtaskTypeToExprType subtaskType
+    let exprAddresses = case exprType of
+            H -> getAllHypInds tab
+            T -> getAllTargInds tab
+    let getter = case exprType of
+            H -> getHyp
+            T -> getPureTarg
+    address <- listToMaybe $ filter (\exprAddress ->
+        case getter exprAddress tab of
+            Just e -> matches pattern e
+            Nothing -> False) exprAddresses
+    let (newAutData, id) = case exprType of
+            H -> registerHyp address autData
+            T -> registerTarg address autData
+    return (newAutData, Subtask subtaskType (Just id) pattern)

@@ -4,8 +4,13 @@ import Robot.LibraryMoves
 import Robot.HoleExpr
 import Robot.Parser
 import Robot.Subtasks
+import Robot.TableauFoundation
+import Robot.BasicMoves
+import Robot.AutomationData
 
 import Data.Function
+import Data.Maybe
+import Control.Monad
 
 import qualified Data.HashMap.Lazy as M
 import Data.Hashable
@@ -39,6 +44,23 @@ subtaskSearch index subtask@(Subtask subtaskType exprID pattern) =
     case index M.!? searchTerm of
         Just indexValues -> if flipFlag then map flip indexValues else indexValues
         Nothing -> []
+
+-- Given a destroy task which specifies an expression,
+-- Attempt to achieve the subtask using results from the index
+attemptDestroySubtask :: Index -> Subtask -> AutData -> Move
+attemptDestroySubtask index task@(Subtask subtaskType exprID pattern) autData tab = do
+    guard $ subtaskTypeToSubtaskClass subtaskType == Destroy
+    let exprType = subtaskTypeToExprType subtaskType
+    eid <- exprID
+    address <- case exprType of
+        H -> getHypFromID eid autData
+        T -> getTargFromID eid autData
+    let equivalences = subtaskSearch index task
+    let invoker = case exprType of
+            H -> libEquivHyp
+            T -> libEquivTarg
+    listToMaybe $ mapMaybe (\(EquivalenceValue result pair) ->
+        invoker result pair address tab) equivalences
 
 -- Intersection and union properties
 
