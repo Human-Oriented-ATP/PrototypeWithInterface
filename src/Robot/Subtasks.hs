@@ -13,7 +13,7 @@ import Control.Monad
 
 data SubtaskType = CreateInTarg | CreateAllInTarg | DestroyInTarg
                  | CreateInHyp | CreateAllInHyp | DestroyInHyp
-                 deriving (Eq)
+                 deriving (Eq, Show)
 
 data SubtaskClass = Create | CreateAll | Destroy
                  deriving (Eq)
@@ -21,6 +21,7 @@ data SubtaskClass = Create | CreateAll | Destroy
 data Subtask = Subtask { getSubtaskType :: SubtaskType,
                  getExprID :: Maybe Int, -- currently HypIDs and TargIDs are Ints
                  getPattern :: HoleExpr }
+                 deriving (Eq, Show)
 
 subtaskTypeToExprType :: SubtaskType -> ExprType
 subtaskTypeToExprType subtaskType =
