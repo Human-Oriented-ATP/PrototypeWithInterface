@@ -16,6 +16,7 @@ import Data.String (IsString(..))
 import Data.List ( union )
 import GHC.Generics
 import Data.Aeson (FromJSON, ToJSON)
+import Control.Monad
 
 -- | A type to represent external variable names.
 newtype ExternalName = ExternalName { getExternalName :: String }
@@ -197,3 +198,57 @@ getFreeVars (B _) = []
 -- | Nothing right now.
 someFunc :: IO ()
 someFunc = return ()
+
+-- <<< NAVIGATION WITHIN EXPRESSIONS >>
+
+-- Direction for navigating within an expression.
+-- GoLeft navigates from App x y to x
+-- GoRight navigates from App x y to y
+-- Enter navigates from Abs _ (Sc x) to x
+data ExprDirection = GoLeft | GoRight | Enter
+
+type ExprDirections = [ExprDirection]
+
+followDirection :: Expr -> ExprDirection -> Maybe Expr
+followDirection (App x y) GoLeft = Just x
+followDirection (App x y) GoRight = Just y
+followDirection (Abs _ (Sc x)) Enter = Just x
+followDirection _ _ = Nothing
+
+followDirections :: Expr -> ExprDirections -> Maybe Expr
+followDirections = foldM followDirection
+
+-- Zipper type for Expressions
+-- (see http://learnyouahaskell.com/zippers for an intro to Zippers in Haskell)
+type ExprZipper = (Expr, [ExprCrumb])
+
+data ExprCrumb
+    -- Crumb from going left
+    = LeftCrumb Expr
+    -- Crumb from going right
+    | RightCrumb Expr
+    -- Crumb from entering an abstraction
+    | EnterCrumb (Maybe ExternalName)
+    deriving (Eq, Show)
+
+-- zipper versions of above functions
+zFollowDirection :: ExprZipper -> ExprDirection -> Maybe ExprZipper
+zFollowDirection ((App x y), crumbs) GoLeft = Just (x, (LeftCrumb y):crumbs)
+zFollowDirection ((App x y), crumbs) GoRight = Just (y, (RightCrumb x):crumbs)
+zFollowDirection ((Abs nm (Sc x)), crumbs) Enter = Just (x, (EnterCrumb nm):crumbs)
+zFollowDirection _ _ = Nothing
+
+zFollowDirections :: ExprZipper -> ExprDirections -> Maybe ExprZipper
+zFollowDirections = foldM zFollowDirection
+
+zGoUp :: ExprZipper -> Maybe ExprZipper
+-- if we're already at the top, can't go up
+zGoUp (e, []) = Nothing
+zGoUp (e, (LeftCrumb e'):crumbs) = Just (App e e', crumbs)
+zGoUp (e, (RightCrumb e'):crumbs) = Just (App e' e, crumbs)
+zGoUp (e, (EnterCrumb nm):crumbs) = Just (Abs nm (Sc e), crumbs)
+
+unzipper :: ExprZipper -> Expr
+unzipper (e, []) = e
+unzipper exprZipper = let Just newZipper = zGoUp exprZipper
+    in unzipper newZipper
