@@ -4,6 +4,8 @@ import Robot.Lib
 import Robot.HoleExpr
 
 import Control.Monad
+import Data.List
+import Data.Tuple
 
 type ExprIdentifier = Int
 
@@ -46,10 +48,14 @@ type NBISub = [(InternalName, NBIExpr)]
 
 -- Tries to add an assignment to a substitution and succeeds if it is
 -- consistent
-addAssignment :: NBISub -> (InternalName, NBIExpr) -> Maybe NBISub
-addAssignment sub (i, expr) = case lookup i sub of
+addNBIAssignment :: NBISub -> (InternalName, NBIExpr) -> Maybe NBISub
+addNBIAssignment sub (i, expr) = case lookup i sub of
     Nothing -> Just ((i, expr):sub)
     Just expr' -> if expr == expr' then Just sub else Nothing
+
+-- Merging two substitutions together
+mergeNBISubstitutions :: NBISub -> NBISub -> Maybe NBISub
+mergeNBISubstitutions = foldM addNBIAssignment
 
 -- If we have an expression that was reached after following a series
 -- of directions, with each set of directions corresponding to a nested
@@ -93,6 +99,45 @@ exprToNBIExprAux n (B i) allDirections = if n > i then Just $ NBIB i else
     do  nbi <- getNBI remainingDepth binderCounts allDirections
         Just $ NBINBI nbi
 
+-- Functions performing the reverse conversion
+nbiExprToExpr :: NBIExpr -> [(ExprDirections, Int)] -> Maybe Expr
+nbiExprToExpr = nbiExprToExprAux 0
+
+-- first argument is how many binders we've entered within the NBIExpr
+nbiExprToExprAux :: Int -> NBIExpr -> [(ExprDirections, Int)] -> Maybe Expr
+nbiExprToExprAux n (NBIApp e1 e2) dirs = do
+    e1' <- nbiExprToExprAux n e1 dirs
+    e2' <- nbiExprToExprAux n e2 dirs
+    Just $ App e1' e2'
+nbiExprToExprAux n (NBIAbs nm (NBISc e)) dirs = do
+    e' <- nbiExprToExprAux (n+1) e dirs
+    Just $ Abs nm (Sc e')
+nbiExprToExprAux n (NBIFree m) _ = Just $ Free m
+nbiExprToExprAux n (NBICon s) _ = Just $ Con s
+nbiExprToExprAux n (NBIB i) _ = Just $ B i
+nbiExprToExprAux n (NBINBI (NBI id dirs)) allDirections = do
+    relevantDirections <- lookup id (map swap allDirections)
+    guard $ isPrefixOf dirs relevantDirections
+    -- The number of binders inbetween the nbi and the binder thus
+    -- identified is a sum consisting of three parts:
+    -- 1) the number of binders entered into within the NBIExpr itself
+    -- = n
+    -- 2) the number of binders in the intermediate nested expressions
+    -- (These expressions have different ids comapred to the one we're
+    -- looking for)
+    let intermediateBinderCount = sum (
+            map (\(dirs', _) -> length $ filter (==Enter) dirs') $
+            takeWhile (\(_,id') -> id /= id') allDirections)
+    -- 3) the number of binders passed within the relevant nested
+    -- expression. -1 here because we don't want to count the
+    -- identified binder itself
+    let finalBinderCount = (length $ filter (==Enter) relevantDirections) -
+                           (length $ filter (==Enter) dirs) - 1
+    Just $ B (n + intermediateBinderCount + finalBinderCount)
+
+-- If we have an expression, some directions to a subexpression thereof,
+-- and a HoleExpr that should match the subexpression, attempt the match
+-- and return the substitution
 matchSubExpression :: (Expr, Int) -> ExprDirections -> (HoleExpr, Int) -> Maybe NBISub
 matchSubExpression (rootExpr, rootID) directions (holeExpr, matchID) = do
     matchExpr <- followDirections rootExpr directions
@@ -102,4 +147,16 @@ matchSubExpression (rootExpr, rootID) directions (holeExpr, matchID) = do
         preNBIExpr <- followDirections matchExpr dirs
         nbiExpr <- exprToNBIExpr preNBIExpr [(dirs, matchID), (directions, rootID)]
         return (nm, nbiExpr)) holeDirs
-    foldM addAssignment [] assignments
+    mergeNBISubstitutions [] assignments
+
+-- Same as above, apart from that it matches a whole expression rather
+-- than a subexpression
+matchExpression :: (Expr, Int) -> HoleExpr -> Maybe NBISub
+matchExpression (expr, id) holeExpr = do
+    guard $ basicMatchCheck holeExpr expr
+    let holeDirs = getHoleDirections holeExpr
+    assignments <- mapM (\(dirs, nm) -> do
+        preNBIExpr <- followDirections expr dirs
+        nbiExpr <- exprToNBIExpr preNBIExpr [(dirs, id)]
+        return (nm, nbiExpr)) holeDirs
+    mergeNBISubstitutions [] assignments

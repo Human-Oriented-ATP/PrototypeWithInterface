@@ -63,6 +63,13 @@ holeExprToExpr (Hole _) = Nothing
 -- IMPROVEMENT - probably change to HashMap later, but will keep as list for now
 type Substitution = [(InternalName, Expr)]
 
+-- Add a single assignment to a substitution. Maybe because consistency
+-- could fail
+addAssignment :: Substitution -> (InternalName, Expr) -> Maybe Substitution
+addAssignment sub (i, expr) = case lookup i sub of
+    Nothing -> Just ((i, expr):sub)
+    Just expr' -> if expr == expr' then Just sub else Nothing
+
 -- | Check that all InternalNames map to things which agree, then union
 -- (there are more efficient ways to do this, of course)
 mergeSubstitutions :: Substitution -> Substitution -> Maybe Substitution

@@ -560,7 +560,7 @@ subLibraryEquivalence :: LibraryEquivalence -> (Int, Int) -> ExprType ->
 -- First argument is the library equivalence we want to apply.
 -- Second argument is the indices of the two equivalents we will use.
 -- Third argument indicates whether we are applying the equivalence
--- in a target or a hypothesis. Fourth arguent is address of the
+-- in a target or a hypothesis. Fourth argument is address of the
 -- expression. Fifth argument is directions to the relevant subExpression
 subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprType
     address@(boxNumber, index) directions tab
@@ -571,12 +571,41 @@ subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprT
         rootExpr <- maybeToList $ case exprType of
             H -> getHyp address tab
             T -> getPureTarg address tab
-        -- start with the NBI sustitution that matches the original
+        -- Start with the NBI sustitution that matches the original
         -- equivalent to the subExpression. We use id 0 for the
         -- root expression and id -1 for the original equivalent.
         startingSubstitution <- maybeToList $ matchSubExpression (rootExpr, 0)
             directions (originalEquivalent, -1)
-
         let hyps = concat $ maybeToList $ getHypsUsableInBoxNumber boxNumber
                 $ getRootBox tab
-        return tab
+        -- Provide ids starting at 1 for our conditions
+        let numberedConditions = zip [1..] conditions
+        -- Steps to find all consistent matchings
+        -- 1) find all individual matches for conditions
+        let matchings :: [[NBISub]]
+            matchings = map (\(i, holeExpr) -> mapMaybe
+                (\h -> matchExpression (h, i) holeExpr) hyps) numberedConditions
+        -- 2) Order them by fewest matchings first (Not strictly
+        -- necessary, but include this for efficiency)
+        let sortedMatchings = sortBy (\l1 l2 -> length l1 `compare` length l2) matchings
+        -- 3) recursively try to merge matchings
+        let finalSubs :: [NBISub]
+            finalSubs = foldl (\currentSubList possibleNextSubList -> do
+                    -- in list monad
+                    currentSub <- currentSubList
+                    nextSub <- possibleNextSubList
+                    maybeToList $ mergeNBISubstitutions currentSub nextSub
+                ) [startingSubstitution] sortedMatchings
+        nbiSub <- finalSubs
+        sub <- maybeToList $ foldM addAssignment [] $ mapMaybe (\(exprDirections, nm) -> do
+                nbiExpr <- lookup nm nbiSub
+                -- the new equivalent is assigned id -2
+                expr <- nbiExprToExpr nbiExpr [(exprDirections, -2), (directions, 0)]
+                return (nm, expr))
+                $ getHoleDirections newEquivalent
+        -- Only substitutions which specify all the holes in
+        -- newEquivalent will succeed
+        newExpr <- maybeToList $ holeExprToExpr $ applySubstitution sub newEquivalent
+        case exprType of
+            H -> maybeToList $ updateHyp address newExpr tab
+            H -> maybeToList $ updatePureTarg address newExpr tab
