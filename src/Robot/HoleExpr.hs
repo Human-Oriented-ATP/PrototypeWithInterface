@@ -84,6 +84,17 @@ matchExpressions (HoleFree n) (Free n') = if n == n' then Just [] else Nothing
 matchExpressions (Hole i) expr = Just [(i, expr)]-- IMPROVEMENT - currently doesn't check that expr is a term (as now have removed constant types)
 matchExpressions _ _ = Nothing
 
+-- Check whether the non-hole parts of the expressions match
+basicMatchCheck :: HoleExpr -> Expr -> Bool
+basicMatchCheck (HoleApp e1 e2) (App e1' e2') = basicMatchCheck e1 e1' &&
+                                                basicMatchCheck e2 e2'
+basicMatchCheck (HoleAbs _ (HoleSc sc)) (Abs _ (Sc sc')) = basicMatchCheck sc sc'
+basicMatchCheck (HoleCon s) (Con s') = s == s'
+basicMatchCheck (HoleFree n) (Free n') = n == n'
+basicMatchCheck (HoleB i) (B i') = i == i'
+basicMatchCheck (Hole _) _ = True
+basicMatchCheck _ _ = False
+
 -- | Performs a given substitution on an expression
 applySubstitution :: Substitution -> HoleExpr -> HoleExpr
 applySubstitution [] expr = expr

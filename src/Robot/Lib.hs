@@ -206,6 +206,7 @@ someFunc = return ()
 -- GoRight navigates from App x y to y
 -- Enter navigates from Abs _ (Sc x) to x
 data ExprDirection = GoLeft | GoRight | Enter
+    deriving (Eq)
 
 type ExprDirections = [ExprDirection]
 

@@ -6,6 +6,7 @@ import Robot.Lib
 import Robot.TableauFoundation
 import Robot.BasicMoveHelpers
 import Robot.HoleExpr
+import Robot.NewBinderIdentifiers
 
 import Data.Maybe
 import Data.List ( foldl', sortBy, nub )
@@ -547,3 +548,30 @@ libBackwardReasoning libImpl@(LibraryImplication libQZone conditions consequents
             [0..length targs-1]
     
     removePureTargs (zip (repeat targBoxNumber) targIndsToRemove) tab >>= addPureTargs (zip (repeat targBoxNumber) remainingConds)
+
+-- <<< Library Moves that act at the subexpression level >>>
+
+-- Instead of Maybe, we work with lists to keep track of different
+-- possibilities that can occur. These can easily be converted to
+-- Maybes later, and Haskell's laziness should (hopefully) mean that
+-- dealing with lists isn't wasting computational resources.
+subLibraryEquivalence :: LibraryEquivalence -> (Int, Int) -> ExprType ->
+    (BoxNumber, Int) -> ExprDirections -> Tableau -> [Tableau]
+-- First argument is the library equivalence we want to apply.
+-- Second argument is the indices of the two equivalents we will use.
+-- Third argument indicates whether we are applying the equivalence
+-- in a target or a hypothesis. Fourth arguent is address of the
+-- expression. Fifth argument is directions to the relevant subExpression
+subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprType
+    address@(boxNumber, index) directions tab
+    | i < 0 || i >= length equivalents || j < 0 || j >= length equivalents = []
+    | otherwise = do
+        let originalEquivalent = equivalents !! i
+        let newEquivalent = equivalents !! j
+        expr <- maybeToList $ case exprType of
+            H -> getHyp address tab
+            T -> getPureTarg address tab
+        startingSubstitution <- maybeToList $ followDirections expr directions
+        let hyps = concat $ maybeToList $ getHypsUsableInBoxNumber boxNumber
+                $ getRootBox tab
+        return tab
