@@ -605,7 +605,11 @@ subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprT
                 $ getHoleDirections newEquivalent
         -- Only substitutions which specify all the holes in
         -- newEquivalent will succeed
-        newExpr <- maybeToList $ holeExprToExpr $ applySubstitution sub newEquivalent
+        newSubExpr <- maybeToList $ holeExprToExpr $ applySubstitution sub newEquivalent
+        newExpr <- maybeToList $ (do
+                (_, crumbs) <- zFollowDirections (rootExpr, []) directions
+                return $ unzipper (newSubExpr, crumbs)
+            )
         case exprType of
             H -> maybeToList $ updateHyp address newExpr tab
-            H -> maybeToList $ updatePureTarg address newExpr tab
+            T -> maybeToList $ updatePureTarg address newExpr tab
