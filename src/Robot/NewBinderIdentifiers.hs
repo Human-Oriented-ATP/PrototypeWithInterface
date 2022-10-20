@@ -51,8 +51,55 @@ addAssignment sub (i, expr) = case lookup i sub of
     Nothing -> Just ((i, expr):sub)
     Just expr' -> if expr == expr' then Just sub else Nothing
 
+-- If we have an expression that was reached after following a series
+-- of directions, with each set of directions corresponding to a nested
+-- identified subexpression, we can turn the De Bruijn indices in the
+-- expression into new binder identifiers. The list of nested
+-- expression identifiers is innermost-first
+exprToNBIExpr :: Expr -> [(ExprDirections, Int)] -> Maybe NBIExpr
+exprToNBIExpr = exprToNBIExprAux 0
+
+-- first argument is how many binders we've entered within the expr
+exprToNBIExprAux :: Int -> Expr -> [(ExprDirections, Int)] -> Maybe NBIExpr
+exprToNBIExprAux n (App e1 e2) dirs = do
+    e1' <- exprToNBIExprAux n e1 dirs
+    e2' <- exprToNBIExprAux n e2 dirs
+    Just $ NBIApp e1' e2'
+exprToNBIExprAux n (Abs nm (Sc e)) dirs = do
+    e' <- exprToNBIExprAux (n+1) e dirs
+    Just $ NBIAbs nm (NBISc e')
+exprToNBIExprAux n (Free m) _ = Just $ NBIFree m
+exprToNBIExprAux n (Con s) _ = Just $ NBICon s
+exprToNBIExprAux n (B i) allDirections = if n > i then Just $ NBIB i else
+    let remainingDepth = i-n
+        binderCounts = map (\(dirs, _) -> length $ filter (==Enter) dirs) allDirections
+        getNBI :: Int -> [Int] -> [(ExprDirections, Int)] -> Maybe NBI
+        getNBI depth [] _ = Nothing
+        getNBI depth _ [] = Nothing
+        getNBI depth (count:remainingCounts) ((dirs, id):remainingDirections) =
+            if count > depth then
+                let getBinderDirections :: Int -> ExprDirections -> Maybe ExprDirections
+                    getBinderDirections n dirs'
+                        | n < 0 = Just dirs'
+                        | otherwise = case dirs' of
+                            [] -> Nothing
+                            (GoLeft:rest) -> getBinderDirections n rest
+                            (GoRight:rest) -> getBinderDirections n rest
+                            (Enter:rest) -> getBinderDirections (n-1) rest in
+                do  binderDirections <- getBinderDirections depth dirs
+                    return $ NBI {getExprIdentifier = id,
+                                  getDirections = binderDirections}
+            else getNBI (depth - count) remainingCounts remainingDirections in
+    do  nbi <- getNBI remainingDepth binderCounts allDirections
+        Just $ NBINBI nbi
+
 matchSubExpression :: (Expr, Int) -> ExprDirections -> (HoleExpr, Int) -> Maybe NBISub
 matchSubExpression (rootExpr, rootID) directions (holeExpr, matchID) = do
     matchExpr <- followDirections rootExpr directions
     guard $ basicMatchCheck holeExpr matchExpr
-    return []
+    let holeDirs = getHoleDirections holeExpr
+    assignments <- mapM (\(dirs, nm) -> do
+        preNBIExpr <- followDirections matchExpr dirs
+        nbiExpr <- exprToNBIExpr preNBIExpr [(dirs, matchID), (directions, rootID)]
+        return (nm, nbiExpr)) holeDirs
+    foldM addAssignment [] assignments

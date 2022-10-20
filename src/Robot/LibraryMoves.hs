@@ -568,10 +568,15 @@ subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprT
     | otherwise = do
         let originalEquivalent = equivalents !! i
         let newEquivalent = equivalents !! j
-        expr <- maybeToList $ case exprType of
+        rootExpr <- maybeToList $ case exprType of
             H -> getHyp address tab
             T -> getPureTarg address tab
-        startingSubstitution <- maybeToList $ followDirections expr directions
+        -- start with the NBI sustitution that matches the original
+        -- equivalent to the subExpression. We use id 0 for the
+        -- root expression and id -1 for the original equivalent.
+        startingSubstitution <- maybeToList $ matchSubExpression (rootExpr, 0)
+            directions (originalEquivalent, -1)
+
         let hyps = concat $ maybeToList $ getHypsUsableInBoxNumber boxNumber
                 $ getRootBox tab
         return tab

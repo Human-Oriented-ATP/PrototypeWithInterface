@@ -107,3 +107,13 @@ applySubstitution ((inNm, subExpr):rest) expr = applySubstitution rest (singleSu
     singleSub _ _ (HoleCon conS) = HoleCon conS
     singleSub _ _ (HoleB j) = HoleB j
 
+-- returns a list giving the ExprDirections to each hole, along with
+-- the identifier of each hole
+getHoleDirections :: HoleExpr -> [(ExprDirections, InternalName)]
+getHoleDirections (HoleApp e1 e2) =
+    (map (\(dirs, nm) -> (GoLeft:dirs, nm)) $ getHoleDirections e1) ++
+    (map (\(dirs, nm) -> (GoRight:dirs, nm)) $ getHoleDirections e2)
+getHoleDirections (HoleAbs _ (HoleSc e)) =
+    (map (\(dirs, nm) -> (Enter:dirs, nm)) $ getHoleDirections e)
+getHoleDirections (Hole nm) = [([], nm)]
+getHoleDirections _ = []
