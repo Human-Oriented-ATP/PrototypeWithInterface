@@ -124,3 +124,18 @@ getHoleDirections (HoleAbs _ (HoleSc e)) =
     (map (\(dirs, nm) -> (Enter:dirs, nm)) $ getHoleDirections e)
 getHoleDirections (Hole nm) = [([], nm)]
 getHoleDirections _ = []
+
+-- Takes a HoleExpr and directions to a hole and instantiates the
+-- hole with a given expr
+instantiateOneHole :: HoleExpr -> ExprDirections -> Expr -> Maybe HoleExpr
+instantiateOneHole (Hole _) [] e = Just $ exprToHoleExpr e
+instantiateOneHole (HoleApp x y) (GoLeft:rest) e = do
+                                newx <- instantiateOneHole x rest e
+                                Just $ HoleApp newx y
+instantiateOneHole (HoleApp x y) (GoRight:rest) e = do
+                                newy <- instantiateOneHole y rest e
+                                Just $ HoleApp x newy
+instantiateOneHole (HoleAbs nm (HoleSc x)) (Enter:rest) e = do
+                                newx <- instantiateOneHole x rest e
+                                Just $ HoleAbs nm (HoleSc newx)
+instantiateOneHole _ _ _ = Nothing

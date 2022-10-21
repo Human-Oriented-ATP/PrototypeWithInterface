@@ -597,15 +597,20 @@ subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprT
                     maybeToList $ mergeNBISubstitutions currentSub nextSub
                 ) [startingSubstitution] sortedMatchings
         nbiSub <- finalSubs
-        sub <- maybeToList $ foldM addAssignment [] $ mapMaybe (\(exprDirections, nm) -> do
-                nbiExpr <- lookup nm nbiSub
-                -- the new equivalent is assigned id -2
-                expr <- nbiExprToExpr nbiExpr [(exprDirections, -2), (directions, 0)]
-                return (nm, expr))
-                $ getHoleDirections newEquivalent
-        -- Only substitutions which specify all the holes in
-        -- newEquivalent will succeed
-        newSubExpr <- maybeToList $ holeExprToExpr $ applySubstitution sub newEquivalent
+
+        sub <- maybeToList $ mapM (\(exprDirections, nm) -> do
+            -- Only substitutions which specify all the holes in
+            -- newEquivalent will succeed
+            nbiExpr <- lookup nm nbiSub
+            -- the new equivalent is assigned id -2
+            expr <- nbiExprToExpr nbiExpr [(exprDirections, -2), (directions, 0)]
+            return (exprDirections, expr)) $ getHoleDirections newEquivalent
+
+        newHoleExpr <- maybeToList $ foldM (\currentHoleExpr (exprDirections, expr) ->
+            instantiateOneHole currentHoleExpr exprDirections expr)
+            newEquivalent sub
+        newSubExpr <- maybeToList $ holeExprToExpr newHoleExpr
+        
         newExpr <- maybeToList $ (do
                 (_, crumbs) <- zFollowDirections (rootExpr, []) directions
                 return $ unzipper (newSubExpr, crumbs)
