@@ -12,7 +12,7 @@ import Test.HUnit
 
 subexpressionMatchingTests :: Test
 subexpressionMatchingTests = TestLabel "Subexpression matching tests" $ (TestList
-    [test1, test2, test3, test4, test5, test6])
+    [test1, test2, test3, test4, test5, test6, test7])
 
 -- <<< Tests for navigating within expressions >>>
 
@@ -89,3 +89,22 @@ resultTab3b = Tableau testQZone2 (Box [testHyp2, testHyp3] [PureTarg testExpr6])
 test6 :: Test
 test6 = TestCase (assertEqual "multiple possible eqSubst" [resultTab3a, resultTab3b]
     (subLibraryEquivalence eqSubst (0, 1) T ([], 0) [GoRight, Enter] testTab3))
+
+Just subsetQZone = parseQZone "forall A, forall B"
+Just subsete = parseWithQZone subsetQZone "subset(A, B)"
+Just subsete' = parseWithQZone subsetQZone
+    "forall x, implies(element_of(x, A), element_of(x, B))"
+subsetDef = LibraryEquivalence subsetQZone [] (map holeFreeVars [subsete, subsete'])
+
+Just testQZone3 = parseQZone "forall A"
+Just testExpr7 = parseWithQZone testQZone3 "forall B, implies(P(B), subset(B, A))"
+Just testExpr8 = parseWithQZone testQZone3
+    "forall B, implies(P(B), forall x, implies(element_of(x, B), element_of(x, A)))"
+
+testTab4 = Tableau testQZone3 (Box [] [PureTarg testExpr7])
+resultTab4 = Tableau testQZone3 (Box [] [PureTarg testExpr8])
+
+test7 :: Test
+test7 = TestCase (assertEqual "Changing De Bruijn index (subset definition)"
+    [resultTab4] (subLibraryEquivalence subsetDef (0, 1) T ([], 0)
+        [GoRight, Enter, GoRight] testTab4))
