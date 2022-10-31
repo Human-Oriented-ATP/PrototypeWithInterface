@@ -110,6 +110,7 @@ test-suite PrototypeWithInterface-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      PositionTests
       SubexpressionMatchingTests
       SubtaskTests
       Paths_PrototypeWithInterface

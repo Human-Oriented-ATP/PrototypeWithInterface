@@ -253,3 +253,31 @@ unzipper :: ExprZipper -> Expr
 unzipper (e, []) = e
 unzipper exprZipper = let Just newZipper = zGoUp exprZipper
     in unzipper newZipper
+
+-- Keeping track of subexpressions in positive or negative position
+data Position = Positive | Negative
+    deriving (Eq, Show)
+
+-- helper function for finding negative/positive position
+opposite :: Position -> Position
+opposite Positive = Negative
+opposite Negative = Positive
+
+-- Given a target or hypothesis, and directions to a subexpression
+-- thereof, return if it is in positive or negative position
+getPosition :: Position -> Expr -> ExprDirections -> Maybe Position
+getPosition position _ [] = Just position
+getPosition position (Or x y) (GoRight:rest) = getPosition position y rest
+getPosition position (Or x y) (GoLeft:GoRight:rest) = getPosition position x rest
+getPosition position (And x y) (GoRight:rest) = getPosition position y rest
+getPosition position (And x y) (GoLeft:GoRight:rest) = getPosition position x rest
+getPosition position (Implies x y) (GoRight:rest) = getPosition position y rest
+getPosition position (Implies x y) (GoLeft:GoRight:rest) =
+    getPosition (opposite position) x rest
+getPosition position (Not x) (GoRight:rest) =
+    getPosition (opposite position) x rest
+getPosition position (Exists _ (Sc x)) (GoRight:Enter:rest) =
+    getPosition position x rest
+getPosition position (Forall _ (Sc x)) (GoRight:Enter:rest) =
+    getPosition position x rest
+getPosition _ _ _ = Nothing

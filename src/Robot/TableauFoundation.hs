@@ -44,6 +44,10 @@ data Tableau = Tableau {getQZone :: QZone,
 -- Enum data type: Targets or Hypotheses
 data ExprType = T | H
 
+exprTypeToPosition :: ExprType -> Position
+exprTypeToPosition T = Positive
+exprTypeToPosition H = Negative
+
 -- | Simply for JSON requests to allow the web interface to work
 instance ToJSON (Targ Expr)
 instance ToJSON (Box Expr)
