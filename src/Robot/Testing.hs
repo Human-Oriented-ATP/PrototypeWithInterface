@@ -19,11 +19,13 @@ import Data.List
 import Control.Monad
 import Debug.Trace
 
+-- <<< HELPER FUNCTIONS >>>
+
 -- Create a tableau with just one given target
 exprToTab :: Expr -> Tableau
 exprToTab e = Tableau (Poset [] []) (Box [] [PureTarg e])
 
--- Parse a string as an expression then turn it into a Tableau as above
+-- Parse a string for a single target as an expression then turn it into a Tableau as above
 stringToTab :: String -> Maybe Tableau
 stringToTab s = do
     e <- parseSimple parseExpr s
@@ -31,8 +33,110 @@ stringToTab s = do
 
 -- <<< MOVE TESTING >>>
 
--- IMPROVEMENT - have fixed the hacky need for negative InternalName's here using HoleExpr's, but this seemed to hit performance a bit
--- How can we improve this, and why does it affect performance?
+{-
+   A (simple) tableau represents a problem state and consists of:
+
+   Type statements (FIXME: currently just part of the Hypotheses)
+   -------------------
+   Quantification zone (quantifiers that have been peeled or for metavariable)
+   -------------------
+   Hypotheses
+   -------------------
+   Target(s)
+   -------------------
+
+   Our current tableau system allows for breaking targets up and specifying a
+   common set of hypotheses for all targets, and separate hypotheses that only
+   apply to certain targets. This system is recursive.
+
+   Quantification zone (quantifiers that have been peeled or for metavariable)
+   -----------------------------
+   Common hypotheses
+   -----------------------------
+   Hypotheses(1) | Hypotheses(2)
+   -----------------------------
+   Target(1)     | Target(2)
+   -----------------------------
+
+   Note that Target(1) and Target(2) can be further split up recursively.
+
+   Things that can split targets:
+
+   1) Committing to a hypothesis:
+      If P=>Q is a hypothesis, we commit to proving P (so that will follow)
+
+   2) Implication tidy:
+      If P=>Q is a target (one of possibily many), we can try to assume P
+      and prove Q.   
+-}
+
+{-
+   Free variables are symbols quantified in quantification zone and we give
+   them negative indices -1, -2, ....
+
+   Bound variables are symbols bound to a quantifier elsewhere in the box.
+   For these, de Brujin indices are used *internally*, but initially we
+   simply number them with non-negative indices 0, 1, 2, .... so that they
+   can be referred to by number in our expressions, rather than by de Brujin
+   indices, which may change depending on position within the expression.
+-}
+
+{-
+   Currently free variables have an internal name which is just a number.
+
+   To print a free variable we need a string. This is currently given by:
+      Just $ ExternalName "x"
+   for example. The Maybe monad is used because some variables may not
+   have an external name. 
+   
+   Note: Although technically printing is impossible without an external
+   name, there may be other reasons to have separate internal names
+   including cases where there is no external name.
+
+   Note: currently if an variable without an external name is printed,
+   it just uses the next available letter in the alphabet. This also
+   happens if there is a conflict.
+-}
+
+{-
+   A hole is a "variable" that could be substituted by some other
+   expresssion, e.g. open(U) could be substituted by open(intersect(A, B)).
+   
+   Hole expressions are expression containing holes which can be substituted
+   with other expressions to yield an instance of the whole expression.
+
+   E.g. library expressions need to be able to be applied in many contexts and
+   so are often stored as hole expressions.
+   
+   holeFreeVars is a function that replaces every free variable in an
+   expression with a hole of the same name. This is just a convenience function
+   that makes it easier to write hole expressions.
+-}
+
+{-
+   App f x = f(x)
+   BApp f x y = f(x, y)
+   TApp f x y z = f(x, y, z)
+   QApp f x y z w = f(x, y, z, w)
+   PApp f x y z w u = f(x, y, z, w, u)
+
+   (works around needing to write everything as a curry)
+-}
+
+{-
+   A Poset is used for quantifiers because quantifiers may depend on
+   some that came before, e.g.
+
+   forall x, forall e, exists d, forall y
+
+   consecutive quantifiers of the same kind can commute
+-}
+
+{-
+   f_ is our notation for a sequence
+-}
+
+-- <<< TESTS for EXPRESSIONS >>>
 
 openSetDefQZone = Poset [QVar "Forall" (Just $ ExternalName "M") (-1)
     , QVar "Forall" (Just $ ExternalName "d") (-2)
@@ -55,6 +159,10 @@ intersectionDefQZone = Poset [ QVar "forall" (Just $ ExternalName "x") (-1)
 intersectionDefe = holeFreeVars $ BApp ( "element_of") (Free (-1)) (BApp ( "set_intersection") (Free (-2)) (Free (-3)))
 intersectionDefe' = holeFreeVars $ And (BApp ( "element_of") (Free (-1)) (Free (-2))) (BApp ( "element_of") (Free (-1)) (Free (-3)))
 intersectionDef = LibraryEquivalence intersectionDefQZone [] [intersectionDefe, intersectionDefe']
+
+-- <<< TESTS FOR PARSER >>>
+
+-- FIXME: put different tests in sections for testing with/without parser.
 
 -- IMPROVEMENT - for now we're storing this as an equivalence because the above code would be identical for an implication, but
 -- need to clarify how we want either to work and implement separately.
@@ -83,6 +191,8 @@ f1 = forall (Just $ ExternalName "X") (0) $
 fTab = exprToTab f1
 
 Just fResult = Just 0
+
+-- FIXME: use either e, e' or T1, T2, or e1, e2 throughout for library equivalence
 
 -- Sequence of functions
 Just sequenceOfFunctionsQZone = parseQZone "forall X, forall Y, forall f_"
