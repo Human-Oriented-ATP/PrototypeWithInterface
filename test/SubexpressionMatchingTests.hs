@@ -12,7 +12,7 @@ import Test.HUnit
 
 subexpressionMatchingTests :: Test
 subexpressionMatchingTests = TestLabel "Subexpression matching tests" $ (TestList
-    [test1, test2, test3, test4, test5, test6, test7])
+    [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11])
 
 -- <<< Tests for navigating within expressions >>>
 
@@ -108,3 +108,45 @@ test7 :: Test
 test7 = TestCase (assertEqual "Changing De Bruijn index (subset definition)"
     [resultTab4] (subLibraryEquivalence subsetDef (0, 1) T ([], 0)
         [GoRight, Enter, GoRight] testTab4))
+
+-- <<< Tests for subLibraryImplication >>>
+
+Just leqTransQZone = parseQZone "forall x, forall y, forall z"
+Just leqTransCond1 = parseWithQZone leqTransQZone "leq(x, y)"
+Just leqTransCond2 = parseWithQZone leqTransQZone "leq(y, z)"
+Just leqTransConc = parseWithQZone leqTransQZone "leq(x, z)"
+leqTrans = LibraryImplication eqSubstQZone
+    (map holeFreeVars [leqTransCond1, leqTransCond2]) [holeFreeVars leqTransConc]
+
+Just leqTabQZone = parseQZone "forall x, forall y, forall z"
+Just leqExpr1 = parseWithQZone leqTabQZone "leq(x, y)"
+Just leqExpr2 = parseWithQZone leqTabQZone "leq(y, z)"
+Just leqExpr3 = parseWithQZone leqTabQZone "leq(x, z)"
+Just leqExpr4a = parseWithQZone leqTabQZone "and(P, leq(x, y))"
+Just leqExpr4b = parseWithQZone leqTabQZone "and(P, leq(x, z))"
+Just leqExpr5a = parseWithQZone leqTabQZone "implies(leq(x, z), Q)"
+Just leqExpr5b = parseWithQZone leqTabQZone "implies(leq(y, z), Q)"
+
+leqTab1a = Tableau leqTabQZone (Box [leqExpr1] [PureTarg leqExpr3])
+leqTab1b = Tableau leqTabQZone (Box [leqExpr1] [PureTarg leqExpr2])
+leqTab2a = Tableau leqTabQZone (Box [leqExpr2, leqExpr4a] [PureTarg (Con "true")])
+leqTab2b = Tableau leqTabQZone (Box [leqExpr2, leqExpr4b] [PureTarg (Con "true")])
+leqTab3a = Tableau leqTabQZone (Box [leqExpr1, leqExpr5a] [PureTarg (Con "true")])
+leqTab3b = Tableau leqTabQZone (Box [leqExpr1, leqExpr5b] [PureTarg (Con "true")])
+
+test8 :: Test
+test8 = TestCase (assertEqual "leq transitive"
+    [leqTab1b] (subLibraryImplication leqTrans (1, 0) T ([], 0) [] leqTab1a))
+
+test9 :: Test
+test9 = TestCase (assertEqual "leq transitive"
+    [] (subLibraryImplication leqTrans (1, 0) T ([], 0) [] leqTab1b))
+
+test10 :: Test
+test10 = TestCase (assertEqual "leq transitive"
+    [leqTab2b] (subLibraryImplication leqTrans (0, 0) H ([], 1) [GoRight] leqTab2a))
+
+test11 :: Test
+test11 = TestCase (assertEqual "leq transitive"
+    [leqTab3b] (subLibraryImplication leqTrans (1, 0) H ([], 1)
+        [GoLeft, GoRight] leqTab3a))

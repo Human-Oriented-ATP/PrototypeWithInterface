@@ -561,13 +561,56 @@ subLibraryEquivalence :: LibraryEquivalence -> (Int, Int) -> ExprType ->
 -- Second argument is the indices of the two equivalents we will use.
 -- Third argument indicates whether we are applying the equivalence
 -- in a target or a hypothesis. Fourth argument is address of the
--- expression. Fifth argument is directions to the relevant subExpression
+-- expression. Fifth argument is directions to the relevant subexpression.
 subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprType
-    address@(boxNumber, index) directions tab
+    address directions tab
     | i < 0 || i >= length equivalents || j < 0 || j >= length equivalents = []
-    | otherwise = do
+    | otherwise =
         let originalEquivalent = equivalents !! i
-        let newEquivalent = equivalents !! j
+            newEquivalent = equivalents !! j in
+        subLibraryAux conditions originalEquivalent newEquivalent exprType
+            address directions tab
+
+-- When using a library implication, the following function automatically
+-- detects which direction the result needs to be applied in by checking
+-- for positive/negative position.
+subLibraryImplication :: LibraryImplication -> (Int, Int) -> ExprType ->
+    (BoxNumber, Int) -> ExprDirections -> Tableau -> [Tableau]
+-- First argument is the library implication we want to apply.
+-- Second argument is the indices of the condition and conclusion we will
+-- use respectively.
+-- Third argument indicates whether we are applying the implication
+-- in a target or a hypothesis. Fourth argument is address of the
+-- expression. Fifth argument is directions to the relevant subexpression.
+subLibraryImplication (LibraryImplication _ originalConditions conclusions) (i, j)
+    exprType address directions tab
+    | i < 0 || i >= length originalConditions || j < 0 || j >= length conclusions = []
+    | otherwise = do
+        let chosenCondition = originalConditions !! i
+        let chosenConclusion = conclusions !! j
+        let (start, _:end) = splitAt i originalConditions
+        let conditions = start ++ end
+        rootExpr <- maybeToList $ case exprType of
+            H -> getHyp address tab
+            T -> getPureTarg address tab
+        position <- maybeToList $ getPosition (exprTypeToPosition exprType)
+            rootExpr directions
+        case position of
+            Positive -> subLibraryAux conditions chosenConclusion chosenCondition
+                exprType address directions tab
+            Negative -> subLibraryAux conditions chosenCondition chosenConclusion
+                exprType address directions tab
+
+subLibraryAux :: [HoleExpr] -> HoleExpr -> HoleExpr -> ExprType -> (BoxNumber, Int)
+    -> ExprDirections -> Tableau -> [Tableau]
+-- First argument is list of conditions that need to be matched
+-- Second argument is original equivalent
+-- Third argument is new equivalent
+-- Fourth argument is the type of the expression in which we are substituting
+-- Fifth argument is the address of the expression in which we are substituting
+-- Sixth argument is the directions to the relevant subexpression
+subLibraryAux conditions originalEquivalent newEquivalent exprType
+    address@(boxNumber, index) directions tab = do
         rootExpr <- maybeToList $ case exprType of
             H -> getHyp address tab
             T -> getPureTarg address tab
