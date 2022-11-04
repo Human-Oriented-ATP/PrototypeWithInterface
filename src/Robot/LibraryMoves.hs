@@ -6,6 +6,7 @@ import Robot.Lib
 import Robot.TableauFoundation
 import Robot.BasicMoveHelpers
 import Robot.HoleExpr
+import Robot.NewBinderIdentifiers
 
 import Data.Maybe
 import Data.List ( foldl', sortBy, nub )
@@ -547,3 +548,116 @@ libBackwardReasoning libImpl@(LibraryImplication libQZone conditions consequents
             [0..length targs-1]
     
     removePureTargs (zip (repeat targBoxNumber) targIndsToRemove) tab >>= addPureTargs (zip (repeat targBoxNumber) remainingConds)
+
+-- <<< Library Moves that act at the subexpression level >>>
+
+-- Instead of Maybe, we work with lists to keep track of different
+-- possibilities that can occur. These can easily be converted to
+-- Maybes later, and Haskell's laziness should (hopefully) mean that
+-- dealing with lists isn't wasting computational resources.
+subLibraryEquivalence :: LibraryEquivalence -> (Int, Int) -> ExprType ->
+    (BoxNumber, Int) -> ExprDirections -> Tableau -> [Tableau]
+-- First argument is the library equivalence we want to apply.
+-- Second argument is the indices of the two equivalents we will use.
+-- Third argument indicates whether we are applying the equivalence
+-- in a target or a hypothesis. Fourth argument is address of the
+-- expression. Fifth argument is directions to the relevant subexpression.
+subLibraryEquivalence (LibraryEquivalence _ conditions equivalents) (i, j) exprType
+    address directions tab
+    | i < 0 || i >= length equivalents || j < 0 || j >= length equivalents = []
+    | otherwise =
+        let originalEquivalent = equivalents !! i
+            newEquivalent = equivalents !! j in
+        subLibraryAux conditions originalEquivalent newEquivalent exprType
+            address directions tab
+
+-- When using a library implication, the following function automatically
+-- detects which direction the result needs to be applied in by checking
+-- for positive/negative position.
+subLibraryImplication :: LibraryImplication -> (Int, Int) -> ExprType ->
+    (BoxNumber, Int) -> ExprDirections -> Tableau -> [Tableau]
+-- First argument is the library implication we want to apply.
+-- Second argument is the indices of the condition and conclusion we will
+-- use respectively.
+-- Third argument indicates whether we are applying the implication
+-- in a target or a hypothesis. Fourth argument is address of the
+-- expression. Fifth argument is directions to the relevant subexpression.
+subLibraryImplication (LibraryImplication _ originalConditions conclusions) (i, j)
+    exprType address directions tab
+    | i < 0 || i >= length originalConditions || j < 0 || j >= length conclusions = []
+    | otherwise = do
+        let chosenCondition = originalConditions !! i
+        let chosenConclusion = conclusions !! j
+        let (start, _:end) = splitAt i originalConditions
+        let conditions = start ++ end
+        rootExpr <- maybeToList $ case exprType of
+            H -> getHyp address tab
+            T -> getPureTarg address tab
+        position <- maybeToList $ getPosition (exprTypeToPosition exprType)
+            rootExpr directions
+        case position of
+            Positive -> subLibraryAux conditions chosenConclusion chosenCondition
+                exprType address directions tab
+            Negative -> subLibraryAux conditions chosenCondition chosenConclusion
+                exprType address directions tab
+
+subLibraryAux :: [HoleExpr] -> HoleExpr -> HoleExpr -> ExprType -> (BoxNumber, Int)
+    -> ExprDirections -> Tableau -> [Tableau]
+-- First argument is list of conditions that need to be matched
+-- Second argument is original equivalent
+-- Third argument is new equivalent
+-- Fourth argument is the type of the expression in which we are substituting
+-- Fifth argument is the address of the expression in which we are substituting
+-- Sixth argument is the directions to the relevant subexpression
+subLibraryAux conditions originalEquivalent newEquivalent exprType
+    address@(boxNumber, index) directions tab = do
+        rootExpr <- maybeToList $ case exprType of
+            H -> getHyp address tab
+            T -> getPureTarg address tab
+        -- Start with the NBI sustitution that matches the original
+        -- equivalent to the subExpression. We use id 0 for the
+        -- root expression and id -1 for the original equivalent.
+        startingSubstitution <- maybeToList $ matchSubExpression (rootExpr, 0)
+            directions (originalEquivalent, -1)
+        let hyps = concat $ maybeToList $ getHypsUsableInBoxNumber boxNumber
+                $ getRootBox tab
+        -- Provide ids starting at 1 for our conditions
+        let numberedConditions = zip [1..] conditions
+        -- Steps to find all consistent matchings
+        -- 1) find all individual matches for conditions
+        let matchings :: [[NBISub]]
+            matchings = map (\(i, holeExpr) -> mapMaybe
+                (\h -> matchExpression (h, i) holeExpr) hyps) numberedConditions
+        -- 2) Order them by fewest matchings first (Not strictly
+        -- necessary, but include this for efficiency)
+        let sortedMatchings = sortBy (\l1 l2 -> length l1 `compare` length l2) matchings
+        -- 3) recursively try to merge matchings
+        let finalSubs :: [NBISub]
+            finalSubs = foldl (\currentSubList possibleNextSubList -> do
+                    -- in list monad
+                    currentSub <- currentSubList
+                    nextSub <- possibleNextSubList
+                    maybeToList $ mergeNBISubstitutions currentSub nextSub
+                ) [startingSubstitution] sortedMatchings
+        nbiSub <- finalSubs
+
+        sub <- maybeToList $ mapM (\(exprDirections, nm) -> do
+            -- Only substitutions which specify all the holes in
+            -- newEquivalent will succeed
+            nbiExpr <- lookup nm nbiSub
+            -- the new equivalent is assigned id -2
+            expr <- nbiExprToExpr nbiExpr [(exprDirections, -2), (directions, 0)]
+            return (exprDirections, expr)) $ getHoleDirections newEquivalent
+
+        newHoleExpr <- maybeToList $ foldM (\currentHoleExpr (exprDirections, expr) ->
+            instantiateOneHole currentHoleExpr exprDirections expr)
+            newEquivalent sub
+        newSubExpr <- maybeToList $ holeExprToExpr newHoleExpr
+        
+        newExpr <- maybeToList $ (do
+                (_, crumbs) <- zFollowDirections (rootExpr, []) directions
+                return $ unzipper (newSubExpr, crumbs)
+            )
+        case exprType of
+            H -> maybeToList $ updateHyp address newExpr tab
+            T -> maybeToList $ updatePureTarg address newExpr tab

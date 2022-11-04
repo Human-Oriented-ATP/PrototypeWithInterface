@@ -38,6 +38,7 @@ library
       Robot.HoleExpr
       Robot.Lib
       Robot.LibraryMoves
+      Robot.NewBinderIdentifiers
       Robot.Parser
       Robot.Poset
       Robot.PPrinting
@@ -109,6 +110,8 @@ test-suite PrototypeWithInterface-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      PositionTests
+      SubexpressionMatchingTests
       SubtaskTests
       Paths_PrototypeWithInterface
   hs-source-dirs:

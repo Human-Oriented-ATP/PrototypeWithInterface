@@ -63,6 +63,13 @@ holeExprToExpr (Hole _) = Nothing
 -- IMPROVEMENT - probably change to HashMap later, but will keep as list for now
 type Substitution = [(InternalName, Expr)]
 
+-- Add a single assignment to a substitution. Maybe because consistency
+-- could fail
+addAssignment :: Substitution -> (InternalName, Expr) -> Maybe Substitution
+addAssignment sub (i, expr) = case lookup i sub of
+    Nothing -> Just ((i, expr):sub)
+    Just expr' -> if expr == expr' then Just sub else Nothing
+
 -- | Check that all InternalNames map to things which agree, then union
 -- (there are more efficient ways to do this, of course)
 mergeSubstitutions :: Substitution -> Substitution -> Maybe Substitution
@@ -84,6 +91,17 @@ matchExpressions (HoleFree n) (Free n') = if n == n' then Just [] else Nothing
 matchExpressions (Hole i) expr = Just [(i, expr)]-- IMPROVEMENT - currently doesn't check that expr is a term (as now have removed constant types)
 matchExpressions _ _ = Nothing
 
+-- Check whether the non-hole parts of the expressions match
+basicMatchCheck :: HoleExpr -> Expr -> Bool
+basicMatchCheck (HoleApp e1 e2) (App e1' e2') = basicMatchCheck e1 e1' &&
+                                                basicMatchCheck e2 e2'
+basicMatchCheck (HoleAbs _ (HoleSc sc)) (Abs _ (Sc sc')) = basicMatchCheck sc sc'
+basicMatchCheck (HoleCon s) (Con s') = s == s'
+basicMatchCheck (HoleFree n) (Free n') = n == n'
+basicMatchCheck (HoleB i) (B i') = i == i'
+basicMatchCheck (Hole _) _ = True
+basicMatchCheck _ _ = False
+
 -- | Performs a given substitution on an expression
 applySubstitution :: Substitution -> HoleExpr -> HoleExpr
 applySubstitution [] expr = expr
@@ -96,3 +114,28 @@ applySubstitution ((inNm, subExpr):rest) expr = applySubstitution rest (singleSu
     singleSub _ _ (HoleCon conS) = HoleCon conS
     singleSub _ _ (HoleB j) = HoleB j
 
+-- returns a list giving the ExprDirections to each hole, along with
+-- the identifier of each hole
+getHoleDirections :: HoleExpr -> [(ExprDirections, InternalName)]
+getHoleDirections (HoleApp e1 e2) =
+    (map (\(dirs, nm) -> (GoLeft:dirs, nm)) $ getHoleDirections e1) ++
+    (map (\(dirs, nm) -> (GoRight:dirs, nm)) $ getHoleDirections e2)
+getHoleDirections (HoleAbs _ (HoleSc e)) =
+    (map (\(dirs, nm) -> (Enter:dirs, nm)) $ getHoleDirections e)
+getHoleDirections (Hole nm) = [([], nm)]
+getHoleDirections _ = []
+
+-- Takes a HoleExpr and directions to a hole and instantiates the
+-- hole with a given expr
+instantiateOneHole :: HoleExpr -> ExprDirections -> Expr -> Maybe HoleExpr
+instantiateOneHole (Hole _) [] e = Just $ exprToHoleExpr e
+instantiateOneHole (HoleApp x y) (GoLeft:rest) e = do
+                                newx <- instantiateOneHole x rest e
+                                Just $ HoleApp newx y
+instantiateOneHole (HoleApp x y) (GoRight:rest) e = do
+                                newy <- instantiateOneHole y rest e
+                                Just $ HoleApp x newy
+instantiateOneHole (HoleAbs nm (HoleSc x)) (Enter:rest) e = do
+                                newx <- instantiateOneHole x rest e
+                                Just $ HoleAbs nm (HoleSc newx)
+instantiateOneHole _ _ _ = Nothing
