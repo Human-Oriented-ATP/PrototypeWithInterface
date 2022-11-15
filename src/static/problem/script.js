@@ -99,7 +99,7 @@ const argsToWaitForInfo = {
 	"peelExistentialHyp": [0],
 
 	"tidyImplInTarg": [1],
-	"commitToHypothesis": [0],
+	"commitToHyp": [0],
 
 	"tidyAndInHyp": [0],
 	"tidyAndInTarg": [0],
@@ -205,24 +205,30 @@ clickAnywhere = function(e){
 	if(settings_panel.style.display == "block") handleSettingsBox(e)
 	console.log(e.target)
 	// If we aren't expecting arguments then do nothing
-	if(globalArgsToWaitFor == -1) return; 
+	if(globalArgsToWaitFor == -1) return;
+
+	var element = e.target;
 
 	// And if we clicked on something that isn't a hyp/targ/button then reset the state and do nothing
-	if(!e.target.classList.contains("hyp") && !e.target.classList.contains("targ")
-		&& !e.target.classList.contains("action_button")){
-		resetGlobalClickState()
-		return;
+	while(!element.classList.contains("hyp") && !element.classList.contains("targ")
+		&& !element.classList.contains("action_button")){
+		if (element === document.documentElement) {
+			resetGlobalClickState();
+			return;
+		} else {
+			element = element.parentNode;
+		}
 	}
 	
 	const correctTypeOfExprClicked =
-		((globalArgsToWaitFor[0] == 0 && e.target.classList.contains("hyp")) ||
-		 (globalArgsToWaitFor[0] == 1 && e.target.classList.contains("targ")))
-	const exprLoc = e.target.id
+		((globalArgsToWaitFor[0] == 0 && element.classList.contains("hyp")) ||
+		 (globalArgsToWaitFor[0] == 1 && element.classList.contains("targ")))
+	const exprLoc = element.id
 
 	if(!correctTypeOfExprClicked) return;
 
 	// If we get this far, the correct type of expression was clicked, so select it
-	e.target.style.backgroundColor = "#ffffcc"
+	element.style.backgroundColor = "#ffffcc"
 	globalArgsToWaitFor.shift();
 	globalArgsReceived.push(exprLoc);
 	
