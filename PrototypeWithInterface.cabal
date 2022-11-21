@@ -35,9 +35,11 @@ library
       Robot.BasicMoveHelpers
       Robot.BasicMoves
       Robot.ExistentialMoves
+      Robot.History
       Robot.HoleExpr
       Robot.Lib
       Robot.LibraryMoves
+      Robot.MathematicianMonad
       Robot.NewBinderIdentifiers
       Robot.Parser
       Robot.Poset

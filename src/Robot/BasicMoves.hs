@@ -11,6 +11,7 @@ import Robot.Lib
 import Robot.TableauFoundation
 import Robot.Poset
 import Robot.BasicMoveHelpers
+import Robot.MathematicianMonad
 
 import Control.Monad
 import Data.Maybe
