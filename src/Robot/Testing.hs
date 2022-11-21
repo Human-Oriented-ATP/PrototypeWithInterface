@@ -25,7 +25,7 @@ import Debug.Trace
 exprToTab :: Expr -> Tableau
 exprToTab e = Tableau (Poset [] []) (Box [] [PureTarg e])
 
--- Parse a string for a single target as an expression then turn it into a Tableau as above
+-- | Parse a string for a single target as an expression then turn it into a Tableau as above
 stringToTab :: String -> Maybe Tableau
 stringToTab s = do
     e <- parseSimple parseExpr s
