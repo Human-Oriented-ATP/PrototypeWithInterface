@@ -13,6 +13,7 @@ import Robot.BasicMoves
 import Robot.PPrinting
 import Robot.HoleExpr
 import Robot.Parser
+import Robot.Automation
 
 import Data.Maybe
 import Data.List

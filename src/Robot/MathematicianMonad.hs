@@ -21,6 +21,11 @@ data MathematicianState = MathematicianState
 -- | The Mathematician monad combines State and Maybe capabilities
 type Mathematician = StateT MathematicianState Maybe
 
+-- | Lifting function mainly used to turn Maybes into Mathematicians
+liftMaybe :: (MonadPlus m) => Maybe a -> m a
+liftMaybe (Just x) = return x
+liftMaybe Nothing = mzero
+
 -- | Get a fresh name and increment the counter
 getFreshName :: Mathematician Int
 getFreshName = do
@@ -38,6 +43,11 @@ putAutData :: AutData -> Mathematician ()
 putAutData autData = do
     state <- get
     put $ state { returnAutData = autData }
+
+updateAutData :: (AutData -> AutData) -> Mathematician ()
+updateAutData f = do
+    autData <- getAutData
+    putAutData $ f autData
 
 -- | Function to be called thus when a move is complete:
 -- result tab

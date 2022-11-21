@@ -4,6 +4,7 @@ module Robot.AutomationData where
 
 import Robot.TableauFoundation
 
+import Control.Monad
 import GHC.Generics
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Maybe
@@ -19,7 +20,11 @@ data AutData = AutData {
     getModusPonensPairs :: [(HypID, HypID)],
     getRawModusPonensPairs :: [(HypID, HypID)],
     getLibEquivHyps :: [HypID],
+    -- ^ Currently not in use. To track this properly, we would need to know the
+    -- library result id
     getLibEquivTargs :: [TargID],
+    -- ^ Currently not in use. To track this properly, we would need to know the
+    -- library result id
     getCommittedToHyps :: [HypID],
 
     getHypLookupTable :: ([((BoxNumber, Int), HypID)], Int), -- Int at the end is
@@ -47,18 +52,30 @@ registerTarg targ autData =
             Nothing -> (autData { getTargLookupTable = ((targ, newID):table, newID+1)},
                         newID)
 
--- Lookup functions
-getHypID :: (BoxNumber, Int) -> AutData -> Maybe HypID
-getHypID hyp autData = lookup hyp $ fst $ getHypLookupTable autData
+-- Lookup functions. Think of the monad m as being a Maybe,
+-- included to account for failure. (Sometimes we want the monad
+-- to be Mathematician, otherwise we would just have said Maybe)
+getHypID :: (MonadPlus m) => (BoxNumber, Int) -> AutData -> m HypID
+getHypID hyp autData = case lookup hyp $ fst $ getHypLookupTable autData of
+    Just hid -> return hid
+    Nothing -> mzero
 
-getTargID :: (BoxNumber, Int) -> AutData -> Maybe TargID
-getTargID targ autData = lookup targ $ fst $ getTargLookupTable autData
+getTargID :: (MonadPlus m) => (BoxNumber, Int) -> AutData -> m TargID
+getTargID targ autData = case lookup targ $ fst $ getTargLookupTable autData of
+    Just tid -> return tid
+    Nothing -> mzero
 
-getHypFromID :: HypID -> AutData -> Maybe (BoxNumber, Int)
-getHypFromID hypID autData = lookup hypID $ map swap $ fst $ getHypLookupTable autData
+getHypFromID :: (MonadPlus m) => HypID -> AutData -> m (BoxNumber, Int)
+getHypFromID hypID autData =
+    case lookup hypID $ map swap $ fst $ getHypLookupTable autData of
+        Just hyp -> return hyp
+        Nothing -> mzero
 
-getTargFromID :: TargID -> AutData -> Maybe (BoxNumber, Int)
-getTargFromID targID autData = lookup targID $ map swap $ fst $ getTargLookupTable autData
+getTargFromID :: (MonadPlus m) => TargID -> AutData -> m (BoxNumber, Int)
+getTargFromID targID autData =
+    case lookup targID $ map swap $ fst $ getTargLookupTable autData of
+        Just targ -> return targ
+        Nothing -> mzero
 
 -- This boilerplate code could be reduced with Lens and template Haskell but
 -- I'll avoid that for now because it's no effort to just copy paste these.
@@ -94,8 +111,8 @@ addLibEquivTarg t autData = let
     (autData', id) = registerTarg t autData
     in autData' { getLibEquivTargs = id:already}
 
-addCommittedToHyps :: (BoxNumber, Int) -> AutData -> AutData
-addCommittedToHyps h autData = let
+addCommittedToHyp :: (BoxNumber, Int) -> AutData -> AutData
+addCommittedToHyp h autData = let
     already = getCommittedToHyps autData
     (autData', id) = registerHyp h autData
     in autData' { getCommittedToHyps = id:already}
@@ -110,8 +127,8 @@ type HypTracker = (BoxNumber, Int) -> Maybe (BoxNumber, Int)
 type TargTracker = (BoxNumber, Int) -> Maybe (BoxNumber, Int)
 type Tracker = (HypTracker, TargTracker)
 
-applyTracker :: AutData -> Tracker -> AutData
-applyTracker autData (hypTracker, targTracker) =
+applyTracker :: Tracker -> AutData -> AutData
+applyTracker (hypTracker, targTracker) autData =
     let (hypLookup, hypCounter) = getHypLookupTable autData
         (targLookup, targCounter) = getTargLookupTable autData
         newHypLookup = mapMaybe (
