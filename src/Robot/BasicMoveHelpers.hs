@@ -5,6 +5,7 @@ import Robot.Poset
 import Robot.TableauFoundation
 
 import Data.Maybe
+import Control.Monad
 
 -- | Gets an unused InternalName from a QZone
 getNewInternalName :: QZone -> InternalName
@@ -22,12 +23,12 @@ findFreshExNm usedNames = head $ filter (`notElem` usedNames) options
 -- | Gets an ExternalName for a variable being peeled. If the peeled variable
 -- already has a suggested ExternalName and it doesn't conflict with others
 -- then we use that. Otherwise, we find a fresh one
-getNewExternalNamePeel :: Maybe ExternalName -> QZone -> Maybe ExternalName
+getNewExternalNamePeel :: (MonadPlus m) => Maybe ExternalName -> QZone -> m ExternalName
 getNewExternalNamePeel exNm (Poset set rel) = case exNm of
     Just nm -> if nm `elem` (mapMaybe qVarGetExternalName set) then
-            Just $ findFreshExNm (mapMaybe qVarGetExternalName set)
-        else exNm
-    _ -> Just $ findFreshExNm (mapMaybe qVarGetExternalName set)
+            return $ findFreshExNm (mapMaybe qVarGetExternalName set)
+        else return nm
+    _ -> return $ findFreshExNm (mapMaybe qVarGetExternalName set)
 
 
 -- | Adds a hypothesis to a specified Box. Because this is just a helper
