@@ -12,6 +12,7 @@ import Robot.MathematicianMonad
 import Data.Function
 import Data.Maybe
 import Control.Monad
+import Control.Applicative
 
 import qualified Data.HashMap.Lazy as M
 import Data.Hashable
@@ -61,7 +62,8 @@ attemptDestroySubtask index task@(Subtask subtaskType exprID pattern) tab = do
     let invoker = case exprType of
             H -> libEquivHyp
             T -> libEquivTarg
-    liftMaybe $ listToMaybe $ mapMaybe (\(EquivalenceValue result pair) ->
+    guard $ not $ null equivalences
+    foldl1 (<|>) $ map (\(EquivalenceValue result pair) ->
         invoker result pair address tab) equivalences
 
 -- Intersection and union properties

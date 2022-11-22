@@ -8,6 +8,8 @@ import Robot.TableauFoundation
 import GHC.Generics
 import Control.Monad
 
+import Data.Aeson (FromJSON, ToJSON)
+
 -- | History item is a data type storing the relevent information for
 -- our problem state at a given point in time
 data HistoryItem = HistoryItem { getOldTableau :: Tableau,
@@ -21,6 +23,11 @@ infix 5 :=>
 -- Top of the stack should be the present.
 data History = NoHistory | History :=> HistoryItem
     deriving (Show, Read, Generic)
+
+instance ToJSON HistoryItem
+instance ToJSON History
+instance FromJSON HistoryItem
+instance FromJSON History
 
 -- | Remove the top entry in the history, effectively going back in time one step.
 -- Fails if there is no history

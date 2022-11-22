@@ -7,6 +7,7 @@ import Robot.TableauFoundation
 import Robot.Poset
 import Robot.PPrinting
 import Robot.Parser
+import Robot.MathematicianMonad
 
 import Control.Monad
 import qualified Data.HashMap.Strict as M
@@ -21,7 +22,7 @@ import qualified Data.HashMap.Strict as M
 -- expression. We need to ensure that none of the free variables in the expression
 -- must come after x. We then need to update the dependencies so that all variables
 -- which had to come after x must now come after all free variables in the expression
-instantiateExistentialNoParse :: InternalName -> Expr -> Tableau -> Maybe Tableau
+instantiateExistentialNoParse :: InternalName -> Expr -> Tableau -> Mathematician Tableau
 instantiateExistentialNoParse inNm expr (Tableau qZone@(Poset set deps) rootBox) = do
     let relevantQVars = filter (\qVar -> qVarGetInternalName qVar == inNm) set
     -- Ensure the given InternalName is actually in the QZone
@@ -54,18 +55,18 @@ instantiateExistentialNoParse inNm expr (Tableau qZone@(Poset set deps) rootBox)
         instantiateInExpr (Free i) = if i == inNm then expr else Free i
 
     -- Performs the instantiate using fmap over the rootBox
-    return $ Tableau newQZone (fmap instantiateInExpr rootBox)
+    result $ Tableau newQZone (fmap instantiateInExpr rootBox)
 
 
 -- | Takes a string giving the show-ExternalName of the relevant variable,
 -- then a string specifying the term we want to instantiate it for.
 -- Parses the information to hand onto instantiateExistentialNoParse.
-instantiateExistential :: String -> String -> Tableau -> Maybe Tableau
+instantiateExistential :: String -> String -> Tableau -> Mathematician Tableau
 instantiateExistential exNmStr exprStr tab@(Tableau qZone@(Poset set rel) boxes) = do
     let showMap = getShowMap $ getStartingPrintState qZone (PS mempty mempty 0)
     let inNms = filter (\n -> M.lookup n showMap == Just (ExternalName exNmStr)) (map qVarGetInternalName set)
     guard $ length inNms == 1
     let (inNm:_) = inNms
-    expr <- parseWithQZone qZone exprStr
+    expr <- liftMaybe $ parseWithQZone qZone exprStr
     instantiateExistentialNoParse inNm expr tab
 

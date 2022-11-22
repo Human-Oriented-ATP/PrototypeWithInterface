@@ -9,6 +9,7 @@ import Robot.Testing
 import Robot.ExistentialMoves
 import Robot.PPrinting
 import Robot.AutomationData
+import Robot.MathematicianMonad
 
 import APICode.JSONTypes
 import APICode.HTMLGeneration
@@ -17,76 +18,74 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import Data.List.Split
 
-data AcceptableOutput = TableauOut Tableau | TabAndAutDataOut AutData Tableau | ExprOut Expr
+type Output = (Tableau, MathematicianState)
 
-performFunctionOnProblemState :: String -> ProblemState -> Maybe AcceptableOutput
+performFunctionOnProblemState :: String -> ProblemState -> Maybe Output
 performFunctionOnProblemState "" _ = Nothing
-performFunctionOnProblemState str (ProblemState tab autData _ _ _) =
+performFunctionOnProblemState str (ProblemState tab state _ _) =
     let (functionToApply:rest) = words str
     in case functionToApply of
         "peelUniversalTarg" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (peelUniversalTarg (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (peelUniversalTarg (read exprLoc :: (BoxNumber, Int)) tab) state
         "peelExistentialTarg" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (peelExistentialTarg (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (peelExistentialTarg (read exprLoc :: (BoxNumber, Int)) tab) state
         "peelUniversalHyp" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (peelUniversalHyp (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (peelUniversalHyp (read exprLoc :: (BoxNumber, Int)) tab) state
         "peelExistentialHyp" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (peelExistentialHyp (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (peelExistentialHyp (read exprLoc :: (BoxNumber, Int)) tab) state
         
         "tidyImplInTarg" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (tidyImplInTarg (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (tidyImplInTarg (read exprLoc :: (BoxNumber, Int)) tab) state
         "commitToHyp" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (commitToHyp (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (commitToHyp (read exprLoc :: (BoxNumber, Int)) tab) state
         
         "tidyAndInHyp" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (tidyAndInHyp (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (tidyAndInHyp (read exprLoc :: (BoxNumber, Int)) tab) state
         "tidyAndInTarg" -> do
             [exprLoc] <- Just rest
-            fmap TableauOut (tidyAndInTarg (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (tidyAndInTarg (read exprLoc :: (BoxNumber, Int)) tab) state
         
         "tidyEverything" -> do
             [] <- Just rest
-            fmap TableauOut (tidyEverything tab)
+            runMathematician (tidyEverything tab) state
         "modusPonens" -> do
             [h1, h2] <- Just rest
-            fmap TableauOut (modusPonens (read h1 :: (BoxNumber, Int)) (read h2 :: (BoxNumber, Int)) tab)
+            runMathematician (modusPonens (read h1 :: (BoxNumber, Int)) (read h2 :: (BoxNumber, Int)) tab) state
         "modusPonensRaw" -> do
             [h1, h2] <- Just rest
-            fmap TableauOut (rawModusPonens (read h1 :: (BoxNumber, Int)) (read h2 :: (BoxNumber, Int)) tab)
+            runMathematician (rawModusPonens (read h1 :: (BoxNumber, Int)) (read h2 :: (BoxNumber, Int)) tab) state
         
         "libEquivHyp" -> do
             [libEquivStr, swapToDo, exprLoc] <- Just rest
             libEquiv <- libEquivFromString libEquivStr
-            fmap TableauOut (libEquivHyp libEquiv (read swapToDo :: (Int, Int)) (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (libEquivHyp libEquiv (read swapToDo :: (Int, Int)) (read exprLoc :: (BoxNumber, Int)) tab) state
         "libEquivTarg" -> do
             [libEquivStr, swapToDo, exprLoc] <- Just rest
             libEquiv <- libEquivFromString libEquivStr
-            fmap TableauOut (libEquivTarg libEquiv (read swapToDo :: (Int, Int)) (read exprLoc :: (BoxNumber, Int)) tab)
+            runMathematician (libEquivTarg libEquiv (read swapToDo :: (Int, Int)) (read exprLoc :: (BoxNumber, Int)) tab) state
         "libForwardReasoning" -> do
             [libImplStr] <- Just rest
             libImpl <- libImplFromString libImplStr
-            fmap TableauOut (libForwardReasoning libImpl tab)
+            runMathematician (libForwardReasoning libImpl tab) state
         "libBackwardReasoning" -> do
             [libImplStr] <- Just rest
             libImpl <- libImplFromString libImplStr
-            fmap TableauOut (libBackwardReasoning libImpl tab)
+            runMathematician (libBackwardReasoning libImpl tab) state
         "instantiateExistential" -> do
             let exprs = splitOn "->" $ unwords rest
             [varA, varB] <- Just exprs
-            fmap TableauOut (instantiateExistential varA varB tab)
+            runMathematician (instantiateExistential varA varB tab) state
 
         "waterfall" -> do
             [] <- Just rest
-            case waterfall autData tab of
-                Just (newAutData, newTab) -> Just $ TabAndAutDataOut newAutData newTab
-                Nothing -> Nothing
+            runMathematician (waterfall tab) state
             
         _ -> Nothing
 
@@ -103,8 +102,10 @@ libEquivFromString "openSetDef" = Just openSetDef
 libEquivFromString "intersectionDef" = Just intersectionDef
 libEquivFromString _ = Nothing
 
+stateAndTabToProblemState :: (Tableau, MathematicianState) -> ProblemState
+stateAndTabToProblemState (tab, state) = ProblemState { getTab = tab, getState = state,
+    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab tab,
+    getAllowedActions = [] }
 
 testState :: ProblemState
-testState = ProblemState { getTab = s1Tab, getAutData = startAutData,
-    getTabHtml = renderHtml $ generateTabHtml $ prettifyTab s1Tab,
-    getAllowedActions = [], getProofHistory = []}
+testState = stateAndTabToProblemState gResult

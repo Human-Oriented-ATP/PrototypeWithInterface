@@ -8,6 +8,7 @@ import Robot.TableauFoundation
 
 import Control.Monad.State
 import GHC.Generics
+import Data.Aeson (FromJSON, ToJSON)
 
 -- | The state we have in the monad is called MathematicianState
 data MathematicianState = MathematicianState
@@ -17,6 +18,9 @@ data MathematicianState = MathematicianState
       returnAutData :: AutData,
       returnHistory :: History }
       deriving (Show, Read, Generic)
+
+instance ToJSON MathematicianState
+instance FromJSON MathematicianState
 
 -- | The Mathematician monad combines State and Maybe capabilities
 type Mathematician = StateT MathematicianState Maybe
@@ -64,3 +68,9 @@ getHistory :: Mathematician History
 getHistory = do
     state <- get
     return $ returnHistory state
+
+baseMathematicianState :: MathematicianState
+baseMathematicianState = MathematicianState 1 startAutData NoHistory
+
+runMathematician :: Mathematician a -> MathematicianState -> Maybe (a, MathematicianState)
+runMathematician = runStateT

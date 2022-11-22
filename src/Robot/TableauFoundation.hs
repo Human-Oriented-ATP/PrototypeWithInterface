@@ -52,6 +52,10 @@ data Tableau = Tableau {getQZone :: QZone,
                         getRootBox :: Box Expr}
                         deriving (Eq, Read, Show, Generic)
 
+-- Create a tableau with just one given target
+exprToTab :: Expr -> Tableau
+exprToTab e = Tableau (Poset [] []) (Box [] [PureTarg e])
+
 -- Enum data type: Targets or Hypotheses
 data ExprType = T | H
 
