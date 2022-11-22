@@ -25,6 +25,9 @@ performFunctionOnProblemState "" _ = Nothing
 performFunctionOnProblemState str (ProblemState tab state _ _) =
     let (functionToApply:rest) = words str
     in case functionToApply of
+        "undo" -> do
+            [] <- Just rest
+            runMathematician (undo tab) state
         "peelUniversalTarg" -> do
             [exprLoc] <- Just rest
             runMathematician (peelUniversalTarg (read exprLoc :: (BoxNumber, Int)) tab) state

@@ -12,7 +12,9 @@ import Robot.TableauFoundation
 import Robot.Poset
 import Robot.BasicMoveHelpers
 import Robot.MathematicianMonad
+import Robot.History
 import Robot.AutomationData
+import Control.Monad.State
 
 import Control.Applicative
 import Control.Monad
@@ -34,6 +36,18 @@ type Move = Tableau -> Mathematician Tableau
 
 
 -- <<< NON-LIB MOVES >>>
+
+-- | Undo move, now easy to implement by using the Mathematician monad
+-- Note: the tableau given to this move has no effect on the result, but is
+-- included so that undo still has type Move. This move fails if there are
+-- no previous entries in the history
+undo :: Move
+undo _ = do
+    MathematicianState freshNm _ history <- get
+    history' <- historyBackInTimeStep history
+    HistoryItem tab autData <- historyPresent history'
+    put $ MathematicianState freshNm autData history'
+    return tab
 
 -- PEELING
 
