@@ -1,3 +1,88 @@
+
+# Elementary material on sets
+
+
+https://www.cl.cam.ac.uk/research/hvg/Isabelle/dist/library/HOL/HOL/Set.html
+
+Please note: Here I use the names used in the HOL Library for now for easy reference. Must find alt names. 
+
+
+"CollectI and CollectD"
+
+P a ⟷  a ∈ {x. P x}"
+ 
+
+ "Collect_cong"
+
+If  ∀ x. (P x ⟷  Q x) 
+Then {x. P x} = {x. Q x}
+  
+  
+ "Equality of sets considering membership" (set_eqI, set_eq_iff) 
+
+Let A, B be sets
+Then ∀ x. (x ∈ A ⟷ x ∈ B) iff A = B
+
+"Equality of sets considering right and left subsets" 
+
+Let A, B be sets
+Then  B ⊆ A ∧ A ⊆ B iff A = B
+
+"Equality of sets considering subset and superset " 
+
+Let A, B be sets
+Then  B ⊆ A ∧ B ⊇ A iff A = B
+
+
+"Set intersection as equality of sets"  (Int_def)
+Let A, B be sets
+Then A ∩ B = {x. x ∈ A ∧ x ∈ B}
+
+"Set intersection as set membership" (Int_Iff and Int_I)
+
+Let A, B be sets
+Then c ∈ A ∩ B  iff  c ∈ A ∧ c ∈ B
+
+                                   
+"Set intersection deducing set membership left" (IntD1 )
+
+Let A, B be sets 
+Let c ∈ A ∩ B 
+Then c ∈ A      
+
+"Set intersection deducing set membership right" (IntD2 )
+
+Let A, B be sets 
+Let c ∈ A ∩ B 
+Then c ∈ B      
+
+
+
+"Set union as equality of sets"  (Un_def}
+ 
+Let A, B be sets
+Then  A ∪ B = {x. x ∈ A ∨ x ∈ B}
+  
+ 
+ "Set union as set membership" (Un_iff [simp])
+
+Let A, B be sets
+Then c ∈ A ∪ B  iff  c ∈ A ∨ c ∈ B
+
+"Assume set membership left deduce set union" ( UnI1 [elim?]) 
+
+Let A, B be sets
+Let c ∈ A
+Then c ∈ A ∪ B
+  
+"Assume set membership right deduce set union" ( UnI2 [elim?]) 
+
+Let A, B be sets
+Let c ∈ B
+Then c ∈ A ∪ B
+
+
+
 # Topological spaces
 
 "Definition of open_in for a topological space"
