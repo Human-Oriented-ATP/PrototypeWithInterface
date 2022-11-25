@@ -45,7 +45,7 @@ holeFreeVars (Free n) = Hole n
 holeFreeVars (Con con) = HoleCon con
 holeFreeVars (B i) = HoleB i
 
--- | Takes a holed expression without holes and returns an expression (Maybe because there might be holes)
+-- | Takes a holed expression without holes and returns an expression (MonadPlus because there might be holes)
 holeExprToExpr :: (MonadPlus m) => HoleExpr -> m Expr
 holeExprToExpr (HoleApp e e') = do
     a <- holeExprToExpr e
