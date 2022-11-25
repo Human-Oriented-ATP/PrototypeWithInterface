@@ -63,8 +63,8 @@ attemptDestroySubtask index task@(Subtask subtaskType exprID pattern) tab = do
             H -> libEquivHyp
             T -> libEquivTarg
     guard $ not $ null equivalences
-    foldl1 (<|>) $ map (\(EquivalenceValue result pair) ->
-        invoker result pair address tab) equivalences
+    foldl1 (<|>) $ map (\(EquivalenceValue res pair) ->
+        invoker res pair address tab) equivalences
 
 -- Intersection and union properties
 

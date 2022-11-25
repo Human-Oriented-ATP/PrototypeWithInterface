@@ -371,6 +371,6 @@ s1 = "forall A, forall B, forall C, forall D, " ++
                 "and(forall x, implies(element_of(x, A), element_of(x, B)), " ++
                     "forall x, implies(element_of(x, intersection(A, B)), element_of(x, C)))), " ++
     "exists x, element_of(x, union(C, D)))"
-Just s1result = runMathematician (
+Just s1Result = runMathematician (
     stringToTab s1 >>= result >>= tidyEverything >>= peelExistentialTarg ([], 0)
     ) baseMathematicianState
