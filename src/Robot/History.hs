@@ -16,27 +16,24 @@ data HistoryItem = HistoryItem { getOldTableau :: Tableau,
                                 getOldAutData :: AutData }
     deriving (Show, Read, Generic)
 
-infix 5 :=>
--- | The History is effectively a stack of history items.
+-- | The History is effectively a stack of history items,
+-- implemented as a list.
 -- Design decision: History includes the present, so that we don't
 -- need to look in two places when doing analysis on present/history.
--- Top of the stack should be the present.
-data History = NoHistory | History :=> HistoryItem
-    deriving (Show, Read, Generic)
+-- first should be the present.
+type History = [HistoryItem]
 
 instance ToJSON HistoryItem
-instance ToJSON History
 instance FromJSON HistoryItem
-instance FromJSON History
 
 -- | Remove the top entry in the history, effectively going back in time one step.
 -- Fails if there is no history
 historyBackInTimeStep :: (MonadPlus m) => History -> m History
-historyBackInTimeStep NoHistory = mzero
-historyBackInTimeStep (history :=> historyItem) = return history
+historyBackInTimeStep [] = mzero
+historyBackInTimeStep (historyItem:history) = return history
 
 -- | Returns the top entry in the history, which should be the present.
 -- Fails if there is no history
 historyPresent :: (MonadPlus m) => History -> m HistoryItem
-historyPresent NoHistory = mzero
-historyPresent (history :=> historyItem) = return historyItem
+historyPresent [] = mzero
+historyPresent (historyItem:history) = return historyItem

@@ -48,7 +48,7 @@ transitivelyCloseCounterExamples (Poset set rel) =
   let counterExamples = [(x, y, z) | x <- set, y <- set, z <- set, (((x,y) `elem` rel) && ((y,z) `elem` rel)) && (not ((x, z) `elem` rel))]
   in map (\(x, y, z) -> (x, z)) (nub counterExamples)
 
--- | Takes a Poset and try to extend it to a genuine maMaybethematical poset which is transitively closed
+-- | Takes a Poset and try to extend it to a genuine mathematical poset which is transitively closed
 -- We work in a monad that is an instance of MonadPlus to allow for failure
 transitivelyClose :: (Eq a, MonadPlus m) => Poset a -> m (Poset a)
 transitivelyClose poset =

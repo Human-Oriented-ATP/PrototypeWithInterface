@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Robot.MathematicianMonad where
 
@@ -31,46 +32,44 @@ liftMaybe (Just x) = return x
 liftMaybe Nothing = mzero
 
 -- | Get a fresh name and increment the counter
-getFreshName :: Mathematician Int
+getFreshName :: MonadState MathematicianState m => m Int
 getFreshName = do
     state <- get
     let freshName = returnFreshName state
     put $ state { returnFreshName = freshName + 1 }
     return freshName
 
-getAutData :: Mathematician AutData
+getAutData :: MonadState MathematicianState m => m AutData
 getAutData = do
     state <- get
     return $ returnAutData state
 
-putAutData :: AutData -> Mathematician ()
+putAutData :: MonadState MathematicianState m => AutData -> m ()
 putAutData autData = do
     state <- get
     put $ state { returnAutData = autData }
 
-updateAutData :: (AutData -> AutData) -> Mathematician ()
-updateAutData f = do
-    autData <- getAutData
-    putAutData $ f autData
+updateAutData :: MonadState MathematicianState m => (AutData -> AutData) -> m ()
+updateAutData f = modify (\state -> state { returnAutData = f $ returnAutData state })
 
 -- | Function to be called thus when a move is complete:
 -- result tab
 -- This is to ensure the tableau is added to the history
-result :: Tableau -> Mathematician Tableau
+result :: MonadState MathematicianState m => Tableau -> m Tableau
 result tab = do
     state <- get
     let history = returnHistory state
     let present = HistoryItem tab (returnAutData state)
-    put $ state { returnHistory = history :=> present }
+    put $ state { returnHistory = present:history }
     return tab
 
-getHistory :: Mathematician History
+getHistory :: MonadState MathematicianState m => m History
 getHistory = do
     state <- get
     return $ returnHistory state
 
 baseMathematicianState :: MathematicianState
-baseMathematicianState = MathematicianState 1 startAutData NoHistory
+baseMathematicianState = MathematicianState 1 startAutData []
 
 runMathematician :: Mathematician a -> MathematicianState -> Maybe (a, MathematicianState)
 runMathematician = runStateT
