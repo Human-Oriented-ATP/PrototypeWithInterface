@@ -1,3 +1,88 @@
+
+# Elementary material on sets
+
+
+https://www.cl.cam.ac.uk/research/hvg/Isabelle/dist/library/HOL/HOL/Set.html
+
+Please note: Here I use the names used in the HOL Library for now for easy reference. Must find alt names. 
+
+
+"CollectI and CollectD"
+
+P a ⟷  a \in {x. P x}"
+ 
+
+ "Collect_cong"
+
+If  \forall x. (P x ⟷  Q x) 
+Then {x. P x} = {x. Q x}
+  
+  
+ "Equality of sets considering membership" (set_eqI, set_eq_iff) 
+
+Let A, B be sets
+Then \forall x. (x \in A ⟷ x \in B) iff A = B
+
+"Equality of sets considering right and left subsets" 
+
+Let A, B be sets
+Then  B \subset A \and A \subset B iff A = B
+
+"Equality of sets considering subset and superset " 
+
+Let A, B be sets
+Then  B \subset A \and B \supset A iff A = B
+
+
+"Set intersection as equality of sets"  (Int_def)
+Let A, B be sets
+Then A \intersection B = {x. x \in A \and x \in B}
+
+"Set intersection as set membership" (Int_Iff and Int_I)
+
+Let A, B be sets
+Then c \in A \intersection B  iff  c \in A \and c \in B
+
+                                   
+"Set intersection deducing set membership left" (IntD1 )
+
+Let A, B be sets 
+Let c \in A \intersection B 
+Then c \in A      
+
+"Set intersection deducing set membership right" (IntD2 )
+
+Let A, B be sets 
+Let c \in A \intersection B 
+Then c \in B      
+
+
+
+"Set union as equality of sets"  (Un_def}
+ 
+Let A, B be sets
+Then  A \union B = {x. x \in A \or x \in B}
+  
+ 
+ "Set union as set membership" (Un_iff [simp])
+
+Let A, B be sets
+Then c \in A \union B  iff  c \in A \or c \in B
+
+"Assume set membership left deduce set union" ( UnI1 [elim?]) 
+
+Let A, B be sets
+Let c \in A
+Then c \in A \union B
+  
+"Assume set membership right deduce set union" ( UnI2 [elim?]) 
+
+Let A, B be sets
+Let c \in B
+Then c \in A \union B
+
+
+
 # Topological spaces
 
 "Definition of open_in for a topological space"
@@ -17,7 +102,7 @@ Let X be a set
 Let \tau be a topology on X
 Let X~ := (X, \tau) be a topological space
 Then open_in(U, X~)
-iff closed_in(X \setmuinus U, X~)
+iff closed_in(X \setminus U, X~)
 
 "Empty set is open in a topological space"
 Let X be a set
