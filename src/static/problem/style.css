@@ -150,7 +150,7 @@ body{
     background-color: white;
     border-radius: 1em;
     box-shadow: rgba(149, 157, 165, 0.2) 0px 4px 24px;
-    
+
 }
 
 /* SETTINGS CSS */
@@ -350,8 +350,18 @@ body{
     left: 55%;
 }
 
+#libForwardReasoning{
+    top: 37%;
+    left: 5%;
+}
+
+#libBackwardReasoning{
+    top: 37%;
+    left: 55%;
+}
+
 #waterfall {
-    top: 42%;
+    top: 50%;
     left: 30%
 }
 
@@ -398,13 +408,13 @@ body{
     width: calc(6*var(--expresion_label_switch_scale));
     height: calc(3.4*var(--expresion_label_switch_scale));
   }
-  
-  .switch input { 
+
+  .switch input {
     opacity: 0;
     width: 0;
     height: 0;
   }
-  
+
   .slider {
     position: absolute;
     cursor: pointer;
@@ -416,7 +426,7 @@ body{
     -webkit-transition: .4s;
     transition: .4s;
   }
-  
+
   .slider:before {
     position: absolute;
     content: "";
@@ -428,26 +438,26 @@ body{
     -webkit-transition: .4s;
     transition: .4s;
   }
-  
+
   input:checked + .slider {
     background-color: #00cc66;
   }
-  
+
   input:focus + .slider {
     box-shadow: 0 0 calc(0.1*var(--expresion_label_switch_scale)) #00cc66;
   }
-  
+
   input:checked + .slider:before {
     -webkit-transform: translateX(calc(2.6*var(--expresion_label_switch_scale)));
     -ms-transform: translateX(calc(2.6*var(--expresion_label_switch_scale)));
     transform: translateX(calc(2.6*var(--expresion_label_switch_scale)));
   }
-  
+
   /* Rounded sliders */
   .slider.round {
     border-radius: calc(3.4*var(--expresion_label_switch_scale));
   }
-  
+
   .slider.round:before {
     border-radius: 50%;
   }
