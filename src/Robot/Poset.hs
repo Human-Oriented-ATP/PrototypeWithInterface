@@ -7,6 +7,7 @@ module Robot.Poset where
 import Data.List
 import Debug.Trace
 import GHC.Generics
+import Control.Monad
 import Data.Aeson (FromJSON, ToJSON, decode, toJSON)
 
 -- | Poset type to store information about quantification order. Probably very inefficient for now, but this can be optimised I'm sure
@@ -48,21 +49,27 @@ transitivelyCloseCounterExamples (Poset set rel) =
   in map (\(x, y, z) -> (x, z)) (nub counterExamples)
 
 -- | Takes a Poset and try to extend it to a genuine mathematical poset which is transitively closed
-transitivelyClose :: (Eq a) => Poset a -> Maybe (Poset a)
+-- We work in a monad that is an instance of MonadPlus to allow for failure
+transitivelyClose :: (Eq a, MonadPlus m) => Poset a -> m (Poset a)
 transitivelyClose poset =
   let witnesses = transitivelyCloseCounterExamples poset
   in
-    if witnesses == [] then (if isRealPoset poset then Just poset else Nothing)
+    if witnesses == [] then (if isRealPoset poset then return poset else mzero)
     else
       let (Poset set rel) = poset
           newPoset = Poset set (witnesses ++ rel)
-      in if isAsymmetric newPoset then transitivelyClose newPoset else Nothing
+      in if isAsymmetric newPoset then transitivelyClose newPoset else mzero
 
--- | Adds (a, b) to relation. If the result is not a Poset, returns Nothing.
-addRel :: (Eq a) => Poset a -> (a,a) -> Maybe (Poset a)
+-- | Adds (a, b) to relation.
+-- We work in a monad that is an instance of MonadPlus to allow for failure
+-- If the result is not a Poset, fails.
+addRel :: (Eq a, MonadPlus m) => Poset a -> (a,a) -> m (Poset a)
 addRel (Poset set rel) (x, y) = transitivelyClose (Poset set ((x,y):rel))
 
-addRels :: (Eq a) => Poset a -> [(a, a)] -> Maybe (Poset a)
+-- | Adds (a, b) to relation.
+-- We work in a monad that is an instance of MonadPlus to allow for failure
+-- If the result is not a Poset, fails.
+addRels :: (Eq a, MonadPlus m) => Poset a -> [(a, a)] -> m (Poset a)
 addRels (Poset set rel) toAdd = transitivelyClose (Poset set (toAdd ++ rel))
 
 -- | isBefore poset a b = True only when a < b in the poset

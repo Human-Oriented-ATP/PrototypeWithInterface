@@ -2,6 +2,16 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS -Wno-unused-imports #-}
 
+{-
+  A lot of the functions here have type (MonadPlus m) => ... -> m (Something)
+  Originally the types where just ... -> Maybe Something
+  The new types are more general, making the functions more versatile
+  If you want you can just think of m being Maybe when you read the code
+  (Maybe is an instance of the MonadPlus type class)
+  The reason for this change is so the functions can be used in the
+  Mathematician monad, which is also an instance of MonadPlus.
+-}
+
 module Robot.TableauFoundation where
 
 import Robot.Poset
@@ -12,6 +22,7 @@ import qualified Data.HashMap.Strict as M
 import Data.List
 import GHC.Generics
 import Data.Aeson (FromJSON, ToJSON, decode, toJSON)
+import Control.Monad
 
 -- <<<< TYPES DEFINING WHAT A TABLEAU IS >>>>
 
@@ -40,6 +51,10 @@ data Targ a = BoxTarg (Box a) | PureTarg a deriving (Eq, Show, Read, Generic)
 data Tableau = Tableau {getQZone :: QZone,
                         getRootBox :: Box Expr}
                         deriving (Eq, Read, Show, Generic)
+
+-- Create a tableau with just one given target
+exprToTab :: Expr -> Tableau
+exprToTab e = Tableau (Poset [] []) (Box [] [PureTarg e])
 
 -- Enum data type: Targets or Hypotheses
 data ExprType = T | H
@@ -84,28 +99,28 @@ type BoxZipper a = (Box a, [BoxCrumb a])
 type BoxNumber = [Int]
 
 -- | Follows the directions specified by a BoxNumber From a BoxZipper
-toBoxNumberFromZipper :: BoxNumber -> BoxZipper a -> Maybe (BoxZipper a)
-toBoxNumberFromZipper [] zipper = Just zipper
+toBoxNumberFromZipper :: (MonadPlus m) => BoxNumber -> BoxZipper a -> m (BoxZipper a)
+toBoxNumberFromZipper [] zipper = return zipper
 toBoxNumberFromZipper (nextBoxInd:rest) (Box hyps targs, crumbs)
-  | nextBoxInd < 0 || nextBoxInd >= length targs = Nothing
+  | nextBoxInd < 0 || nextBoxInd >= length targs = mzero
   | otherwise = let (as, ourTarg:bs) = splitAt nextBoxInd targs in case ourTarg of
-      PureTarg _ -> Nothing
+      PureTarg _ -> mzero
       BoxTarg newBox -> let
         newCrumb = Crumb hyps as bs
-        newZipper = Just (newBox, newCrumb:crumbs)
+        newZipper = return (newBox, newCrumb:crumbs)
         in newZipper >>= toBoxNumberFromZipper rest
 
 -- | Follows the directions to a BoxNumber from the root
-toBoxNumberFromRoot :: BoxNumber -> Box a -> Maybe (BoxZipper a)
+toBoxNumberFromRoot :: (MonadPlus m) => BoxNumber -> Box a -> m (BoxZipper a)
 toBoxNumberFromRoot boxNumber box = toBoxNumberFromZipper boxNumber (box, [])
 
 -- | Takes a BoxZipper and "goes up" a single level
-goUp :: BoxZipper a -> Maybe (BoxZipper a)
-goUp (_, []) = Nothing
+goUp :: (MonadPlus m) => BoxZipper a -> m (BoxZipper a)
+goUp (_, []) = mzero
 goUp (box, crumb:rest) = let
   Crumb hyps aTargs bTargs = crumb
   newBox = Box hyps (aTargs ++ [BoxTarg box] ++ bTargs)
-  in Just (newBox, rest)
+  in return (newBox, rest)
 
 -- | Takes a BoxZipper and entirely unzips it, returning the whole Box
 unzipBox :: BoxZipper a -> Box a
@@ -115,30 +130,30 @@ unzipBox zipper = let Just newZipper = goUp zipper
 
 
 -- | Gets the hypInd-th hyp from a BoxZipper, if it exists
-getHypInZipper :: Int -> BoxZipper a -> Maybe a
+getHypInZipper :: (MonadPlus m) => Int -> BoxZipper a -> m a
 getHypInZipper hypInd (Box hyps _, _)
-  | hypInd < 0 || hypInd >= length hyps = Nothing
-  | otherwise = Just $ hyps !! hypInd
+  | hypInd < 0 || hypInd >= length hyps = mzero
+  | otherwise = return $ hyps !! hypInd
 
-getPureTargInZipper :: Int -> BoxZipper a -> Maybe a
+getPureTargInZipper :: (MonadPlus m) => Int -> BoxZipper a -> m a
 getPureTargInZipper targInd (Box _ targs, _)
-  | targInd < 0 || targInd >= length targs = Nothing
+  | targInd < 0 || targInd >= length targs = mzero
   | otherwise = case targs !! targInd of
-    BoxTarg _ -> Nothing
-    PureTarg targ -> Just targ
+    BoxTarg _ -> mzero
+    PureTarg targ -> return targ
 
-getBoxTargInZipper :: Int -> BoxZipper a -> Maybe (Box a)
+getBoxTargInZipper :: (MonadPlus m) => Int -> BoxZipper a -> m (Box a)
 getBoxTargInZipper targInd (Box _ targs, _)
-  | targInd < 0 || targInd >= length targs = Nothing
+  | targInd < 0 || targInd >= length targs = mzero
   | otherwise = case targs !! targInd of
-    BoxTarg box -> Just box
-    PureTarg _ -> Nothing
+    BoxTarg box -> return box
+    PureTarg _ -> mzero
 
 -- | Gets the box given by a BoxNumber from a given "root" box
-getBox :: BoxNumber -> Box a -> Maybe (Box a)
+getBox :: (MonadPlus m) => BoxNumber -> Box a -> m (Box a)
 getBox boxNumber rootBox = case toBoxNumberFromRoot boxNumber rootBox of
-  Just (box, _) -> Just box
-  Nothing -> Nothing
+  Just (box, _) -> return box
+  Nothing -> mzero
 
 -- | Adds a hypothesis to a BoxZipper
 addHypToZipper :: a -> BoxZipper a -> BoxZipper a
@@ -151,62 +166,62 @@ addBoxTargToZipper :: Box a -> BoxZipper a -> BoxZipper a
 addBoxTargToZipper targ (Box hyps targs, crumbs) = (Box hyps (targs++[BoxTarg targ]), crumbs)
 
 -- | Removes the hypInd-th hypothesis from a BoxZipper
-removeHypFromZipper :: Int -> BoxZipper a -> Maybe (BoxZipper a)
+removeHypFromZipper :: (MonadPlus m) => Int -> BoxZipper a -> m (BoxZipper a)
 removeHypFromZipper hypInd (Box hyps targs, crumbs)
-  | hypInd < 0 || hypInd >= length hyps = Nothing
+  | hypInd < 0 || hypInd >= length hyps = mzero
   | otherwise = let (as, ourHyp:bs) = splitAt hypInd hyps
-    in Just (Box (as++bs) targs, crumbs)
+    in return (Box (as++bs) targs, crumbs)
 
-removeTargFromZipper :: Int -> BoxZipper a -> Maybe (BoxZipper a)
+removeTargFromZipper :: (MonadPlus m) => Int -> BoxZipper a -> m (BoxZipper a)
 removeTargFromZipper targInd (Box hyps targs, crumbs)
-  | targInd < 0 || targInd >= length targs = Nothing
+  | targInd < 0 || targInd >= length targs = mzero
   | otherwise = let (as, ourTarg:bs) = splitAt targInd targs
-    in Just (Box hyps (as++bs), crumbs)
+    in return (Box hyps (as++bs), crumbs)
 
 -- | Updates the hypInd-th hypothesis in a BoxZipper
-updateHypInZipper :: Int -> a -> BoxZipper a -> Maybe (BoxZipper a)
+updateHypInZipper :: (MonadPlus m) => Int -> a -> BoxZipper a -> m (BoxZipper a)
 updateHypInZipper hypInd newHyp (Box hyps targs, crumbs)
-  | hypInd < 0 || hypInd >= length hyps = Nothing
+  | hypInd < 0 || hypInd >= length hyps = mzero
   | otherwise = let (as, ourHyp:bs) = splitAt hypInd hyps
-    in Just (Box (as++newHyp:bs) targs, crumbs)
+    in return (Box (as++newHyp:bs) targs, crumbs)
 
-updatePureTargInZipper :: Int -> a -> BoxZipper a -> Maybe (BoxZipper a)
+updatePureTargInZipper :: (MonadPlus m) => Int -> a -> BoxZipper a -> m (BoxZipper a)
 updatePureTargInZipper targInd newTarg (Box hyps targs, crumbs)
-  | targInd < 0 || targInd >= length targs = Nothing
+  | targInd < 0 || targInd >= length targs = mzero
   | otherwise = let (as, ourTarg:bs) = splitAt targInd targs
     in case ourTarg of
-      PureTarg _ -> Just (Box hyps (as++PureTarg newTarg:bs), crumbs)
-      BoxTarg _ -> Nothing
+      PureTarg _ -> return (Box hyps (as++PureTarg newTarg:bs), crumbs)
+      BoxTarg _ -> mzero
 
-updateBoxTargInZipper :: Int -> Box a -> BoxZipper a -> Maybe (BoxZipper a)
+updateBoxTargInZipper :: (MonadPlus m) => Int -> Box a -> BoxZipper a -> m (BoxZipper a)
 updateBoxTargInZipper targInd newTarg (Box hyps targs, crumbs)
-  | targInd < 0 || targInd >= length targs = Nothing
+  | targInd < 0 || targInd >= length targs = mzero
   | otherwise = let (as, ourTarg:bs) = splitAt targInd targs
     in case ourTarg of
-      BoxTarg _ -> Just (Box hyps (as++BoxTarg newTarg:bs), crumbs)
-      PureTarg _ -> Nothing
+      BoxTarg _ -> return (Box hyps (as++BoxTarg newTarg:bs), crumbs)
+      PureTarg _ -> mzero
 
 
 -- | Turns a PureTarg into a BoxTarg containing no hyps and a single targ
-pureToBoxTargZipper :: Int -> BoxZipper a -> Maybe (BoxZipper a)
+pureToBoxTargZipper :: (MonadPlus m) => Int -> BoxZipper a -> m (BoxZipper a)
 pureToBoxTargZipper targInd (Box hyps targs, crumbs)
-  | targInd < 0 || targInd >= length targs = Nothing
+  | targInd < 0 || targInd >= length targs = mzero
   | otherwise = let (as, ourTarg:bs) = splitAt targInd targs in
     case ourTarg of
-      BoxTarg _ -> Nothing
-      PureTarg targ -> Just (Box hyps (as ++ BoxTarg (Box [] [PureTarg targ]):bs), crumbs)
+      BoxTarg _ -> mzero
+      PureTarg targ -> return (Box hyps (as ++ BoxTarg (Box [] [PureTarg targ]):bs), crumbs)
 
 -- | Returns all the hypotheses in a box and its parents. These are the ones
 -- that can be used when trying to prove targets in this box.
-getHypsUsableInBoxNumber :: BoxNumber -> Box Expr -> Maybe [Expr]
-getHypsUsableInBoxNumber [] (Box rootHyps _) = Just rootHyps
+getHypsUsableInBoxNumber :: (MonadPlus m) => BoxNumber -> Box Expr -> m [Expr]
+getHypsUsableInBoxNumber [] (Box rootHyps _) = return rootHyps
 getHypsUsableInBoxNumber (nextBoxInd:rest) (Box rootHyps rootTargs)
-  | nextBoxInd < 0 || nextBoxInd >= length rootTargs = Nothing
+  | nextBoxInd < 0 || nextBoxInd >= length rootTargs = mzero
   | otherwise = case rootTargs !! nextBoxInd of
-      PureTarg _ -> Nothing
+      PureTarg _ -> mzero
       BoxTarg box -> do
         lowerHyps <- getHypsUsableInBoxNumber rest box
-        Just $ rootHyps ++ lowerHyps
+        return $ rootHyps ++ lowerHyps
 
 -- | Checks whether a boxNumber is a prefix of another
 -- i.e. (isPrefix a b) iff a is a parent of b
@@ -218,10 +233,10 @@ isPrefix (a:as) (b:bs) = a == b && isPrefix as bs
 -- | Given a list of BoxNumbers, returns them in an order s.t. parents come
 -- first then children. If this isn't possible (i.e. if two boxes are
 -- not parent/child to each other), returns Nothing
-orderBoxNumbers :: [BoxNumber] -> Maybe [BoxNumber]
+orderBoxNumbers :: (MonadPlus m) => [BoxNumber] -> m [BoxNumber]
 orderBoxNumbers boxNumbers = let
   sortedBoxNumbers = sortBy (\a b -> length a `compare` length b) boxNumbers
-  in if verifyPrefix [] (nub sortedBoxNumbers) then Just sortedBoxNumbers else Nothing
+  in if verifyPrefix [] (nub sortedBoxNumbers) then return sortedBoxNumbers else mzero
   where
     verifyPrefix :: BoxNumber -> [BoxNumber] -> Bool
     verifyPrefix _ [] = True
@@ -229,10 +244,10 @@ orderBoxNumbers boxNumbers = let
 
 -- | e.g. (getPrefixDiff [0,1,4,3] [0,1] = Just [4,3])
 -- getPrefixDiff [0,1,4,3] [0,1,3,0,0] = Nothing 
-getPrefixDiff :: BoxNumber -> BoxNumber -> Maybe BoxNumber
-getPrefixDiff longer [] = Just longer
-getPrefixDiff [] (a:_) = Nothing
-getPrefixDiff (a:as) (b:bs) = if a == b then getPrefixDiff as bs else Nothing
+getPrefixDiff :: (MonadPlus m) => BoxNumber -> BoxNumber -> m BoxNumber
+getPrefixDiff longer [] = return longer
+getPrefixDiff [] (a:_) = mzero
+getPrefixDiff (a:as) (b:bs) = if a == b then getPrefixDiff as bs else mzero
 
 -- | If the list of BoxNumber's provided can be linearly ordered then
 -- returns the list of directions that one would follow from the root
@@ -242,41 +257,47 @@ getPrefixDiff (a:as) (b:bs) = if a == b then getPrefixDiff as bs else Nothing
 -- which targs we're allowed to solve using the hyps from the given boxes)
 -- e.g. boxNumbersToDirections [([1,0,3], "bottom"),([1,0], "middle"),([], "root")]
 -- = Just ([([], "root"), ([1, 0], "middle"), ([3], "bottom")], [1,0,3])
-boxNumbersToDirections :: [(BoxNumber, a)] -> Maybe ([(BoxNumber, a)], BoxNumber)
+boxNumbersToDirections :: (MonadPlus m) => [(BoxNumber, a)] ->
+  m ([(BoxNumber, a)], BoxNumber)
 boxNumbersToDirections boxNumbersWithData = let
-  reverseSortedBoxNumbersWithData = sortBy (\b a -> length (fst a) `compare` length (fst b)) boxNumbersWithData
-  traverseBoxNumbers :: [(BoxNumber, a)] -> [(BoxNumber, a)] -> Maybe [(BoxNumber, a)]
-  traverseBoxNumbers trailSoFar [] = Just trailSoFar
-  traverseBoxNumbers trailSoFar [thisBox] = Just (thisBox:trailSoFar)
+  reverseSortedBoxNumbersWithData = sortBy
+    (\b a -> length (fst a) `compare` length (fst b)) boxNumbersWithData
+  traverseBoxNumbers :: (MonadPlus m) => [(BoxNumber, a)] -> [(BoxNumber, a)] ->
+    m [(BoxNumber, a)]
+  traverseBoxNumbers trailSoFar [] = return trailSoFar
+  traverseBoxNumbers trailSoFar [thisBox] = return (thisBox:trailSoFar)
   traverseBoxNumbers trailSoFar (thisBox:(nextBox:rest)) = -- thisBox is further down than nextBox
     case getPrefixDiff (fst thisBox) (fst nextBox) of
-      Nothing -> Nothing
+      Nothing -> mzero
       Just diff -> traverseBoxNumbers ((diff, snd thisBox):trailSoFar) (nextBox:rest)
   deepestBox = case map fst reverseSortedBoxNumbersWithData of
     [] -> []
     (a:_) -> a
   in do
     directions <- traverseBoxNumbers [] reverseSortedBoxNumbersWithData
-    Just (directions, deepestBox)
+    return (directions, deepestBox)
 
 -- | The same as above, but returns the shallowest box (useful because this
 -- tells us which hypotheses we can use in solving a list of targets)
-boxNumbersToDirectionsFlipped :: [(BoxNumber, a)] -> Maybe ([(BoxNumber, a)], BoxNumber)
+boxNumbersToDirectionsFlipped :: (MonadPlus m) => [(BoxNumber, a)] ->
+  m ([(BoxNumber, a)], BoxNumber)
 boxNumbersToDirectionsFlipped boxNumbersWithData = let
-  reverseSortedBoxNumbersWithData = sortBy (\b a -> length (fst a) `compare` length (fst b)) boxNumbersWithData
-  traverseBoxNumbers :: [(BoxNumber, a)] -> [(BoxNumber, a)] -> Maybe [(BoxNumber, a)]
-  traverseBoxNumbers trailSoFar [] = Just trailSoFar
-  traverseBoxNumbers trailSoFar [thisBox] = Just (thisBox:trailSoFar)
+  reverseSortedBoxNumbersWithData = sortBy
+    (\b a -> length (fst a) `compare` length (fst b)) boxNumbersWithData
+  traverseBoxNumbers :: (MonadPlus m) => [(BoxNumber, a)] -> [(BoxNumber, a)] ->
+    m [(BoxNumber, a)]
+  traverseBoxNumbers trailSoFar [] = return trailSoFar
+  traverseBoxNumbers trailSoFar [thisBox] = return (thisBox:trailSoFar)
   traverseBoxNumbers trailSoFar (thisBox:(nextBox:rest)) = -- thisBox is further down than nextBox
     case getPrefixDiff (fst thisBox) (fst nextBox) of
-      Nothing -> Nothing
+      Nothing -> mzero
       Just diff -> traverseBoxNumbers ((diff, snd thisBox):trailSoFar) (nextBox:rest)
   shallowestBox = case map fst (reverse reverseSortedBoxNumbersWithData) of
     [] -> []
     (a:_) -> a
   in do
     directions <- traverseBoxNumbers [] reverseSortedBoxNumbersWithData
-    Just (directions, shallowestBox)
+    return (directions, shallowestBox)
 
 
 -- | This function basically only exists to help removing hyps and targs.
@@ -284,21 +305,23 @@ boxNumbersToDirectionsFlipped boxNumbersWithData = let
 -- are broken by forcing the second argument to be decreasing.
 -- e.g. boxNumbersToDirectionsWithInt [([], 0), ([], 1), ([0,1],2), ([0,1],3)] =
 -- Just ([([], 1), ([], 0), ([0,1], 3), ([], 2)], [0,1])
-boxNumbersToDirectionsWithInt :: [(BoxNumber, Int)] -> Maybe ([(BoxNumber, Int)], BoxNumber)
+boxNumbersToDirectionsWithInt :: (MonadPlus m) => [(BoxNumber, Int)] ->
+  m ([(BoxNumber, Int)], BoxNumber)
 boxNumbersToDirectionsWithInt boxNumbersWithData = let
   reverseSortedBoxNumbersWithData = sortBy (\b a -> let
     firstCompare = length (fst a) `compare` length (fst b)
     in if firstCompare /= EQ then firstCompare else snd b `compare` snd a) boxNumbersWithData
-  traverseBoxNumbers :: [(BoxNumber, a)] -> [(BoxNumber, a)] -> Maybe [(BoxNumber, a)]
-  traverseBoxNumbers trailSoFar [] = Just trailSoFar
-  traverseBoxNumbers trailSoFar [thisBox] = Just (thisBox:trailSoFar)
+  traverseBoxNumbers :: (MonadPlus m) => [(BoxNumber, a)] -> [(BoxNumber, a)] ->
+    m [(BoxNumber, a)]
+  traverseBoxNumbers trailSoFar [] = return trailSoFar
+  traverseBoxNumbers trailSoFar [thisBox] = return (thisBox:trailSoFar)
   traverseBoxNumbers trailSoFar (thisBox:(nextBox:rest)) = -- thisBox is further down than nextBox
     case getPrefixDiff (fst thisBox) (fst nextBox) of
-      Nothing -> Nothing
+      Nothing -> mzero
       Just diff -> traverseBoxNumbers ((diff, snd thisBox):trailSoFar) (nextBox:rest)
   shallowestBox = case map fst (reverse reverseSortedBoxNumbersWithData) of
     [] -> []
     (a:_) -> a
   in do
     directions <- traverseBoxNumbers [] reverseSortedBoxNumbersWithData
-    Just (directions, shallowestBox)
+    return (directions, shallowestBox)

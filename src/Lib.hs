@@ -30,25 +30,23 @@ libMain = do
             json testState --change this for an alternative problem, e.g. mTestState
 
         post "/move" $ do
-            ActionState action problemState@(ProblemState tab autData tabHtml allowedActions proofHistory) <- jsonData :: ActionM ActionState
+            ActionState action problemState@(ProblemState tab state tabHtml allowedActions) <- jsonData :: ActionM ActionState
             let result = performFunctionOnProblemState action problemState
             case result of
-                Just (TableauOut newTab) -> json (ProblemState newTab autData (renderHtml $ generateTabHtml $ prettifyTab newTab) allowedActions
-                    ((tab, autData, tabHtml):proofHistory))
-                Just (TabAndAutDataOut newAutData newTab) -> json (
-                    ProblemState newTab newAutData (renderHtml $ generateTabHtml $ prettifyTab newTab) allowedActions
-                    ((tab, autData, tabHtml):proofHistory))
+                Just (newTab, newState) -> json (ProblemState newTab newState
+                    (renderHtml $ generateTabHtml $ prettifyTab newTab) allowedActions)
                 _ -> json problemState
 
         post "/save" $ do
-            problemState@(ProblemState _ _ _ allowedActions proofHistory) <- jsonData :: ActionM ProblemState
+            problemState <- jsonData :: ActionM ProblemState
             liftIO (writeFile "saved_state.txt" (show problemState))
             json problemState
 
-
+{-
 a :: IO (Maybe Tableau)
 a = do
     file <- readFile "saved_state.txt"
-    let ProblemState tab _ _ _ _ = read file
+    let ProblemState tab _ _ _ = read file
     let res = libBackwardReasoning lesserThanTrans tab
     return res
+-}

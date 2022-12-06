@@ -93,6 +93,7 @@ setUpOnLoad = function(){
 // 1 - target
 // 2 - text input
 const argsToWaitForInfo = {
+	"undo": [],
 	"peelUniversalTarg": [1],
 	"peelExistentialTarg": [1],
 	"peelUniversalHyp": [0],
@@ -136,20 +137,6 @@ resetGlobalClickState = function(){
 		let expr = targs[i]
 		expr.style.backgroundColor = "white"
 	}
-}
-
-function undo() {
-	if (globalProblemState && globalProblemState.getProofHistory) {
-		// newest problem state at head of proof history
-		[tab, autData, tabHtml] = globalProblemState.getProofHistory.shift();
-		globalProblemState.getTab = tab;
-		globalProblemState.getAutData = autData;
-		globalProblemState.getTabHtml = tabHtml;
-
-		showProblemState();
-		MathJax.typeset();
-	}
-	resetGlobalClickState();
 }
 
 manualFunctionInput = function(e){

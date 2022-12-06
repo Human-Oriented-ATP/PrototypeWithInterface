@@ -11,7 +11,12 @@ import Robot.Lib
 import Robot.TableauFoundation
 import Robot.Poset
 import Robot.BasicMoveHelpers
+import Robot.MathematicianMonad
+import Robot.History
+import Robot.AutomationData
+import Control.Monad.State
 
+import Control.Applicative
 import Control.Monad
 import Data.Maybe
 import Debug.Trace
@@ -25,11 +30,24 @@ import Debug.Trace
 -- and implement that.
 
 
--- | Takes a Tableau and returns an updated Tableau. Maybe because the move could fail.
-type Move = Tableau -> Maybe Tableau
+-- | Takes a Tableau and returns an updated Tableau.
+-- Moves happen inside the Mathematician monad, as defined in MathematicianMonad.hs
+type Move = Tableau -> Mathematician Tableau
 
 
 -- <<< NON-LIB MOVES >>>
+
+-- | Undo move, now easy to implement by using the Mathematician monad
+-- Note: the tableau given to this move has no effect on the result, but is
+-- included so that undo still has type Move. This move fails if there are
+-- no previous entries in the history
+undo :: Move
+undo _ = do
+    MathematicianState freshNm _ history <- get
+    history' <- historyBackInTimeStep history
+    HistoryItem tab autData <- historyPresent history'
+    put $ MathematicianState freshNm autData history'
+    return tab
 
 -- PEELING
 
@@ -46,7 +64,7 @@ peelUniversalTarg (boxNumber, targInd) tab@(Tableau qZone@(Poset set rel) rootBo
     let newDeps = [(y, peeledVariable) | y <- freeVars, qVarGetQuantifier y == "Exists"] -- We only need to add dependencies relating to exists, because dependencies between forall's is given by this
     newQZone <- addRels (addSetMember qZone peeledVariable) newDeps
     (Tableau _ newRootBox) <- updatePureTarg (boxNumber, targInd) (instantiate (Free peeledName) sc) tab
-    return $ Tableau newQZone newRootBox
+    result $ Tableau newQZone newRootBox
 
 -- | Peels existential target, creating a metavariable
 -- targ i : exists x, P(x)
@@ -61,7 +79,7 @@ peelExistentialTarg (boxNumber, targInd) tab@(Tableau qZone@(Poset set rel) root
     let newDeps = [(y, peeledVariable) | y <- freeVars, qVarGetQuantifier y == "Forall"] -- We only need to add dependencies relating to exists, because dependencies between forall's is given by this
     newQZone <- addRels (addSetMember qZone peeledVariable) newDeps
     (Tableau _ newRootBox) <- updatePureTarg (boxNumber, targInd) (instantiate (Free peeledName) sc) tab
-    return $ Tableau newQZone newRootBox
+    result $ Tableau newQZone newRootBox
 
 -- | Peels existential hypothesis
 -- hyp i : exists x, P(x)
@@ -77,13 +95,19 @@ peelExistentialHyp (boxNumber, hypInd) tab@(Tableau qZone@(Poset set rel) rootBo
     let newDeps = [(y, peeledVariable) | y <- freeVars, qVarGetQuantifier y == "Exists"] -- We only need to add dependencies relating to exists, because dependencies between forall's is given by this
     newQZone <- addRels (addSetMember qZone peeledVariable) newDeps
     (Tableau _ newRootBox) <- updateHyp (boxNumber, hypInd) (instantiate (Free peeledName) sc) tab
-    return $ Tableau newQZone newRootBox
+    result $ Tableau newQZone newRootBox
 
 -- | Peels universal hypothesis, creating a metavariable
 -- This move keeps the original hypothesis, because it's dangerous otherwise
 -- hyp i : forall x, P(x)
 peelUniversalHyp :: (BoxNumber, Int) -> Move
-peelUniversalHyp (boxNumber, hypInd) tab@(Tableau qZone@(Poset set rel) rootBox) = do
+peelUniversalHyp address@(boxNumber, hypInd) tab@(Tableau qZone@(Poset set rel) rootBox) = do
+    autData <- getAutData
+    -- Only proceed if the hypothesis itself hasn't been peeled before.
+    -- In order to override this one can remove the relevant entry from the AutData
+    case getHypID address autData of
+        Nothing -> return ()
+        Just id -> guard $ not $ id `elem` getPeeledUniversalHyps autData
     expr@(Forall exNm sc) <- getHyp (boxNumber, hypInd) tab
     let peeledName = getNewInternalName qZone
     let peeledExternalName = getNewExternalNamePeel exNm qZone
@@ -93,7 +117,8 @@ peelUniversalHyp (boxNumber, hypInd) tab@(Tableau qZone@(Poset set rel) rootBox)
     let newDeps = [(y, peeledVariable) | y <- freeVars, qVarGetQuantifier y == "Forall"] -- We only need to add dependencies relating to exists, because dependencies between forall's is given by this
     newQZone <- addRels (addSetMember qZone peeledVariable) newDeps
     (Tableau _ newRootBox) <- addHyp boxNumber (instantiate (Free peeledName) sc) tab
-    return $ Tableau newQZone newRootBox
+    updateAutData $ addPeeledUniversalHyp address
+    result $ Tableau newQZone newRootBox
 
 
 -- TIDYING
@@ -101,25 +126,26 @@ peelUniversalHyp (boxNumber, hypInd) tab@(Tableau qZone@(Poset set rel) rootBox)
 -- | Tidies implication in target
 -- targ i : P \implies Q
 tidyImplInTarg :: (BoxNumber, Int) -> Move
-tidyImplInTarg (boxNumber, targInd) tab@(Tableau qZone rootBox) = do
+tidyImplInTarg address@(boxNumber, targInd) tab@(Tableau qZone rootBox) = do
     Box hyps targs <- getBox boxNumber rootBox
     PureTarg (Implies p q) <- getFromListMaybe targs targInd
     if length targs == 1 then
-        addHyp boxNumber p tab >>= updatePureTarg (boxNumber, targInd) q
+        addHyp boxNumber p tab >>= updatePureTarg (boxNumber, targInd) q >>= result
     else
-        removeTarg (boxNumber, targInd) tab >>= addBoxTarg boxNumber (Box [p] [PureTarg q])
+        do updateAutData $ applyTracker $ targDeletionTracker address
+           removeTarg (boxNumber, targInd) tab >>= addBoxTarg boxNumber (Box [p] [PureTarg q]) >>= result
 
 -- | Splits and hypotheses up
 -- hyp i : P ^ Q
 tidyAndInHyp :: (BoxNumber, Int) -> Move
 tidyAndInHyp (boxNumber, hypInd) tab@(Tableau qZone rootBox) = do
     And p q <- getHyp (boxNumber, hypInd) tab
-    updateHyp (boxNumber, hypInd) p tab >>= addHyp boxNumber q
+    updateHyp (boxNumber, hypInd) p tab >>= addHyp boxNumber q >>= result
 
 tidyAndInTarg :: (BoxNumber, Int) -> Move
 tidyAndInTarg (boxNumber, targInd) tab@(Tableau qZone rootBox) = do
     And p q <- getPureTarg (boxNumber, targInd) tab
-    updatePureTarg (boxNumber, targInd) p tab >>= addPureTarg boxNumber q
+    updatePureTarg (boxNumber, targInd) p tab >>= addPureTarg boxNumber q >>= result
 
 
 -- MODUS PONENS AND BACKWARDS REASONING
@@ -129,8 +155,17 @@ tidyAndInTarg (boxNumber, targInd) tab@(Tableau qZone rootBox) = do
 -- hyp j : P(y)
 -- conclude : Q(y)
 modusPonens :: (BoxNumber, Int) -> (BoxNumber, Int) -> Move
-modusPonens (boxNumber1, hypInd1) (boxNumber2, hypInd2) tab@(Tableau qZone rootBox) = do
+modusPonens address1@(boxNumber1, hypInd1) address2@(boxNumber2, hypInd2)
+        tab@(Tableau qZone rootBox) = do
     guard $ isPrefix boxNumber1 boxNumber2 || isPrefix boxNumber2 boxNumber1
+    autData <- getAutData
+    -- Only proceed if the pair hasn't been used before.
+    -- In order to override this one can remove the relevant entry from the AutData
+    case getHypID address1 autData of
+        Nothing -> return ()
+        Just id1 -> case getHypID address2 autData of
+            Nothing -> return ()
+            Just id2 -> guard $ not $ (id1, id2) `elem` getModusPonensPairs autData
     let deepestBoxNumber = if isPrefix boxNumber1 boxNumber2 then boxNumber2 else boxNumber1
 
     expr@(Forall exNm (Sc (Implies px qx))) <- getHyp (boxNumber1, hypInd1) tab
@@ -143,21 +178,31 @@ modusPonens (boxNumber1, hypInd1) (boxNumber2, hypInd2) tab@(Tableau qZone rootB
     let successes = filter (\var -> instantiate (Free var) (Sc px) == py) toInstantiate'
     guard $ length successes == 1
     let newHyp = instantiate (Free . head $ successes) (Sc qx)
-    
-    addHyp deepestBoxNumber newHyp tab
+    updateAutData $ addModusPonensPair address1 address2
+    addHyp deepestBoxNumber newHyp tab >>= result
 
 -- | Performs raw modus ponens on hypotheses i and j
 -- hyp i : P \implies Q
 -- hyp j : P
 -- conclude : Q
 rawModusPonens :: (BoxNumber, Int) -> (BoxNumber, Int) -> Move
-rawModusPonens (boxNumber1, hypInd1) (boxNumber2, hypInd2) tab@(Tableau qZone rootBox) = do
+rawModusPonens address1@(boxNumber1, hypInd1) address2@(boxNumber2, hypInd2)
+        tab@(Tableau qZone rootBox) = do
     guard $ isPrefix boxNumber1 boxNumber2 || isPrefix boxNumber2 boxNumber1
+    autData <- getAutData
+    -- Only proceed if the pair hasn't been used before.
+    -- In order to override this one can remove the relevant entry from the AutData
+    case getHypID address1 autData of
+        Nothing -> return ()
+        Just id1 -> case getHypID address2 autData of
+            Nothing -> return ()
+            Just id2 -> guard $ not $ (id1, id2) `elem` getRawModusPonensPairs autData
     let deepestBoxNumber = if isPrefix boxNumber1 boxNumber2 then boxNumber2 else boxNumber1
     expr@(Implies p q) <- getHyp (boxNumber1, hypInd1) tab
     p' <- getHyp (boxNumber2, hypInd2) tab
     guard $ p' == p
-    addHyp deepestBoxNumber q tab
+    updateAutData $ addRawModusPonensPair address1 address2
+    addHyp deepestBoxNumber q tab >>= result
 
 
 -- | Performs backwards reasoning on hypothesis i and target j
@@ -171,21 +216,35 @@ backwardReasoningHyp (boxNumber1, hypInd) (boxNumber2, targInd) tab@(Tableau qZo
     expr@(Implies p q) <- getHyp (boxNumber1, hypInd) tab
     q' <- getPureTarg (boxNumber2, targInd) tab
     guard $ q == q'
-    updatePureTarg (boxNumber2, targInd) p tab
+    updatePureTarg (boxNumber2, targInd) p tab >>= result
 
 
 -- <<< OTHER >>>
+
+-- | Tracker for the nesting that occurs when we commit to a hypothesis.
+-- The way commitToHyp is written, the box always becomes nested at index 1
+trackCommitToHyp :: BoxNumber -> AutData -> AutData
+trackCommitToHyp boxNumber = applyTracker $ nestTracker boxNumber 1
 
 -- | Commits to the use of a particular hypothesis
 -- hyp i : P \implies Q
 -- add a new box with only target P and all hypotheses except i
 -- replace hyp i in this box with Q
 commitToHyp :: (BoxNumber, Int) -> Move
-commitToHyp (boxNumber, hypInd) tab@(Tableau qZone rootBox) = do
+commitToHyp address@(boxNumber, hypInd) tab@(Tableau qZone rootBox) = do
+    autData <- getAutData
+    -- Only proceed if the hypothesis itself hasn't been commited to before.
+    -- In order to override this one can remove the relevant entry from the AutData
+    case getHypID address autData of
+        Nothing -> return ()
+        Just id -> guard $ not $ id `elem` getCommittedToHyps autData
     Implies p q <- getHyp (boxNumber, hypInd) tab
     Box hyps targs <- getBox boxNumber rootBox
     let targsWithQ = Box [q] targs
-    removeAllTargs boxNumber tab >>= addPureTarg boxNumber p >>= addBoxTarg boxNumber targsWithQ
+    updateAutData $ trackCommitToHyp boxNumber
+    updateAutData $ addCommittedToHyp address
+    removeAllTargs boxNumber tab >>= addPureTarg boxNumber p >>=
+        addBoxTarg boxNumber targsWithQ >>= result
 
 
 -- <<< QUALITY OF LIFE MOVES >>>
@@ -217,24 +276,3 @@ getAllTargInds tab@(Tableau qZone rootBox) = let
                 Just newZipper -> getAllTargIndsFromZipper newZipper (boxNumber++[targInd])
                 Nothing -> []) [0..length targs-1]
     in getAllTargIndsFromZipper (rootBox, []) []
-
--- As horrific as this looks, I think laziness means it's not too bad actually
-tidyEverything :: Move
-tidyEverything tab = let
-    repeatOnce :: Move
-    repeatOnce tab' = let
-        allHypInds = getAllHypInds tab'
-        allTargInds = getAllTargInds tab'
-        universalTargPeels = mapMaybe (\i -> peelUniversalTarg i tab') allTargInds
-        existentialHypPeels = mapMaybe (\i -> peelExistentialHyp i tab') allHypInds
-        implPeels = mapMaybe (\i -> tidyImplInTarg i tab') allTargInds
-        andHypPeels = mapMaybe (\i -> tidyAndInHyp i tab') allHypInds
-        andTargPeels = mapMaybe (\i -> tidyAndInTarg i tab') allTargInds
-        concated = universalTargPeels ++ existentialHypPeels ++ implPeels ++
-            andHypPeels ++ andTargPeels
-        in case concated of
-            [] -> Nothing
-            (res:_) -> Just res
-    in case repeatOnce tab of
-        Just newTab -> tidyEverything newTab
-        Nothing -> Just tab

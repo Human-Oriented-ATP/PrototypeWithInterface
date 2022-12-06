@@ -1,3 +1,13 @@
+{-
+  A lot of the functions here have type (MonadPlus m) => ... -> m (Something)
+  Originally the types where just ... -> Maybe Something
+  The new types are more general, making the functions more versatile
+  If you want you can just think of m being Maybe when you read the code
+  (Maybe is an instance of the MonadPlus type class)
+  The reason for this change is so the functions can be used in the
+  Mathematician monad, which is also an instance of MonadPlus.
+-}
+
 module Robot.BasicMoveHelpers where
 
 import Robot.Lib
@@ -5,6 +15,7 @@ import Robot.Poset
 import Robot.TableauFoundation
 
 import Data.Maybe
+import Control.Monad
 
 -- | Gets an unused InternalName from a QZone
 getNewInternalName :: QZone -> InternalName
@@ -22,232 +33,248 @@ findFreshExNm usedNames = head $ filter (`notElem` usedNames) options
 -- | Gets an ExternalName for a variable being peeled. If the peeled variable
 -- already has a suggested ExternalName and it doesn't conflict with others
 -- then we use that. Otherwise, we find a fresh one
-getNewExternalNamePeel :: Maybe ExternalName -> QZone -> Maybe ExternalName
+getNewExternalNamePeel :: (MonadPlus m) => Maybe ExternalName -> QZone -> m ExternalName
 getNewExternalNamePeel exNm (Poset set rel) = case exNm of
     Just nm -> if nm `elem` (mapMaybe qVarGetExternalName set) then
-            Just $ findFreshExNm (mapMaybe qVarGetExternalName set)
-        else exNm
-    _ -> Just $ findFreshExNm (mapMaybe qVarGetExternalName set)
+            return $ findFreshExNm (mapMaybe qVarGetExternalName set)
+        else return nm
+    _ -> return $ findFreshExNm (mapMaybe qVarGetExternalName set)
 
 
 -- | Adds a hypothesis to a specified Box. Because this is just a helper
 -- function in writing moves, not a move itself, I don't use the "Move"
 -- type synonym here.
-addHyp :: BoxNumber -> Expr -> Tableau -> Maybe Tableau
+addHyp :: (MonadPlus m) => BoxNumber -> Expr -> Tableau -> m Tableau
 addHyp boxNumber hyp (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     let newZipper = addHypToZipper hyp boxZipper
-    Just $ Tableau qZone (unzipBox newZipper)
+    return $ Tableau qZone (unzipBox newZipper)
 
-addPureTarg :: BoxNumber -> Expr -> Tableau -> Maybe Tableau
+addPureTarg :: (MonadPlus m) => BoxNumber -> Expr -> Tableau -> m Tableau
 addPureTarg boxNumber targ (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     let newZipper = addPureTargToZipper targ boxZipper
-    Just $ Tableau qZone (unzipBox newZipper)
+    return $ Tableau qZone (unzipBox newZipper)
 
-addBoxTarg :: BoxNumber -> Box Expr -> Tableau -> Maybe Tableau
+addBoxTarg :: (MonadPlus m) => BoxNumber -> Box Expr -> Tableau -> m Tableau
 addBoxTarg boxNumber boxTarg (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     let newZipper = addBoxTargToZipper boxTarg boxZipper
-    Just $ Tableau qZone (unzipBox newZipper)
+    return $ Tableau qZone (unzipBox newZipper)
 
 -- | Repeats addHyp on many arguments in an efficient way
-addHyps :: [(BoxNumber, Expr)] -> Tableau -> Maybe Tableau
+addHyps :: (MonadPlus m) => [(BoxNumber, Expr)] -> Tableau -> m Tableau
 addHyps addSchedule (Tableau qZone rootBox) = do
     (boxRoute, _) <- boxNumbersToDirections addSchedule
     
     let zippedBox = (rootBox, [])
-        followAndAddHyps :: [(BoxNumber, Expr)] -> BoxZipper Expr -> Maybe (BoxZipper Expr)
-        followAndAddHyps [] currentZipper = Just currentZipper
+        followAndAddHyps :: (MonadPlus m) => [(BoxNumber, Expr)] -> BoxZipper Expr ->
+            m (BoxZipper Expr)
+        followAndAddHyps [] currentZipper = return currentZipper
         followAndAddHyps ((direction, hyp):rest) currentZipper = do
             newZipper <- toBoxNumberFromZipper direction currentZipper
-            Just $ addHypToZipper hyp newZipper
+            return $ addHypToZipper hyp newZipper
     
     addedHypsZipper <- followAndAddHyps boxRoute zippedBox
     let newRootBox = unzipBox addedHypsZipper
-    Just $ Tableau qZone newRootBox
+    return $ Tableau qZone newRootBox
 
 
-addPureTargs :: [(BoxNumber, Expr)] -> Tableau -> Maybe Tableau
+addPureTargs :: (MonadPlus m) => [(BoxNumber, Expr)] -> Tableau -> m Tableau
 addPureTargs addSchedule (Tableau qZone rootBox) = do
     (boxRoute, _) <- boxNumbersToDirections addSchedule
     
     let zippedBox = (rootBox, [])
-        followAndAddPureTargs :: [(BoxNumber, Expr)] -> BoxZipper Expr -> Maybe (BoxZipper Expr)
-        followAndAddPureTargs [] currentZipper = Just currentZipper
+        followAndAddPureTargs :: (MonadPlus m) => [(BoxNumber, Expr)] ->
+            BoxZipper Expr -> m (BoxZipper Expr)
+        followAndAddPureTargs [] currentZipper = return currentZipper
         followAndAddPureTargs ((direction, pureTarg):rest) currentZipper = do
             newZipper <- toBoxNumberFromZipper direction currentZipper
-            Just $ addPureTargToZipper pureTarg newZipper
+            return $ addPureTargToZipper pureTarg newZipper
     
     addTargsZipper <- followAndAddPureTargs boxRoute zippedBox
     let newRootBox = unzipBox addTargsZipper
-    Just $ Tableau qZone newRootBox
+    return $ Tableau qZone newRootBox
 
-addBoxTargs :: [(BoxNumber, Box Expr)] -> Tableau -> Maybe Tableau
+addBoxTargs :: (MonadPlus m) => [(BoxNumber, Box Expr)] -> Tableau -> m Tableau
 addBoxTargs addSchedule (Tableau qZone rootBox) = do
     (boxRoute, _) <- boxNumbersToDirections addSchedule
     
     let zippedBox = (rootBox, [])
-        followAndAddBoxTargs :: [(BoxNumber, Box Expr)] -> BoxZipper Expr -> Maybe (BoxZipper Expr)
-        followAndAddBoxTargs [] currentZipper = Just currentZipper
+        followAndAddBoxTargs :: (MonadPlus m) => [(BoxNumber, Box Expr)] ->
+            BoxZipper Expr -> m (BoxZipper Expr)
+        followAndAddBoxTargs [] currentZipper = return currentZipper
         followAndAddBoxTargs ((direction, boxTarg):rest) currentZipper = do
             newZipper <- toBoxNumberFromZipper direction currentZipper
-            Just $ addBoxTargToZipper boxTarg newZipper
+            return $ addBoxTargToZipper boxTarg newZipper
     
     addTargsZipper <- followAndAddBoxTargs boxRoute zippedBox
     let newRootBox = unzipBox addTargsZipper
-    Just $ Tableau qZone newRootBox
+    return $ Tableau qZone newRootBox
 
 
 
 -- | Remove a hypothesis, specified by a BoxNumber and the hyp's index within that box
 -- Maybe because the specified hyp may not exist.
-removeHyp :: (BoxNumber, Int) -> Tableau -> Maybe Tableau
+removeHyp :: (MonadPlus m) => (BoxNumber, Int) -> Tableau -> m Tableau
 removeHyp (boxNumber, hypInd) (Tableau qZone boxes) = do
     boxZipper <- toBoxNumberFromRoot boxNumber boxes
     newBoxZipper <- removeHypFromZipper hypInd boxZipper
-    Just (Tableau qZone (unzipBox newBoxZipper))
+    return (Tableau qZone (unzipBox newBoxZipper))
 
-removeTarg :: (BoxNumber, Int) -> Tableau -> Maybe Tableau
+removeTarg :: (MonadPlus m) => (BoxNumber, Int) -> Tableau -> m Tableau
 removeTarg (boxNumber, targInd) (Tableau qZone boxes) = do
     boxZipper <- toBoxNumberFromRoot boxNumber boxes
     newBoxZipper <- removeTargFromZipper targInd boxZipper
-    Just (Tableau qZone (unzipBox newBoxZipper))
+    return (Tableau qZone (unzipBox newBoxZipper))
 
-removeAllTargs :: BoxNumber -> Tableau -> Maybe Tableau
+removeAllTargs :: (MonadPlus m) => BoxNumber -> Tableau -> m Tableau
 removeAllTargs boxNumber (Tableau qZone boxes) = do
     (Box hyps targs, crumbs) <- toBoxNumberFromRoot boxNumber boxes
-    Just (Tableau qZone (unzipBox (Box hyps [], crumbs)))
+    return (Tableau qZone (unzipBox (Box hyps [], crumbs)))
 
 -- | Helper function to remove the i-th element from a list if it exists
 -- and otherwise return Nothing
-removeFromListMaybe :: [a] -> Int -> Maybe [a]
+removeFromListMaybe :: (MonadPlus m) => [a] -> Int -> m [a]
 removeFromListMaybe l i
-    | i < 0 || i >= length l = Nothing
+    | i < 0 || i >= length l = mzero
     | otherwise = let
         (as, _:bs) = splitAt i l
-        in Just $ as++bs
+        in return $ as++bs
 
 -- | Repeats removeHyp on many arguments in an efficient way
-removeHyps :: [(BoxNumber, Int)] -> Tableau -> Maybe Tableau
+removeHyps :: (MonadPlus m) => [(BoxNumber, Int)] -> Tableau -> m Tableau
 removeHyps removeSchedule tab@(Tableau qZone rootBox) = do
     (orderedRemoveSchedule, _) <- boxNumbersToDirectionsWithInt removeSchedule
     let
-        followAndRemoveHyps :: [(BoxNumber, Int)] -> BoxZipper Expr -> Maybe (BoxZipper Expr)
-        followAndRemoveHyps [] boxZipper = Just boxZipper
+        followAndRemoveHyps :: (MonadPlus m) => [(BoxNumber, Int)] ->
+            BoxZipper Expr -> m (BoxZipper Expr)
+        followAndRemoveHyps [] boxZipper = return boxZipper
         followAndRemoveHyps ((boxNumber, hypInd):rest) boxZipper = do
             (Box hyps targs, crumbs) <- toBoxNumberFromZipper boxNumber boxZipper
             newHyps <- removeFromListMaybe hyps hypInd
             followAndRemoveHyps rest (Box newHyps targs, crumbs)
     finalZipper <- followAndRemoveHyps orderedRemoveSchedule (rootBox, [])
-    Just $ (Tableau qZone (unzipBox finalZipper))
+    return $ (Tableau qZone (unzipBox finalZipper))
 
-removePureTargs :: [(BoxNumber, Int)] -> Tableau -> Maybe Tableau
+removePureTargs :: (MonadPlus m) => [(BoxNumber, Int)] -> Tableau -> m Tableau
 removePureTargs removeSchedule tab@(Tableau qZone rootBox) = do
     (orderedRemoveSchedule, _) <- boxNumbersToDirectionsWithInt removeSchedule
     let
-        followAndRemoveTargs :: [(BoxNumber, Int)] -> BoxZipper Expr -> Maybe (BoxZipper Expr)
-        followAndRemoveTargs [] boxZipper = Just boxZipper
+        followAndRemoveTargs :: (MonadPlus m) => [(BoxNumber, Int)] ->
+            BoxZipper Expr -> m (BoxZipper Expr)
+        followAndRemoveTargs [] boxZipper = return boxZipper
         followAndRemoveTargs ((boxNumber, targInd):rest) boxZipper = do
             (Box hyps targs, crumbs) <- toBoxNumberFromZipper boxNumber boxZipper
-            PureTarg targ <- getFromListMaybe targs targInd
+            targ <- getFromListMaybe targs targInd
+            case targ of
+                PureTarg _ -> return ()
+                _ -> mzero -- Fail if one of the targets is not a Pure target
             newTargs <- removeFromListMaybe targs targInd
             followAndRemoveTargs rest (Box hyps newTargs, crumbs)
     finalZipper <- followAndRemoveTargs orderedRemoveSchedule (rootBox, [])
-    Just $ (Tableau qZone (unzipBox finalZipper))
+    return $ (Tableau qZone (unzipBox finalZipper))
 
-removeBoxTargs :: [(BoxNumber, Int)] -> Tableau -> Maybe Tableau
+removeBoxTargs :: (MonadPlus m) => [(BoxNumber, Int)] -> Tableau -> m Tableau
 removeBoxTargs removeSchedule tab@(Tableau qZone rootBox) = do
     (orderedRemoveSchedule, _) <- boxNumbersToDirectionsWithInt removeSchedule
     let
-        followAndRemoveTargs :: [(BoxNumber, Int)] -> BoxZipper Expr -> Maybe (BoxZipper Expr)
-        followAndRemoveTargs [] boxZipper = Just boxZipper
+        followAndRemoveTargs :: (MonadPlus m) => [(BoxNumber, Int)] ->
+            BoxZipper Expr -> m (BoxZipper Expr)
+        followAndRemoveTargs [] boxZipper = return boxZipper
         followAndRemoveTargs ((boxNumber, targInd):rest) boxZipper = do
             (Box hyps targs, crumbs) <- toBoxNumberFromZipper boxNumber boxZipper
-            BoxTarg targ <- getFromListMaybe targs targInd
+            targ <- getFromListMaybe targs targInd
+            case targ of
+                BoxTarg _ -> return ()
+                _ -> mzero  -- Fail if one of the targets is not a Box target
             newTargs <- removeFromListMaybe targs targInd
             followAndRemoveTargs rest (Box hyps newTargs, crumbs)
     finalZipper <- followAndRemoveTargs orderedRemoveSchedule (rootBox, [])
-    Just $ (Tableau qZone (unzipBox finalZipper))
+    return $ (Tableau qZone (unzipBox finalZipper))
 
 
 -- | Updates the specified hypothesis.
-updateHyp :: (BoxNumber, Int) -> Expr -> Tableau -> Maybe Tableau
+updateHyp :: (MonadPlus m) => (BoxNumber, Int) -> Expr -> Tableau -> m Tableau
 updateHyp (boxNumber, hypInd) newHyp (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     newBoxZipper <- updateHypInZipper hypInd newHyp boxZipper
     let newBox = unzipBox newBoxZipper
-    Just (Tableau qZone newBox)
+    return (Tableau qZone newBox)
 
-updatePureTarg :: (BoxNumber, Int) -> Expr -> Tableau -> Maybe Tableau
+updatePureTarg :: (MonadPlus m) => (BoxNumber, Int) -> Expr -> Tableau -> m Tableau
 updatePureTarg (boxNumber, targInd) newTarg (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     newBoxZipper <- updatePureTargInZipper targInd newTarg boxZipper
     let newBox = unzipBox newBoxZipper
-    Just (Tableau qZone newBox)
+    return (Tableau qZone newBox)
 
-updateBoxTarg :: (BoxNumber, Int) -> Box Expr -> Tableau -> Maybe Tableau
+updateBoxTarg :: (MonadPlus m) => (BoxNumber, Int) -> Box Expr -> Tableau -> m Tableau
 updateBoxTarg (boxNumber, targInd) newTarg (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     newBoxZipper <- updateBoxTargInZipper targInd newTarg boxZipper
     let newBox = unzipBox newBoxZipper
-    Just (Tableau qZone newBox)
+    return (Tableau qZone newBox)
 
 -- | Helper function to get the i-th element from a list if it exists
 -- and return Nothing if not.
-getFromListMaybe :: [a] -> Int -> Maybe a
+getFromListMaybe :: (MonadPlus m) => [a] -> Int -> m a
 getFromListMaybe l i
-    | i < 0 || i >= length l = Nothing
-    | otherwise = Just $ l!!i
+    | i < 0 || i >= length l = mzero
+    | otherwise = return $ l!!i
 
 -- | Gets the specified Hyp
-getHyp :: (BoxNumber, Int) -> Tableau -> Maybe Expr
+getHyp :: (MonadPlus m) => (BoxNumber, Int) -> Tableau -> m Expr
 getHyp (boxNumber, hypInd) (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     getHypInZipper hypInd boxZipper
 
-getPureTarg :: (BoxNumber, Int) -> Tableau -> Maybe Expr
+getPureTarg :: (MonadPlus m) => (BoxNumber, Int) -> Tableau -> m Expr
 getPureTarg (boxNumber, targInd) (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     getPureTargInZipper targInd boxZipper
 
-getBoxTarg :: (BoxNumber, Int) -> Tableau -> Maybe (Box Expr)
+getBoxTarg :: (MonadPlus m) => (BoxNumber, Int) -> Tableau -> m (Box Expr)
 getBoxTarg (boxNumber, targInd) (Tableau qZone rootBox) = do
     boxZipper <- toBoxNumberFromRoot boxNumber rootBox
     getBoxTargInZipper targInd boxZipper
 
 -- | Efficiently gets the specified list of hyps. Data is stored with each hyp,
 -- and this is preserved. Also returns the deepest BoxNumber from the boxes
-getHypsWithData :: [((BoxNumber, Int), a)] -> Tableau -> Maybe ([(Expr, a)], BoxNumber)
+getHypsWithData :: (MonadPlus m) => [((BoxNumber, Int), a)] -> Tableau ->
+    m ([(Expr, a)], BoxNumber)
 getHypsWithData getSchedule tab@(Tableau qZone rootBox) = do
     let boxNumbersWithData = map (\((boxNumber, hypInd), dat) -> (boxNumber, (hypInd, dat))) getSchedule
     (directions, deepestBox) <- boxNumbersToDirections boxNumbersWithData
     let
-        followAndGetHyps :: [(BoxNumber, (Int, a))] -> BoxZipper Expr -> Maybe [(Expr, a)]
-        followAndGetHyps [] _ = Just []
+        followAndGetHyps :: (MonadPlus m) => [(BoxNumber, (Int, a))] ->
+            BoxZipper Expr -> m [(Expr, a)]
+        followAndGetHyps [] _ = return []
         followAndGetHyps ((boxNumber, (hypInd, dat)):rest) boxZipper = do
             newBoxZipper <- toBoxNumberFromZipper boxNumber boxZipper
             hyp <- getHypInZipper hypInd newBoxZipper
             otherHyps <- followAndGetHyps rest newBoxZipper
-            Just ((hyp, dat):otherHyps)
+            return ((hyp, dat):otherHyps)
     extractedHyps <- followAndGetHyps boxNumbersWithData (rootBox, [])
-    Just (extractedHyps, deepestBox)
+    return (extractedHyps, deepestBox)
 
 -- | As above, but for targs and returns the shallowest (not deepest) BoxNumber.
-getTargsWithData :: [((BoxNumber, Int), a)] -> Tableau -> Maybe ([(Expr, a)], BoxNumber)
+getTargsWithData :: (MonadPlus m) => [((BoxNumber, Int), a)] -> Tableau ->
+    m ([(Expr, a)], BoxNumber)
 getTargsWithData getSchedule tab@(Tableau qZone rootBox) = do
     let boxNumbersWithData = map (\((boxNumber, targInd), dat) -> (boxNumber, (targInd, dat))) getSchedule
     (directions, shallowestBox) <- boxNumbersToDirectionsFlipped boxNumbersWithData
     let
-        followAndGetTargs :: [(BoxNumber, (Int, a))] -> BoxZipper Expr -> Maybe [(Expr, a)]
-        followAndGetTargs [] _ = Just []
+        followAndGetTargs :: (MonadPlus m) => [(BoxNumber, (Int, a))] ->
+            BoxZipper Expr -> m [(Expr, a)]
+        followAndGetTargs [] _ = return []
         followAndGetTargs ((boxNumber, (targInd, dat)):rest) boxZipper = do
             newBoxZipper <- toBoxNumberFromZipper boxNumber boxZipper
             targ <- getPureTargInZipper targInd newBoxZipper
             otherTargs <- followAndGetTargs rest newBoxZipper
-            Just ((targ, dat):otherTargs)
+            return ((targ, dat):otherTargs)
     extractedTargs <- followAndGetTargs boxNumbersWithData (rootBox, [])
-    Just (extractedTargs, shallowestBox)
+    return (extractedTargs, shallowestBox)
 
 -- | Checks if the list of expressions provided exist as hypothess in the tableau
 -- in such a way that they can be used together. If not, returns Nothing.

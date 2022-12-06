@@ -13,6 +13,8 @@ import Robot.BasicMoves
 import Robot.PPrinting
 import Robot.HoleExpr
 import Robot.Parser
+import Robot.Automation
+import Robot.MathematicianMonad
 
 import Data.Maybe
 import Data.List
@@ -21,14 +23,10 @@ import Debug.Trace
 
 -- <<< HELPER FUNCTIONS >>>
 
--- Create a tableau with just one given target
-exprToTab :: Expr -> Tableau
-exprToTab e = Tableau (Poset [] []) (Box [] [PureTarg e])
-
 -- | Parse a string for a single target as an expression then turn it into a Tableau as above
-stringToTab :: String -> Maybe Tableau
+stringToTab :: (MonadPlus m) => String -> m Tableau
 stringToTab s = do
-    e <- parseSimple parseExpr s
+    e <- liftMaybe $ parseSimple parseExpr s
     return $ exprToTab e
 
 -- <<< MOVE TESTING >>>
@@ -269,7 +267,7 @@ g1 = forall (Just $ ExternalName "X") (0) $
 
 gTab = exprToTab g1
 
-Just gResult = peelUniversalTarg ([], 0) gTab >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0)
+Just gResult = runMathematician (result gTab >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= peelUniversalTarg ([], 0)
     >>= tidyImplInTarg ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0) >>= tidyAndInHyp ([], 0)
     >>= libEquivTarg continuousDef (0, 1) ([], 0) >>= peelUniversalTarg ([], 0)
     >>= tidyImplInTarg ([], 0) >>= peelUniversalTarg ([], 0) >>= tidyImplInTarg ([], 0)
@@ -290,6 +288,7 @@ Just gResult = peelUniversalTarg ([], 0) gTab >>= peelUniversalTarg ([], 0) >>= 
     >>= rawModusPonens ([1,1,1,1,1,1], 3) ([1,1,1,1,1,1], 1)
     >>= instantiateExistential "a" "n" >>= libForwardReasoning triIneq
     >>= instantiateExistential "b" "theta"
+    ) baseMathematicianState
 
 at1 = exists (Just $ ExternalName "x") 0 (forall (Just $ ExternalName "y") 0 (exists (Just $ ExternalName "z") 1 (Eq (Free 0) (Free 1))))
 aBox = Box [] [PureTarg at1]
@@ -372,4 +371,6 @@ s1 = "forall A, forall B, forall C, forall D, " ++
                 "and(forall x, implies(element_of(x, A), element_of(x, B)), " ++
                     "forall x, implies(element_of(x, intersection(A, B)), element_of(x, C)))), " ++
     "exists x, element_of(x, union(C, D)))"
-Just s1Tab = stringToTab s1 >>= tidyEverything >>= peelExistentialTarg ([], 0)
+Just s1Result = runMathematician (
+    stringToTab s1 >>= result >>= tidyEverything >>= peelExistentialTarg ([], 0)
+    ) baseMathematicianState

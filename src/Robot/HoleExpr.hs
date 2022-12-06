@@ -8,7 +8,7 @@ import Robot.TableauFoundation
 import Robot.PPrinting
 
 import Data.List ( nub )
-
+import Control.Monad
 
 -- | The type of expressions with the addition of variables in the sense of unification.
 data HoleExpr
@@ -45,8 +45,8 @@ holeFreeVars (Free n) = Hole n
 holeFreeVars (Con con) = HoleCon con
 holeFreeVars (B i) = HoleB i
 
--- | Takes a holed expression without holes and returns an expression (Maybe because there might be holes)
-holeExprToExpr :: HoleExpr -> Maybe Expr
+-- | Takes a holed expression without holes and returns an expression (MonadPlus because there might be holes)
+holeExprToExpr :: (MonadPlus m) => HoleExpr -> m Expr
 holeExprToExpr (HoleApp e e') = do
     a <- holeExprToExpr e
     b <- holeExprToExpr e'
@@ -54,10 +54,10 @@ holeExprToExpr (HoleApp e e') = do
 holeExprToExpr (HoleAbs exNm (HoleSc sc)) = do
     a <- holeExprToExpr sc
     return $ Abs exNm (Sc a)
-holeExprToExpr (HoleFree n) = Just $ Free n
-holeExprToExpr (HoleCon con) = Just $ Con con
-holeExprToExpr (HoleB i) = Just $ B i
-holeExprToExpr (Hole _) = Nothing
+holeExprToExpr (HoleFree n) = return $ Free n
+holeExprToExpr (HoleCon con) = return $ Con con
+holeExprToExpr (HoleB i) = return $ B i
+holeExprToExpr (Hole _) = mzero
 
 
 -- IMPROVEMENT - probably change to HashMap later, but will keep as list for now
@@ -65,31 +65,31 @@ type Substitution = [(InternalName, Expr)]
 
 -- Add a single assignment to a substitution. Maybe because consistency
 -- could fail
-addAssignment :: Substitution -> (InternalName, Expr) -> Maybe Substitution
+addAssignment :: (MonadPlus m) => Substitution -> (InternalName, Expr) -> m Substitution
 addAssignment sub (i, expr) = case lookup i sub of
-    Nothing -> Just ((i, expr):sub)
-    Just expr' -> if expr == expr' then Just sub else Nothing
+    Nothing -> return ((i, expr):sub)
+    Just expr' -> if expr == expr' then return sub else mzero
 
 -- | Check that all InternalNames map to things which agree, then union
 -- (there are more efficient ways to do this, of course)
-mergeSubstitutions :: Substitution -> Substitution -> Maybe Substitution
+mergeSubstitutions :: (MonadPlus m) => Substitution -> Substitution -> m Substitution
 mergeSubstitutions s1 s2 = 
     let attempt = nub (s1 ++ s2)
         agree = map fst attempt == nub (map fst attempt)
-    in if agree then Just attempt else Nothing
+    in if agree then return attempt else mzero
 
 -- | Asks if we can get the second expression from the first by substituting terms for holes correctly.
-matchExpressions :: HoleExpr -> Expr -> Maybe Substitution
+matchExpressions :: (MonadPlus m) => HoleExpr -> Expr -> m Substitution
 matchExpressions (HoleApp e1 e2) (App e1' e2') = do
     sub1 <- matchExpressions e1 e1'
     sub2 <- matchExpressions e2 e2'
     mergeSubstitutions sub1 sub2
 matchExpressions (HoleAbs _ (HoleSc sc1)) (Abs _ (Sc sc2)) = matchExpressions sc1 sc2
-matchExpressions (HoleCon s) (Con s') = if s == s' then Just [] else Nothing
-matchExpressions (HoleB i) (B i') = if i == i' then Just [] else Nothing
-matchExpressions (HoleFree n) (Free n') = if n == n' then Just [] else Nothing
-matchExpressions (Hole i) expr = Just [(i, expr)]-- IMPROVEMENT - currently doesn't check that expr is a term (as now have removed constant types)
-matchExpressions _ _ = Nothing
+matchExpressions (HoleCon s) (Con s') = if s == s' then return [] else mzero
+matchExpressions (HoleB i) (B i') = if i == i' then return [] else mzero
+matchExpressions (HoleFree n) (Free n') = if n == n' then return [] else mzero
+matchExpressions (Hole i) expr = return [(i, expr)]-- IMPROVEMENT - currently doesn't check that expr is a term (as now have removed constant types)
+matchExpressions _ _ = mzero
 
 -- Check whether the non-hole parts of the expressions match
 basicMatchCheck :: HoleExpr -> Expr -> Bool
@@ -127,15 +127,15 @@ getHoleDirections _ = []
 
 -- Takes a HoleExpr and directions to a hole and instantiates the
 -- hole with a given expr
-instantiateOneHole :: HoleExpr -> ExprDirections -> Expr -> Maybe HoleExpr
-instantiateOneHole (Hole _) [] e = Just $ exprToHoleExpr e
+instantiateOneHole :: (MonadPlus m) => HoleExpr -> ExprDirections -> Expr -> m HoleExpr
+instantiateOneHole (Hole _) [] e = return $ exprToHoleExpr e
 instantiateOneHole (HoleApp x y) (GoLeft:rest) e = do
                                 newx <- instantiateOneHole x rest e
-                                Just $ HoleApp newx y
+                                return $ HoleApp newx y
 instantiateOneHole (HoleApp x y) (GoRight:rest) e = do
                                 newy <- instantiateOneHole y rest e
-                                Just $ HoleApp x newy
+                                return $ HoleApp x newy
 instantiateOneHole (HoleAbs nm (HoleSc x)) (Enter:rest) e = do
                                 newx <- instantiateOneHole x rest e
-                                Just $ HoleAbs nm (HoleSc newx)
-instantiateOneHole _ _ _ = Nothing
+                                return $ HoleAbs nm (HoleSc newx)
+instantiateOneHole _ _ _ = mzero

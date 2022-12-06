@@ -7,10 +7,12 @@ import Robot.Subtasks
 import Robot.TableauFoundation
 import Robot.BasicMoves
 import Robot.AutomationData
+import Robot.MathematicianMonad
 
 import Data.Function
 import Data.Maybe
 import Control.Monad
+import Control.Applicative
 
 import qualified Data.HashMap.Lazy as M
 import Data.Hashable
@@ -47,11 +49,12 @@ subtaskSearch index subtask@(Subtask subtaskType exprID pattern) =
 
 -- Given a destroy task which specifies an expression,
 -- Attempt to achieve the subtask using results from the index
-attemptDestroySubtask :: Index -> Subtask -> AutData -> Move
-attemptDestroySubtask index task@(Subtask subtaskType exprID pattern) autData tab = do
+attemptDestroySubtask :: Index -> Subtask -> Move
+attemptDestroySubtask index task@(Subtask subtaskType exprID pattern) tab = do
+    autData <- getAutData
     guard $ subtaskTypeToSubtaskClass subtaskType == Destroy
     let exprType = subtaskTypeToExprType subtaskType
-    eid <- exprID
+    eid <- liftMaybe exprID
     address <- case exprType of
         H -> getHypFromID eid autData
         T -> getTargFromID eid autData
@@ -59,8 +62,9 @@ attemptDestroySubtask index task@(Subtask subtaskType exprID pattern) autData ta
     let invoker = case exprType of
             H -> libEquivHyp
             T -> libEquivTarg
-    listToMaybe $ mapMaybe (\(EquivalenceValue result pair) ->
-        invoker result pair address tab) equivalences
+    guard $ not $ null equivalences
+    foldl1 (<|>) $ map (\(EquivalenceValue res pair) ->
+        invoker res pair address tab) equivalences
 
 -- Intersection and union properties
 

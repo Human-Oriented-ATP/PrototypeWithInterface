@@ -7,6 +7,7 @@ import Robot.TableauFoundation
 import Robot.BasicMoveHelpers
 import Robot.HoleExpr
 import Robot.NewBinderIdentifiers
+import Robot.MathematicianMonad
 
 import Data.Maybe
 import Data.List ( foldl', sortBy, nub )
@@ -41,12 +42,12 @@ data LibraryImplication = LibraryImplication QZone [HoleExpr] [HoleExpr]
 
 -- | Here we have to specify all information. The function verifies are suggestions
 -- are in fact legitimate, otherwise returns Nothing.
-libEquivTargFull :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> Substitution -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivTargFull :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> Substitution -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivTargFull (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd) condMap substitution
     (targBoxNumber, targInd) tab@(Tableau qZone rootBox)
     | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents
-        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = Nothing
+        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = mzero
     | otherwise = do
         targExpr <- getPureTarg (targBoxNumber, targInd) tab
         subedTarg <- holeExprToExpr $ applySubstitution substitution (equivalents !! originalEquivalentInd)
@@ -56,14 +57,14 @@ libEquivTargFull (LibraryEquivalence libQZone conditions equivalents)
         guard $ all (\(hyp, cond) -> Just hyp == holeExprToExpr (applySubstitution substitution cond)) hypsWithConds
         
         newTarg <- holeExprToExpr $ applySubstitution substitution (equivalents !! newEquivalentInd)
-        updatePureTarg (targBoxNumber, targInd) newTarg tab
+        updatePureTarg (targBoxNumber, targInd) newTarg tab >>= result
 
-libEquivHypFull :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> Substitution -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivHypFull :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> Substitution -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivHypFull (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd) condMap substitution
     (hypBoxNumber, hypInd) tab@(Tableau qZone rootBox)
     | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents
-        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = Nothing
+        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = mzero
     | otherwise = do
         hypExpr <- getHyp (hypBoxNumber, hypInd) tab
         subedHyp <- holeExprToExpr $ applySubstitution substitution (equivalents !! originalEquivalentInd)
@@ -73,15 +74,15 @@ libEquivHypFull (LibraryEquivalence libQZone conditions equivalents)
         guard $ all (\(hyp, cond) -> Just hyp == holeExprToExpr (applySubstitution substitution cond)) hypsWithConds
         
         newHyp <- holeExprToExpr $ applySubstitution substitution (equivalents !! newEquivalentInd)
-        updateHyp (hypBoxNumber, hypInd) newHyp tab
+        updateHyp (hypBoxNumber, hypInd) newHyp tab >>= result
 
 
 -- | Here we don't need to specify the substitution
-libEquivTargCondMap :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivTargCondMap :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivTargCondMap (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd) condMap (targBoxNumber, targInd) tab@(Tableau qZone rootBox)
     | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents
-        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = Nothing
+        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = mzero
     | otherwise = do
         targExpr <- getPureTarg (targBoxNumber, targInd) tab
         let e = equivalents !! originalEquivalentInd
@@ -100,15 +101,15 @@ libEquivTargCondMap (LibraryEquivalence libQZone conditions equivalents)
                 b <- subB
                 mergeSubstitutions a b
             finalSubMaybe = foldl' foldFunction (Just initialSub) subs
-        finalSub <- finalSubMaybe
+        finalSub <- liftMaybe $ finalSubMaybe
         newTarg <- holeExprToExpr $ applySubstitution finalSub e'
-        updatePureTarg (targBoxNumber, targInd) newTarg tab
+        updatePureTarg (targBoxNumber, targInd) newTarg tab >>= result
 
-libEquivHypCondMap :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivHypCondMap :: LibraryEquivalence -> (Int, Int) -> [(Int, (BoxNumber, Int))] -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivHypCondMap (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd) condMap (hypBoxNumber, hypInd) tab@(Tableau qZone rootBox)
     | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents
-        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = Nothing
+        || any ((\i -> i < 0 || i >= length conditions) . fst) condMap = mzero
     | otherwise = do
         hypExpr <- getHyp (hypBoxNumber, hypInd) tab
         let e = equivalents !! originalEquivalentInd
@@ -127,17 +128,17 @@ libEquivHypCondMap (LibraryEquivalence libQZone conditions equivalents)
                 b <- subB
                 mergeSubstitutions a b
             finalSubMaybe = foldl' foldFunction (Just initialSub) subs
-        finalSub <- finalSubMaybe
+        finalSub <- liftMaybe $ finalSubMaybe
         newHyp <- holeExprToExpr $ applySubstitution finalSub e'
-        updateHyp (hypBoxNumber, hypInd) newHyp tab
+        updateHyp (hypBoxNumber, hypInd) newHyp tab >>= result
 
 
 -- | Here we don't have to specify the mapping from conditions to hypotheses
-libEquivTargSub :: LibraryEquivalence -> (Int, Int) -> Substitution -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivTargSub :: LibraryEquivalence -> (Int, Int) -> Substitution -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivTargSub (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd) substitution
     (targBoxNumber, targInd) tab@(Tableau qZone rootBox)
-    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = Nothing
+    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = mzero
     | otherwise = do
         targExpr <- getPureTarg (targBoxNumber, targInd) tab
         subedTarg <- holeExprToExpr $ applySubstitution substitution (equivalents !! originalEquivalentInd)
@@ -151,14 +152,14 @@ libEquivTargSub (LibraryEquivalence libQZone conditions equivalents)
         guard $ any (isPrefix targBoxNumber) deepestBoxes
 
         newTarg <- holeExprToExpr $ applySubstitution substitution (equivalents !! newEquivalentInd)
-        updatePureTarg (targBoxNumber, targInd) newTarg tab
+        updatePureTarg (targBoxNumber, targInd) newTarg tab >>= result
 
 
-libEquivHypSub :: LibraryEquivalence -> (Int, Int) -> Substitution -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivHypSub :: LibraryEquivalence -> (Int, Int) -> Substitution -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivHypSub (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd) substitution
     (hypBoxNumber, hypInd) tab@(Tableau qZone rootBox)
-    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = Nothing
+    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = mzero
     | otherwise = do
         hypExpr <- getHyp (hypBoxNumber, hypInd) tab
         subedHyp <- holeExprToExpr $ applySubstitution substitution (equivalents !! originalEquivalentInd)
@@ -172,14 +173,14 @@ libEquivHypSub (LibraryEquivalence libQZone conditions equivalents)
         guard $ any (isPrefix hypBoxNumber) deepestBoxes
 
         newHyp <- holeExprToExpr $ applySubstitution substitution (equivalents !! newEquivalentInd)
-        updateHyp (hypBoxNumber, hypInd) newHyp tab
+        updateHyp (hypBoxNumber, hypInd) newHyp tab >>= result
 
 -- | Here we don't have to specify a mapping OR a substitution
-libEquivTarg :: LibraryEquivalence -> (Int, Int) -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivTarg :: LibraryEquivalence -> (Int, Int) -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivTarg (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd)
     (targBoxNumber, targInd) tab@(Tableau qZone rootBox)
-    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = Nothing
+    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = mzero
     | otherwise = do
         let e = equivalents !! originalEquivalentInd
         let e' = equivalents !! newEquivalentInd
@@ -195,16 +196,16 @@ libEquivTarg (LibraryEquivalence libQZone conditions equivalents)
 
         let (sub:_) = possibleSubs
         newTarg <- holeExprToExpr $ applySubstitution sub e'
-        updatePureTarg (targBoxNumber, targInd) newTarg tab
+        updatePureTarg (targBoxNumber, targInd) newTarg tab >>= result
 
 -- | Similarly here. It's worth noting that conditions may appear below the hyp
 -- we're trying to apply an equivalence to, in which case we'll simply add the
 -- equivalent hypothesis to the deepest box required.
-libEquivHyp :: LibraryEquivalence -> (Int, Int) -> (BoxNumber, Int) -> Tableau -> Maybe Tableau
+libEquivHyp :: LibraryEquivalence -> (Int, Int) -> (BoxNumber, Int) -> Tableau -> Mathematician Tableau
 libEquivHyp (LibraryEquivalence libQZone conditions equivalents)
     (originalEquivalentInd, newEquivalentInd)
     (hypBoxNumber, hypInd) tab@(Tableau qZone rootBox)
-    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = Nothing
+    | originalEquivalentInd < 0 || originalEquivalentInd >= length equivalents || newEquivalentInd < 0 || newEquivalentInd >= length equivalents = mzero
     | otherwise = do
         let e = equivalents !! originalEquivalentInd
             e' = equivalents !! newEquivalentInd
@@ -219,9 +220,9 @@ libEquivHyp (LibraryEquivalence libQZone conditions equivalents)
         newHyp <- holeExprToExpr $ applySubstitution finalSub e'
         
         if isPrefix deepestBox hypBoxNumber then
-            updateHyp (hypBoxNumber, hypInd) newHyp tab
+            updateHyp (hypBoxNumber, hypInd) newHyp tab >>= result
         else
-            addHyp deepestBox newHyp tab
+            addHyp deepestBox newHyp tab >>= result
 
 -- Helper function in the minimal-info version of equivalence moves. This seeks
 -- a list of substitutions and mappings that would equate the list of conditions
@@ -275,23 +276,23 @@ findConsistentSubs conds@((condIndex, h1):remainingConds) labelledHypExprs
 -- the same portfolio of functions allowing us to specify less.
 
 -- | All information required.
-libForwardReasoningFull:: LibraryImplication -> [(Int, (BoxNumber, Int))] -> Substitution -> Tableau -> Maybe Tableau
+libForwardReasoningFull:: LibraryImplication -> [(Int, (BoxNumber, Int))] -> Substitution -> Tableau -> Mathematician Tableau
 libForwardReasoningFull (LibraryImplication libQZone conditions consequents)
     condMap substitution tab@(Tableau qZone rootBox)
-    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap = Nothing
+    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap = mzero
     | otherwise = do
         let hypIndsWithConds = map (\(condInd, (hypBoxNumber, hypInd)) -> ((hypBoxNumber, hypInd), conditions!!condInd)) condMap
         (hypsWithConds, deepestBoxNumber) <- getHypsWithData hypIndsWithConds tab
         guard $ all (\(hyp, cond) -> holeExprToExpr (applySubstitution substitution cond) == Just hyp) hypsWithConds
 
         let subedConsequents = mapMaybe (holeExprToExpr . applySubstitution substitution) consequents
-        addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab
+        addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab >>= result
 
 -- | Only condition map required.
-libForwardReasoningCondMap :: LibraryImplication -> [(Int, (BoxNumber, Int))] -> Tableau -> Maybe Tableau
+libForwardReasoningCondMap :: LibraryImplication -> [(Int, (BoxNumber, Int))] -> Tableau -> Mathematician Tableau
 libForwardReasoningCondMap (LibraryImplication libQZone conditions consequents)
     condMap tab@(Tableau qZone rootBox)
-    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap = Nothing
+    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap = mzero
     | otherwise = do
         let hypIndsWithConds = map (\(condInd, (hypBoxNumber, hypInd)) -> ((hypBoxNumber, hypInd), conditions!!condInd)) condMap
         (hypsWithConds, deepestBoxNumber) <- getHypsWithData hypIndsWithConds tab
@@ -304,13 +305,13 @@ libForwardReasoningCondMap (LibraryImplication libQZone conditions consequents)
                 b <- subB
                 mergeSubstitutions a b
             finalSubMaybe = foldl' foldFunction (Just []) subs
-        finalSub <- finalSubMaybe
+        finalSub <- liftMaybe finalSubMaybe
 
         let subedConsequents = mapMaybe (holeExprToExpr . applySubstitution finalSub) consequents
-        addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab
+        addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab >>= result
 
 -- | Only substitution required.
-libForwardReasoningSub :: LibraryImplication -> Substitution -> Tableau -> Maybe Tableau
+libForwardReasoningSub :: LibraryImplication -> Substitution -> Tableau -> Mathematician Tableau
 libForwardReasoningSub (LibraryImplication libQZone conditions consequents)
     substitution tab@(Tableau qZone rootBox) = do
         let subedMaybeConditions = map (holeExprToExpr . applySubstitution substitution) conditions
@@ -322,16 +323,16 @@ libForwardReasoningSub (LibraryImplication libQZone conditions consequents)
         let (deepestBoxNumber:_) = sortBy (\a b -> length a `compare` length b) deepestBoxNumbers
 
         let subedConsequents = mapMaybe (holeExprToExpr . applySubstitution substitution) consequents
-        addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab
+        addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab >>= result
 
 -- | Neither substitution or condition map required.
-libForwardReasoning :: LibraryImplication -> Tableau -> Maybe Tableau
+libForwardReasoning :: LibraryImplication -> Tableau -> Mathematician Tableau
 libForwardReasoning (LibraryImplication libQZone conditions consequents) tab@(Tableau qZone rootBox) = do
     let possibleSolutions = exploreTree [] conditions [] (rootBox, [])
     guard $ not $ null possibleSolutions
     let ((finalSub, deepestBoxNumber):_) = sortBy (\a b -> snd a `compare` snd b) possibleSolutions
         subedConsequents = mapMaybe (holeExprToExpr . applySubstitution finalSub) consequents
-    addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab
+    addHyps (zip (repeat deepestBoxNumber) subedConsequents) tab >>= result
 
 -- | Finds all the possible substitutions one can make in matching the given list of 
 -- conditions with the given list of expressions. This includes, for instance, the
@@ -387,10 +388,10 @@ exploreTree currentSub condsToMatch currentBoxNumber boxZipper@(Box hyps targs, 
 
 
 -- | Must specify all information.
-libBackwardReasoningFull :: LibraryImplication -> [(Int, (BoxNumber, Int))] -> [(Int, (BoxNumber, Int))] -> Substitution -> Tableau -> Maybe Tableau
+libBackwardReasoningFull :: LibraryImplication -> [(Int, (BoxNumber, Int))] -> [(Int, (BoxNumber, Int))] -> Substitution -> Tableau -> Mathematician Tableau
 libBackwardReasoningFull (LibraryImplication libQZone conditions consequents)
     condMap targMap substitution tab@(Tableau qZone rootBox)
-    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap || any ((\i -> i < 0 || i >= length consequents) . fst) targMap = Nothing
+    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap || any ((\i -> i < 0 || i >= length consequents) . fst) targMap = mzero
     | otherwise = do
         (targsWithConsequents, targsShallowestBox) <- getTargsWithData (map (\(consInd, b) -> (b, consequents!!consInd)) targMap) tab
         (hypsWithConditions, hypsDeepestBox) <- getHypsWithData (map (\(condInd, b) -> (b, conditions!!condInd)) condMap) tab
@@ -403,13 +404,13 @@ libBackwardReasoningFull (LibraryImplication libQZone conditions consequents)
 
         let missingSubedConds = catMaybes missingSubedMaybeConds
         let targIndsToRemove = map snd targMap
-        removePureTargs targIndsToRemove tab >>= addPureTargs (zip (repeat targsShallowestBox) missingSubedConds)
+        removePureTargs targIndsToRemove tab >>= addPureTargs (zip (repeat targsShallowestBox) missingSubedConds) >>= result
 
 -- | Only need to specify the map between conds/hyps and consequents/targs
-libBackwardReasoningCondMapTargMap :: LibraryImplication -> [(Int, (BoxNumber, Int))] -> [(Int, (BoxNumber, Int))] -> Tableau -> Maybe Tableau
+libBackwardReasoningCondMapTargMap :: LibraryImplication -> [(Int, (BoxNumber, Int))] -> [(Int, (BoxNumber, Int))] -> Tableau -> Mathematician Tableau
 libBackwardReasoningCondMapTargMap (LibraryImplication libQZone conditions consequents)
     condMap targMap tab@(Tableau qZone rootBox)
-    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap || any ((\i -> i < 0 || i >= length consequents) . fst) targMap = Nothing
+    | any ((\i -> i < 0 || i >= length conditions) . fst) condMap || any ((\i -> i < 0 || i >= length consequents) . fst) targMap = mzero
     | otherwise = do
         (targsWithConsequents, targsShallowestBox) <- getTargsWithData (map (\(consInd, b) -> (b, consequents!!consInd)) targMap) tab
         (hypsWithConditions, hypsDeepestBox) <- getHypsWithData (map (\(condInd, b) -> (b, conditions!!condInd)) condMap) tab
@@ -423,18 +424,18 @@ libBackwardReasoningCondMapTargMap (LibraryImplication libQZone conditions conse
                 b <- subB
                 mergeSubstitutions a b
             finalSubMaybe = foldl' foldFunction (Just []) subs
-        finalSub <- finalSubMaybe
+        finalSub <- liftMaybe finalSubMaybe
         
         let missingSubedMaybeConds = [holeExprToExpr $ applySubstitution finalSub (conditions!!condInd) | condInd <- [0..length conditions-1], condInd `notElem` map fst condMap]
         guard $ all isJust missingSubedMaybeConds
         let missingSubedConds = catMaybes missingSubedMaybeConds
         let targIndsToRemove = map snd targMap
-        removePureTargs targIndsToRemove tab >>= addPureTargs (zip (repeat targsShallowestBox) missingSubedConds)
+        removePureTargs targIndsToRemove tab >>= addPureTargs (zip (repeat targsShallowestBox) missingSubedConds) >>= result
 
 
 -- | Only need to specify the desired substitution. Will replace as many targets as
 -- possible with as few conditions as possible
-libBackwardReasoningSub :: LibraryImplication -> Substitution -> Tableau -> Maybe Tableau
+libBackwardReasoningSub :: LibraryImplication -> Substitution -> Tableau -> Mathematician Tableau
 libBackwardReasoningSub (LibraryImplication libQZone conditions consequents) substitution tab@(Tableau qZone rootBox) = do
     let subedMaybeConditions = map (holeExprToExpr . applySubstitution substitution) conditions
     guard $ all isJust subedMaybeConditions
@@ -459,7 +460,7 @@ libBackwardReasoningSub (LibraryImplication libQZone conditions consequents) sub
         unmatchedConds = filter (`notElem` matchedConds) subedConditions
         targIndsToRemove = map snd matchedTargs
 
-    removePureTargs (zip (repeat targBoxNumber) targIndsToRemove) tab >>= addPureTargs (zip (repeat targBoxNumber) unmatchedConds)
+    removePureTargs (zip (repeat targBoxNumber) targIndsToRemove) tab >>= addPureTargs (zip (repeat targBoxNumber) unmatchedConds) >>= result
 
 
 
@@ -490,7 +491,7 @@ getDeepestMatchingTargs consequentsToMatch tab@(Tableau qZone rootBox@(Box rootH
 -- deepest possible matches (as these have more hypotheses to match conditions with).
 -- After this, we find the single target-consequent match which will maximise the
 -- number of matched conditions, then choose this.
-libBackwardReasoning :: LibraryImplication -> Tableau -> Maybe Tableau
+libBackwardReasoning :: LibraryImplication -> Tableau -> Mathematician Tableau
 libBackwardReasoning libImpl@(LibraryImplication libQZone conditions consequents) tab@(Tableau qZone rootBox) = do
     let
         extractBestSub :: [(Substitution, ([HoleExpr], [Expr]))] -> Maybe (Substitution, ([HoleExpr], [Expr]))
@@ -547,7 +548,7 @@ libBackwardReasoning libImpl@(LibraryImplication libQZone conditions consequents
             _ -> False)
             [0..length targs-1]
     
-    removePureTargs (zip (repeat targBoxNumber) targIndsToRemove) tab >>= addPureTargs (zip (repeat targBoxNumber) remainingConds)
+    removePureTargs (zip (repeat targBoxNumber) targIndsToRemove) tab >>= addPureTargs (zip (repeat targBoxNumber) remainingConds) >>= result
 
 -- <<< Library Moves that act at the subexpression level >>>
 
