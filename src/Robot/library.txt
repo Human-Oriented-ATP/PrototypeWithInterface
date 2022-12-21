@@ -7,12 +7,12 @@ https://www.cl.cam.ac.uk/research/hvg/Isabelle/dist/library/HOL/HOL/Set.html
 Please note: Here I use the names used in the HOL Library for now for easy reference. Must find alt names. 
 
 
-"CollectI and CollectD"
+"name?"  (CollectI, CollectD)
 
 $P a ⟷  a \in {x. P x}$
  
 
- "Collect_cong"
+"name?" (Collect_cong)
 
 If  $\forall x. (P x ⟷  Q x)$
 Then ${x. P x} = {x. Q x}$
