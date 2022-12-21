@@ -95,90 +95,105 @@ Then $c \in A \union B$
 
 
 # Topological spaces (by Bill)
+Note by Angeliki: minor changes in notation
 
 "Definition of open_in for a topological space"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-Define open_in(U, X~) := U \in \tau
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Define $open_in(U, \tilde{X}) := U \in \tau$
    
 "Definition of closed_in for a topological space"
-Let X be a set
-Let \tau be a topology on $X$
-Let X~ := (X, \tau) be a topological space
-Define closed_in(F, X~) := open_in(X \setmuinus F, X~)
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Define $closed_in(F, \tilde{X}) := open_in(X \setminus F, \tilde{X})$
 
 "Open set iff closed complement"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-Then open_in(U, X~)
-iff closed_in(X \setminus U, X~)
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Then $open_in(U, \tilde{X})$
+iff $closed_in(X \setminus U, \tilde{X}$
 
 "Empty set is open in a topological space"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-Then open_in(\emptyset, X~)
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Then $open_in(\emptyset, \tilde{X})$
 
 "Empty set is closed in a topological space"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-Then closed_in(\emptyset, X~)
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Then $closed_in(\emptyset, \tilde{X})$
 
 "Underlying set of topological space is open"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-Then open_in(X, X~)
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Then $open_in(X, \tilde{X})$
 
 "Underlying set of topological space is closed"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-Then closed_in(X, X~)
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Then $closed_in(X, \tilde{X})$
 
 "Empty set is element of a topology on a topological space"
-Let X be a set
-Let \tau be a topology on X
-Then \emptyset \in \tau
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Then $\emptyset \in \tau$
 
 "Underlying set of topological space is element of its topology"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-Then X \in \tau
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+Then $X \in \tau$
 
 "Intersection of open sets is open"
-Let X be a set
-Let \tau be a topology on X
-Let X~ := (X, \tau) be a topological space
-If open_in(U, X~) and open_in(V, X~)
-then open_in(U \cap V, X~)
+
+Let $X$ be a set
+Let $\tau$ be a topology on $X$
+Let $\tilde{X} := (X, \tau)$ be a topological space
+If $open_in(U, \tilde{X})$ and $open_in(V, \tilde{X})$
+then $open_in(U \cap V, \tilde{X})$
 
 "Finite intersection of open sets is open"
-Let \Gamma be a set
-Suppose \Gamma is finite
-Let U : \Gamma \to power_set(X)
-If \forall \gamma \in \Gamma open_in(U(\gamma), X~)
-then open_in(\bigcap_{\gamma\in\Gamma} U(\gamma), X~)
+
+Let $\Gamma$ be a set
+Suppose $\Gamma$ is finite
+Let $U : \Gamma \to power_set(X)$
+If $\forall \gamma \in \Gamma . open_in(U(\gamma), \tilde{X})$
+then $open_in(\bigcap_{\gamma\in\Gamma} U(\gamma), \tilde{X})$
 
 "Finite union of closed sets is closed"
-Let \Gamma be a set
-Suppose \Gamma is finite
-Let F : \Gamma \to power_set(X)
-If \forall \gamma \in \Gamma closed_in(F(\gamma), X~)
-then closed_in(\bigcup_{\gamma\in\Gamma} F(\gamma), X~)
+
+Let $\Gamma be a set
+Suppose $\Gamma$ is finite
+Let $F : \Gamma \to power_set(X)$
+If $\forall \gamma \in \Gamma . closed_in(F(\gamma), \tilde{X})$
+then $closed_in(\bigcup_{\gamma\in\Gamma} F(\gamma), \tilde{X})$
 
 "Union of open sets is open"
-Let \Gamma be a set
-Let U : \Gamma \to power_set(X)
-If \forall \gamma \in \Gamma open_in(U(\gamma), X~)
-then open_in(\bigcup_{\gamma\in\Gamma} U(\gamma), X~)
+
+Let $\Gamma$ be a set
+Let $U : \Gamma \to power_set(X)$
+If $\forall \gamma \in \Gamma . open_in(U(\gamma), \tilde{X})$
+then $open_in(\bigcup_{\gamma\in\Gamma} U(\gamma), \tilde{X})$
 
 "Intersection of closed sets is closed"
-Let \Gamma be a set
-Let F : \Gamma \to power_set(X)
-If \forall \gamma \in \Gamma closed_in(F(\gamma), X~)
-then closed_in(\bigcap_{\gamma\in\Gamma} F(\gamma), X~) 
+
+Let $\Gamma$ be a set
+Let $F : \Gamma \to power_set(X)$
+If $\forall \gamma \in \Gamma . closed_in(F(\gamma), \tilde{X})$
+then $closed_in(\bigcap_{\gamma\in\Gamma} F(\gamma), \tilde{X})$ 
