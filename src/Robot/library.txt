@@ -4,18 +4,19 @@
 
 https://www.cl.cam.ac.uk/research/hvg/Isabelle/dist/library/HOL/HOL/Set.html
 
-Please note: Here I use the names used in the HOL Library for now for easy reference. Must find alt names. 
+Please note: I have kept the names from the HOL Library in the parentheses for easy reference. Please keep these.
+The actual names are in " " : these need to be specified or modified.
 
 
 "name?"  (CollectI, CollectD)
 
-$P a ⟷  a \in {x. P x}$
+$P a ⟷  a \in \{x. P x\}$
  
 
 "name?" (Collect_cong)
 
 If  $\forall x. (P x ⟷  Q x)$
-Then ${x. P x} = {x. Q x}$
+Then $\{x. P x \} = \{x. Q x \}$
   
   
  "Equality of sets considering membership" (set_eqI, set_eq_iff) 
@@ -41,7 +42,7 @@ Then  $B \subset A \and B \supset A$ iff $A = B$
 
 Let $A$ be a set
 Let $B$ be a set
-Then $A \intersection B = {x. x \in A \and x \in B}$
+Then $A \intersection B = \{x. x \in A \and x \in B \}$
 
 "Set intersection as set membership" (Int_Iff and Int_I)
 
@@ -69,7 +70,7 @@ Then $c \in B$
  
 Let $A$ be a set
 Let $B$ be a set
-Then  $A \union B = {x. x \in A \or x \in B}$
+Then  $A \union B = \{x. x \in A \or x \in B \}$
   
  
  "Set union as set membership" (Un_iff [simp])
@@ -93,9 +94,77 @@ Let $c \in B$
 Then $c \in A \union B$
 
 
+ "name?" (Diff_iff [simp])
+
+Let $A$ be a set
+Let $B$ be a set
+Then  $c \in A \setminus B$ iff $c \in A \and c \notin B$
+
+"name?" ( DiffD1 )
+
+Let $A$ be a set
+Let $B$ be a set
+Let $c \in A \setminus B$
+Then $c \in A$
+
+
+"name?" (set_diff_eq)
+
+Let $A$ be a set
+Let $B$ be a set
+Then $A \setminus B = \{x. x \in A \and x \notin B \}$
+
+"Definition of image" (image)
+
+Let $A$ be a set
+Let $f$ be a function 
+Define $f ` A := \{y. \exists x \in A. y = f x \}$
+
+ "name?" (imageI)
+
+Let $A$ be a set
+Let $f$ be a function 
+Assume $x ∈ A$ 
+Then $f x \in  f ` A$
+ 
+"name?"  (image_Un)
+
+Let $A$ be a set
+Let $B$ be a set
+Let $f$ be a function
+Then $f ` (A \cup B) = f ` A \cup f ` B$
+
+"name?"  (image_iff)
+
+Let $A$ be a set
+Let $f$ be a function
+Then $z \in f ` A$  iff $\exists x \in A. z = f x$
+  
+"name?" (image_subsetI) 
+
+Let $A$ be a set
+Let $B$ be a set
+Let $f$ be a function
+Assume $ \forall x \in A.  f x \in B$ 
+Then $f ` A \subseteq B$
+
+
+"name?"  (subset_image_iff)
+
+Let $A$ be a set
+Let $B$ be a set
+Let $f$ be a function
+Then $B \subseteq f ` A $ iff $ \exists C \subseteq A. B = f ` C $
+ 
+"The image of the empty set is the empty set" (image_empty [simp])
+
+Let $f$ be a function
+Then $f ` \emptyset = \emptyset$
+
+  
 
 # Topological spaces (by Bill)
-Note by Angeliki: minor changes in notation
+Note by Angeliki: made minor changes in notation
 
 "Definition of open_in for a topological space"
 
