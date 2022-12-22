@@ -114,7 +114,7 @@ Let $A$ be a set
 Let $B$ be a set
 Then $A \setminus B = \{x. x \in A \and x \notin B \}$
 
-"Definition of image" (image)
+"Definition of image of a set under a function" (image)
 
 Let $A$ be a set
 Let $f$ be a function 
@@ -127,7 +127,7 @@ Let $f$ be a function
 Assume $x ∈ A$ 
 Then $f x \in  f ` A$
  
-"name?"  (image_Un)
+"The image of the union of two sets under a function equals the union of the images of the two sets under the function"  (image_Un)
 
 Let $A$ be a set
 Let $B$ be a set
@@ -156,12 +156,48 @@ Let $B$ be a set
 Let $f$ be a function
 Then $B \subseteq f ` A $ iff $ \exists C \subseteq A. B = f ` C $
  
-"The image of the empty set is the empty set" (image_empty [simp])
+"The image of the empty set under a function is the empty set" (image_empty [simp])
 
 Let $f$ be a function
 Then $f ` \emptyset = \emptyset$
 
-  
+
+"The image of a set under a function is the empty set iff the set is the empty set " (image_is_empty [iff])
+
+Let $f$ be a function
+Let $A$ be a set
+
+Then $f ` A = \emptyset$ iff $A = \emptyset$
+
+
+ "Equal sets under equal functions have equal images"  (image_cong)
+ 
+Let $f$ be a function
+Let $g$ be a function
+Let $A$ be a set
+Let $B$ be a set
+
+Assume $A = B$ 
+Assume $\forall x \in B. f x = g x$
+Then  $f ` A = g ` B$
+
+"The image of the intersection of two sets under a function is a subset of the intersection of the images of the two sets under the function" (image_Int_subset)
+
+Let $f$ be a function
+Let $A$ be a set
+Let $B$ be a set
+Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
+
+ "The set difference of the images of two sets under a function is a subset of the image of the difference of the sets under the function "      (image_diff_subset)
+
+ Let $f$ be a function
+ Let $A$ be a set
+ Let $B$ be a set
+ 
+$f ` A \setminus f ` B \subseteq f ` (A \setminus B)$
+ 
+
+  Note: I'm concerned that the names get inevitably big...
 
 # Topological spaces (by Bill)
 Note by Angeliki: made minor changes in notation
