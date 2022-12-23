@@ -193,8 +193,7 @@ Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
  Let $f$ be a function
  Let $A$ be a set
  Let $B$ be a set
- 
-$f ` A \setminus f ` B \subseteq f ` (A \setminus B)$
+ Then $f ` A \setminus f ` B \subseteq f ` (A \setminus B)$
  
 
   Note: I'm concerned that the names get inevitably big...
