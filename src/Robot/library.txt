@@ -134,13 +134,13 @@ Let $B$ be a set
 Let $f$ be a function
 Then $f ` (A \cup B) = f ` A \cup f ` B$
 
-"Basic property of the image of the union of two sets under a function "  (image_iff)
+"Basic property of the image of a set under a function "  (image_iff)
 
 Let $A$ be a set
 Let $f$ be a function
 Then $z \in f ` A$  iff $\exists x \in A. z = f x$
   
-"Basic property of the image of the union of two sets under a function " (image_subsetI) 
+"Basic property of the image of a set under a function " (image_subsetI) 
 
 Let $A$ be a set
 Let $B$ be a set
@@ -149,7 +149,7 @@ Assume $ \forall x \in A.  f x \in B$
 Then $f ` A \subseteq B$
 
 
-"Basic property of the image of the union of two sets under a function "  (subset_image_iff)
+"Basic property of the image of a set under a function "  (subset_image_iff)
 
 Let $A$ be a set
 Let $B$ be a set
