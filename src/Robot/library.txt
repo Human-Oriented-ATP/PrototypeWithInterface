@@ -8,57 +8,57 @@ Please note: I have kept the names from the HOL Library in the parentheses for e
 The actual names are in " " : these need to be specified or modified.
 
 
-"name?"  (CollectI, CollectD)
+"Definition of set"  (CollectI, CollectD)
 
 $P a ⟷  a \in \{x. P x\}$
  
 
-"name?" (Collect_cong)
+"Set equality" (Collect_cong)
 
 If  $\forall x. (P x ⟷  Q x)$
 Then $\{x. P x \} = \{x. Q x \}$
   
   
- "Equality of sets considering membership" (set_eqI, set_eq_iff) 
+ "Set equality" (set_eqI, set_eq_iff) 
 
 Let $A$ be a set
 Let $B$ be a set
 Then $\forall x. (x \in A ⟷ x \in B)$ iff $A = B$
 
-"Equality of sets considering right and left subsets" 
+"Set equality" 
 
 Let $A$ be a set
 Let $B$ be a set
 Then  $B \subset A \and A \subset B$ iff $A = B$
 
-"Equality of sets considering subset and superset " 
+"Set equality" 
 
 Let $A$ be a set
 Let $B$ be a set
 Then  $B \subset A \and B \supset A$ iff $A = B$
 
 
-"Set intersection as equality of sets"  (Int_def)
+"Definition of set intersection"  (Int_def)
 
 Let $A$ be a set
 Let $B$ be a set
 Then $A \intersection B = \{x. x \in A \and x \in B \}$
 
-"Set intersection as set membership" (Int_Iff and Int_I)
+"Definition of set intersection" (Int_Iff and Int_I)
 
 Let $A$ be a set
 Let $B$ be a set
 Then $c \in A \intersection B$  iff  $c \in A \and c \in B$
 
                                    
-"Set intersection deducing set membership left" (IntD1 )
+"Definition of set intersection" (IntD1 )
 
 Let $A$ be a set
 Let $B$ be a set
 Let $c \in A \intersection B$ 
 Then $c \in A$      
 
-"Set intersection deducing set membership right" (IntD2 )
+"Definition of set intersection" (IntD2 )
 
 Let $A$ be a set
 Let $B$ be a set
@@ -66,27 +66,27 @@ Let $c \in A \intersection B $
 Then $c \in B$      
 
 
-"Set union as equality of sets"  (Un_def}
+"Definition of set union"  (Un_def}
  
 Let $A$ be a set
 Let $B$ be a set
 Then  $A \union B = \{x. x \in A \or x \in B \}$
   
  
- "Set union as set membership" (Un_iff [simp])
+ "Definition of set union" (Un_iff [simp])
 
 Let $A$ be a set
 Let $B$ be a set
 Then $c \in A \union B$ iff  $c \in A \or c \in B$
 
-"Assume set membership left deduce set union" ( UnI1 [elim?]) 
+"Definition of set union" ( UnI1 [elim?]) 
 
 Let $A$ be a set
 Let $B$ be a set
 Let $c \in A$
 Then $c \in A \union B$
   
-"Assume set membership right deduce set union" ( UnI2 [elim?]) 
+"Definition of set union" ( UnI2 [elim?]) 
 
 Let $A$ be a set
 Let $B$ be a set
@@ -94,13 +94,13 @@ Let $c \in B$
 Then $c \in A \union B$
 
 
- "name?" (Diff_iff [simp])
+ "Definition of set difference" (Diff_iff [simp])
 
 Let $A$ be a set
 Let $B$ be a set
 Then  $c \in A \setminus B$ iff $c \in A \and c \notin B$
 
-"name?" ( DiffD1 )
+"Definition of set difference " ( DiffD1 )
 
 Let $A$ be a set
 Let $B$ be a set
@@ -108,7 +108,7 @@ Let $c \in A \setminus B$
 Then $c \in A$
 
 
-"name?" (set_diff_eq)
+"Definition of set difference " (set_diff_eq)
 
 Let $A$ be a set
 Let $B$ be a set
@@ -120,27 +120,27 @@ Let $A$ be a set
 Let $f$ be a function 
 Define $f ` A := \{y. \exists x \in A. y = f x \}$
 
- "name?" (imageI)
+ "Definition of image of a set under a function " (imageI)
 
 Let $A$ be a set
 Let $f$ be a function 
 Assume $x ∈ A$ 
 Then $f x \in  f ` A$
  
-"The image of the union of two sets under a function equals the union of the images of the two sets under the function"  (image_Un)
+"Basic property of the image of the union of two sets under a function"  (image_Un)
 
 Let $A$ be a set
 Let $B$ be a set
 Let $f$ be a function
 Then $f ` (A \cup B) = f ` A \cup f ` B$
 
-"name?"  (image_iff)
+"Basic property of the image of the union of two sets under a function "  (image_iff)
 
 Let $A$ be a set
 Let $f$ be a function
 Then $z \in f ` A$  iff $\exists x \in A. z = f x$
   
-"name?" (image_subsetI) 
+"Basic property of the image of the union of two sets under a function " (image_subsetI) 
 
 Let $A$ be a set
 Let $B$ be a set
@@ -149,7 +149,7 @@ Assume $ \forall x \in A.  f x \in B$
 Then $f ` A \subseteq B$
 
 
-"name?"  (subset_image_iff)
+"Basic property of the image of the union of two sets under a function "  (subset_image_iff)
 
 Let $A$ be a set
 Let $B$ be a set
@@ -181,14 +181,14 @@ Assume $A = B$
 Assume $\forall x \in B. f x = g x$
 Then  $f ` A = g ` B$
 
-"The image of the intersection of two sets under a function is a subset of the intersection of the images of the two sets under the function" (image_Int_subset)
+"Basic property of the image of the intersection of two sets under a function" (image_Int_subset)
 
 Let $f$ be a function
 Let $A$ be a set
 Let $B$ be a set
 Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
 
- "The set difference of the images of two sets under a function is a subset of the image of the difference of the sets under the function "      (image_diff_subset)
+ "Basic property of the set difference of the images of two sets under a function"      (image_diff_subset)
 
  Let $f$ be a function
  Let $A$ be a set
