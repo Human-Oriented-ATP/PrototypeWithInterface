@@ -196,7 +196,65 @@ Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
  Then $f ` A \setminus f ` B \subseteq f ` (A \setminus B)$
  
 
-  Note: I'm concerned that the names get inevitably big...
+ "Strict subset definition " (psubset_eq)
+ 
+ Let $A$ be a set
+ Let $B$ be a set
+ Then $A \subset B$ iff $A \subseteq B  \and A \neq B$
+
+
+ "Strict subset definition "    (psubset_imp_subset)
+
+ Let $A$ be a set
+ Let $B$ be a set
+ Assume $A \subset B$
+ Then $A \subseteq B$
+ 
+"Transitivity of subset relation" (psubset_trans)
+
+ Let $A$ be a set
+ Let $B$ be a set
+ Let $C$ be a set
+ Assume $A \subset B$
+ Assume  $B \subset C$
+ Then $A \subset C$
+  
+"Subset definition " (psubsetD)
+
+ Let $A$ be a set
+ Let $B$ be a set
+ Let $c \in A$
+ Then $c \in B$
+
+
+"Transitivity of subset relation"  (psubset_subset_trans)
+ 
+ Let $A$ be a set
+ Let $B$ be a set
+ Let $C$ be a set
+ Assume $A \subset B$
+ Assume  $B \subseteq C$
+ Then $A \subset C$
+
+"Transitivity of subset relation"  (subset_psubset_trans)
+
+ Let $A$ be a set
+ Let $B$ be a set
+ Let $C$ be a set
+ Assume $A \subseteq B$
+ Assume  $B \subset C$
+ Then $A \subset C$
+
+
+  
+"Definition of strict subset relation and definition of set difference" (psubset_imp_ex_mem)
+
+ Let $A$ be a set
+ Let $B$ be a set
+ Assume $A \subset B$
+ Then $\exists b. b \in B \setminus A"
+ 
+
 
 # Topological spaces (by Bill)
 Note by Angeliki: made minor changes in notation
