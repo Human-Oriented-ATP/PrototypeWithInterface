@@ -223,6 +223,7 @@ Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
 
  Let $A$ be a set
  Let $B$ be a set
+ Assume $A \subset B$
  Let $c \in A$
  Then $c \in B$
 
