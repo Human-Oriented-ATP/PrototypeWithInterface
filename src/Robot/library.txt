@@ -15,30 +15,22 @@ $P a ⟷  a \in \{x. P x\}$
 
 "Set equality" (Collect_cong)
 
-If  $\forall x. (P x ⟷  Q x)$
+If  $\forall x. (P x =  Q x)$
 Then $\{x. P x \} = \{x. Q x \}$
   
   
- "Set equality" (set_eqI, set_eq_iff) 
+ "Set equality by extensionality" (set_eqI, set_eq_iff) 
 
 Let $A$ be a set
 Let $B$ be a set
 Then $\forall x. (x \in A ⟷ x \in B)$ iff $A = B$
 
-"Set equality" 
-
+"Two sets are equal if each is a subset of the other  " (set_eq_subset)
 Let $A$ be a set
 Let $B$ be a set
-Then  $B \subset A \and A \subset B$ iff $A = B$
-
-"Set equality" 
-
-Let $A$ be a set
-Let $B$ be a set
-Then  $B \subset A \and B \supset A$ iff $A = B$
-
-
-"Definition of set intersection"  (Int_def)
+Then $A = B$ iff $A \subseteq B \and B \subseteq A$
+ 
+  "Definition of set intersection"  (Int_def)
 
 Let $A$ be a set
 Let $B$ be a set
