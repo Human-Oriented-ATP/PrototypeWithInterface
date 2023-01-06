@@ -7,6 +7,12 @@ https://www.cl.cam.ac.uk/research/hvg/Isabelle/dist/library/HOL/HOL/Set.html
 Please note: I have kept the names from the HOL Library in the parentheses for easy reference. Please keep these.
 The actual names are in " " : these need to be specified or modified.
 
+TIM: To avoid confusion I am going to add phrases that I shall call "pointers". (There may be a better name, in which case I'm happy to change to that, but this is the best I have come up with in a couple of seconds. The idea of a pointer is that it lets the reader know what result is being used. Not all results need pointers, since some are considered too obvious to need comment. For example, with the first one, if we had that a \in \{x. Px\} and deduced that Pa, we would not feel the need to tell the reader that we were using a basic definition of naive set theory. In such cases, rather than putting an empty pointer, I shall simply not put a pointer. I shall enclose pointers in single inverted commas, to distinguish them from names.
+
+I shall also add comments. These are not meant to be part of the library file. They are just questions that arise as I go along.
+
+General comment: I assume that the format of these entries is closely modelled on Isabelle. I think we need to discuss a bit more what format we want to use. For example, you use words like "If", "Then" and "Let". Maybe this is fine and makes the library more human-readable, and maybe some parser can take results in that kind of format and turn them into more of a tableau format. Maybe that's even what we agreed we would do. An alternative would be to write them in tableau format in the first place, with a line that separates hypotheses and conclusions, and no need for those words. It isn't clear to me what is best.
+
 
 "Definition of set"  (CollectI, CollectD)
 
@@ -17,6 +23,8 @@ $P a ⟷  a \in \{x. P x\}$
 
 If  $\forall x. (P x =  Q x)$
 Then $\{x. P x \} = \{x. Q x \}$
+
+Comment: Human mathematicians would not express the statement that P and Q are equivalent by writing P x = Q x. Thinking of a proposition as a function to Bool is quite a computery thing to do (even if in some ways it is quite nice). So I would favour writing P x ⟷ Q x or something similar, as I think that is more likely to match what comes up in problem states. (A more minor point is whether we want ⟷ or <=> or maybe even both.) 
   
   
  "Set equality by extensionality" (set_eqI, set_eq_iff) 
@@ -25,10 +33,18 @@ Let $A$ be a set
 Let $B$ be a set
 Then $\forall x. (x \in A ⟷ x \in B)$ iff $A = B$
 
+Pointer: 'by the definition of set equality'.
+
+Comment: I think we should not have the "if" direction in the library. It is most unlikely we would ever use it, and if we did, it would follow from the more general principle that equal objects can be substituted for each other. (A possible counterargument is that if we explicitly record that we have an equivalence, then the program will know that using this result is guaranteed to be safe. I'm not convinced that that is a strong enough argument, but it's worth bearing in mind.)
+
 "Two sets are equal if each is a subset of the other  " (set_eq_subset)
 Let $A$ be a set
 Let $B$ be a set
 Then $A = B$ iff $A \subseteq B \and B \subseteq A$
+
+Pointer: 'by the definition of set equality'.
+
+Comment: I don't think it matters if we have the same pointer for two different results. Also, again here I think we should keep just the interesting direction, so I would replace "iff" by "if". 
  
   "Definition of set intersection"  (Int_def)
 
@@ -36,11 +52,15 @@ Let $A$ be a set
 Let $B$ be a set
 Then $A \intersection B = \{x. x \in A \and x \in B \}$
 
+Pointer: probably not needed here, but if we had a dial that let the user specify how explicit the write-up should be, then maybe we could have a pointer 'by the definition of set intersection' to be used only in very explicit write-ups. 
+
 "Definition of set intersection" (Int_Iff and Int_I)
 
 Let $A$ be a set
 Let $B$ be a set
 Then $c \in A \intersection B$  iff  $c \in A \and c \in B$
+
+Pointer: same remark as above.
 
                                    
 "Definition of set intersection" (IntD1 )
@@ -50,12 +70,24 @@ Let $B$ be a set
 Let $c \in A \intersection B$ 
 Then $c \in A$      
 
+Comment: My instinct is that this should not be in the library. Also, I don't think it *is* the definition of set intersection, so much as a trivial consequence of the definition. The reason I think it shouldn't be in the library is that if we had the statement $c \in A \intersection B$, then we could obtain the hypothesis $c \in A$ by expanding using the previous result. On the other hand, I would not be against including the following result, which says essentially the same.
+
+Let $A$ be a set
+Let $B$ be a set
+Then $(A \intersection B) \subset A$
+
+The rationale for including this would be that it would enable the program to engage in high-level reasoning using set-theoretic operations rather than having to expand down and use elements. 
+
 "Definition of set intersection" (IntD2 )
 
 Let $A$ be a set
 Let $B$ be a set
 Let $c \in A \intersection B $
 Then $c \in B$      
+
+Comment: Similarly, I would replace this by $(A \intersection B) \subset B$. 
+
+Comment about next few definitions: My reactions are the same, with obvious modifications, as my reactions to the results about intersections.
 
 
 "Definition of set union"  (Un_def}
@@ -112,6 +144,11 @@ Let $A$ be a set
 Let $f$ be a function 
 Define $f ` A := \{y. \exists x \in A. y = f x \}$
 
+Comment: We need to decide on a convention here. Is it necessary/useful to label results explicitly as definitions by using the word "Define" and writing := or can we just stick with =? It isn't clear to me whether it was a carefully considered choice to use "Define" here and not, for example, for the definitions of the set operations above. Another question is whether we want to use the $f ` A$ notation. It certainly has some advantages, as it stops the program having to disambiguate. But for the output that the reader sees, I would prefer to see the more conventional notation $f(A)$. (What appears in the problem states as opposed to the accompanying natural-langage output is a different matter, and I'm not sure what would be best.)
+
+Second comment: Do we not need to specify the domain and range of f? I think of this as a definition to be applied when f:X->Y and A is a subset of X. This comment applies to several of the results below as well.
+
+
  "Definition of image of a set under a function " (imageI)
 
 Let $A$ be a set
@@ -131,6 +168,8 @@ Then $f ` (A \cup B) = f ` A \cup f ` B$
 Let $A$ be a set
 Let $f$ be a function
 Then $z \in f ` A$  iff $\exists x \in A. z = f x$
+
+Pointer: 'by the definition of f ` A'.
   
 "Basic property of the image of a set under a function " (image_subsetI) 
 
@@ -140,6 +179,8 @@ Let $f$ be a function
 Assume $ \forall x \in A.  f x \in B$ 
 Then $f ` A \subseteq B$
 
+Comment: This is another result that I think might not be wanted in the library. Suppose, for example, that we found ourselves wanting to prove that $f ' A \subseteq B$. This result would tell us that we could replace the target by $ \forall x \in A. f x \in B$. But we would get that by first expanding, which would replace the target by $y \in f ` A \implies y \in B$ and then by expanding again to get $(\exists x. x \in A \wedge f(x) = y) \implies y \in B$, which after tidying becomes $\forall x. (x \in A \wedge f x = y) \implies y \in B$ and finally after further tidying (to remove the redundant y) $\forall x. x\in A \implies f x \in B$. All these moves would I think be done with no difficulty by the program, so the library result would not be helping, except that it would be doing all these easy steps in one go. But that I think might be a question more about the write-up -- yes, we don't want a write-up that is full of boring tidying steps, but I think we can find ways of judging which steps fall into that category and omitting them from the write-up. Again, I think this is something we will all need to discuss.
+
 
 "Basic property of the image of a set under a function "  (subset_image_iff)
 
@@ -147,6 +188,15 @@ Let $A$ be a set
 Let $B$ be a set
 Let $f$ be a function
 Then $B \subseteq f ` A $ iff $ \exists C \subseteq A. B = f ` C $
+
+Comment: This again feels like a result that we might not want. I can't see when it might be used, and if it was needed, it would feel more humanly natural to prove it rather than to quote it. On the other hand, we might want a result
+
+  $B \subset f ` A \implies B = f ` f^{-1}(B)$  
+  
+I'm not sure how we will notate inverse images there. 
+
+***********THIS IS WHERE I HAVE GOT TO SO FAR**************
+
  
 "The image of the empty set under a function is the empty set" (image_empty [simp])
 
