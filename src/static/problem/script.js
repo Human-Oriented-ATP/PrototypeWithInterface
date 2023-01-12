@@ -2,7 +2,7 @@ const getJSON = async url => {
     const response = await fetch(url);
     if(!response.ok)
       throw new Error(response.statusText);
-  
+
     const data = response.json();
     return data;
   }
@@ -36,7 +36,7 @@ setUpProblem = async function(){
 	//const b = JSON.parse(a);
 	//globalProblemState = b;
 	await getInitialProblemState();
-	
+
 	showProblemState();
 	MathJax.texReset();
 	MathJax.typesetClear();
@@ -115,6 +115,9 @@ const argsToWaitForInfo = {
 
 	"instantiateExistential": [2, 2],
 
+	"libForwardReasoning": [2],
+	"libBackwardReasoning": [2],
+
 	"waterfall": []
 }
 
@@ -151,7 +154,7 @@ if (e.key == "Enter") {
 	e.target.value = "";
 	const argsToWaitForInfoCopy = JSON.parse(JSON.stringify(argsToWaitForInfo));
 	// The cost of global variables - ugly solution, but it works
-	
+
 	if(argsToWaitForInfoCopy[val] != undefined){
 		globalArgsToWaitFor = argsToWaitForInfoCopy[val];
 		globalArgsReceived = [];
@@ -206,7 +209,7 @@ clickAnywhere = function(e){
 			element = element.parentNode;
 		}
 	}
-	
+
 	const correctTypeOfExprClicked =
 		((globalArgsToWaitFor[0] == 0 && element.classList.contains("hyp")) ||
 		 (globalArgsToWaitFor[0] == 1 && element.classList.contains("targ")))
@@ -218,7 +221,7 @@ clickAnywhere = function(e){
 	element.style.backgroundColor = "#ffffcc"
 	globalArgsToWaitFor.shift();
 	globalArgsReceived.push(exprLoc);
-	
+
 
 	// Now if there are no arguments left to get, then we actually call the function.
 	if(globalArgsToWaitFor.length == 0){
@@ -229,5 +232,3 @@ clickAnywhere = function(e){
 	}
 
 }
-
-
