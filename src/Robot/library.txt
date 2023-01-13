@@ -163,13 +163,15 @@ Let $B$ be a set
 Let $f$ be a function
 Then $f ` (A \cup B) = f ` A \cup f ` B$
 
+Low-priority pointer: 'since taking an image preserves unions'.
+
 "Basic property of the image of a set under a function "  (image_iff)
 
 Let $A$ be a set
 Let $f$ be a function
 Then $z \in f ` A$  iff $\exists x \in A. z = f x$
 
-Pointer: 'by the definition of f ` A'.
+Low-priority pointer: 'by the definition of f ` A'.
   
 "Basic property of the image of a set under a function " (image_subsetI) 
 
@@ -194,9 +196,6 @@ Comment: This again feels like a result that we might not want. I can't see when
   $B \subset f ` A \implies B = f ` f^{-1}(B)$  
   
 I'm not sure how we will notate inverse images there. 
-
-***********THIS IS WHERE I HAVE GOT TO SO FAR**************
-
  
 "The image of the empty set under a function is the empty set" (image_empty [simp])
 
@@ -211,6 +210,10 @@ Let $A$ be a set
 
 Then $f ` A = \emptyset$ iff $A = \emptyset$
 
+Comment: It seems strange to have a library result of the form P => Q and then another one of the form P <=> Q for the same P and Q. I would suggest replacing this one by just the "only if" part. And after that change I would suggest the following pointer.
+
+Pointer: 'since the image of a non-empty set is non-empty'.
+
 
  "Equal sets under equal functions have equal images"  (image_cong)
  
@@ -223,12 +226,17 @@ Assume $A = B$
 Assume $\forall x \in B. f x = g x$
 Then  $f ` A = g ` B$
 
+Comment: This feels like a result we don't obviously want. In particular, I think having two objects and hypothesizing that they are equal shouldn't be necessary -- I would hope that our program could handle equality well enough not to need help from the library of this kind. But if someone can think of a situation where this library result might make it easier for a program to find a proof, I might change my mind, but I can't think of one.
+
+
 "Basic property of the image of the intersection of two sets under a function" (image_Int_subset)
 
 Let $f$ be a function
 Let $A$ be a set
 Let $B$ be a set
 Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
+
+Minor comment: I think the name you've given here is a little uninformative, given that the result is slightly non-trivial. Maybe "The image of an intersection is contained in the intersection of the images" would be better. I have a similar minor comment for the next result.
 
  "Basic property of the set difference of the images of two sets under a function"      (image_diff_subset)
 
@@ -243,6 +251,8 @@ Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
  Let $A$ be a set
  Let $B$ be a set
  Then $A \subset B$ iff $A \subseteq B  \and A \neq B$
+ 
+ Comment: I favour using \subset for the subset relation and \subsetneq for proper subsets. This is more in accordance with what most mathematicians do in their papers.
 
 
  "Strict subset definition "    (psubset_imp_subset)
@@ -251,6 +261,8 @@ Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
  Let $B$ be a set
  Assume $A \subset B$
  Then $A \subseteq B$
+ 
+ Comment: I'm genuinely unclear about whether we would want this result in the library. The argument in favour would be that it helps the program do a step automatically that it would otherwise have to do via a simple argument. The argument against would be that this follows too easily from the definition: we expand the definition of proper subset and obtain two statements, one of which we can just ignore. And suppose we had a target to prove that some set A is a subset of another set B. It would be peculiar to use backwards library reasoning to replace that by the target of proving that A is a proper subset of B.
  
 "Transitivity of subset relation" (psubset_trans)
 
@@ -268,6 +280,8 @@ Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
  Assume $A \subset B$
  Let $c \in A$
  Then $c \in B$
+ 
+ Comment: It's not completely clear to me what your naming convention is. This I would regard as a trivial consequence of the definition but not as the definition itself. But maybe that is why you use this name. Incidentally, this result I definitely do think should belong to the library, since it enables the program to deduce from x \in A and A \subset B that x\in B without the need to expand A \subset B. And that is something that human mathematicians do all the time.
 
 
 "Transitivity of subset relation"  (psubset_subset_trans)
@@ -297,7 +311,7 @@ Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
  Assume $A \subset B$
  Then $\exists b. b \in B \setminus A"
  
-
+Pointer: 'since A is a strict subset of B'.
 
 # Topological spaces (by Bill)
 Note by Angeliki: made minor changes in notation
