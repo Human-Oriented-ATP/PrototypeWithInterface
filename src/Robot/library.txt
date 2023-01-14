@@ -322,6 +322,8 @@ Let $X$ be a set
 Let $\tau$ be a topology on $X$
 Let $\tilde{X} := (X, \tau)$ be a topological space
 Define $open_in(U, \tilde{X}) := U \in \tau$
+
+Low-priority pointer: 'by the definition of open sets'.
    
 "Definition of closed_in for a topological space"
 
@@ -329,6 +331,10 @@ Let $X$ be a set
 Let $\tau$ be a topology on $X$
 Let $\tilde{X} := (X, \tau)$ be a topological space
 Define $closed_in(F, \tilde{X}) := open_in(X \setminus F, \tilde{X})$
+
+Low-priority pointer: 'by the definition of closed sets'.
+
+Comment: It might be useful to have an alternative definition that F is closed if its complement belongs to \tau.
 
 "Open set iff closed complement"
 
@@ -338,12 +344,16 @@ Let $\tilde{X} := (X, \tau)$ be a topological space
 Then $open_in(U, \tilde{X})$
 iff $closed_in(X \setminus U, \tilde{X}$
 
+Pointer: 'since a set is closed if and only if its complement is open'.
+
 "Empty set is open in a topological space"
 
 Let $X$ be a set
 Let $\tau$ be a topology on $X$
 Let $\tilde{X} := (X, \tau)$ be a topological space
 Then $open_in(\emptyset, \tilde{X})$
+
+Pointer: 'since the empty set is open'.
 
 "Empty set is closed in a topological space"
 
@@ -352,12 +362,16 @@ Let $\tau$ be a topology on $X$
 Let $\tilde{X} := (X, \tau)$ be a topological space
 Then $closed_in(\emptyset, \tilde{X})$
 
+Pointer: 'since the empty set is closed'.
+
 "Underlying set of topological space is open"
 
 Let $X$ be a set
 Let $\tau$ be a topology on $X$
 Let $\tilde{X} := (X, \tau)$ be a topological space
 Then $open_in(X, \tilde{X})$
+
+Pointer: 'since $X$ is open in itself'.
 
 "Underlying set of topological space is closed"
 
@@ -366,11 +380,15 @@ Let $\tau$ be a topology on $X$
 Let $\tilde{X} := (X, \tau)$ be a topological space
 Then $closed_in(X, \tilde{X})$
 
+Pointer: 'since $X$ is closed in itself'.
+
 "Empty set is element of a topology on a topological space"
 
 Let $X$ be a set
 Let $\tau$ be a topology on $X$
 Then $\emptyset \in \tau$
+
+Pointer: 'since the empty set belongs to $\tau$'.
 
 "Underlying set of topological space is element of its topology"
 
@@ -378,6 +396,8 @@ Let $X$ be a set
 Let $\tau$ be a topology on $X$
 Let $\tilde{X} := (X, \tau)$ be a topological space
 Then $X \in \tau$
+
+Pointer: 'since $X$ belongs to $\tau$'.
 
 "Intersection of open sets is open"
 
@@ -387,6 +407,8 @@ Let $\tilde{X} := (X, \tau)$ be a topological space
 If $open_in(U, \tilde{X})$ and $open_in(V, \tilde{X})$
 then $open_in(U \cap V, \tilde{X})$
 
+Pointer: 'since the intersection of two open sets is open'.
+
 "Finite intersection of open sets is open"
 
 Let $\Gamma$ be a set
@@ -394,6 +416,8 @@ Suppose $\Gamma$ is finite
 Let $U : \Gamma \to power_set(X)$
 If $\forall \gamma \in \Gamma . open_in(U(\gamma), \tilde{X})$
 then $open_in(\bigcap_{\gamma\in\Gamma} U(\gamma), \tilde{X})$
+
+Pointer: 'since the intersection of finitely many open sets is open'.
 
 "Finite union of closed sets is closed"
 
@@ -403,6 +427,8 @@ Let $F : \Gamma \to power_set(X)$
 If $\forall \gamma \in \Gamma . closed_in(F(\gamma), \tilde{X})$
 then $closed_in(\bigcup_{\gamma\in\Gamma} F(\gamma), \tilde{X})$
 
+Pointer: 'since the union of finitely many closed sets is closed'.
+
 "Union of open sets is open"
 
 Let $\Gamma$ be a set
@@ -410,9 +436,13 @@ Let $U : \Gamma \to power_set(X)$
 If $\forall \gamma \in \Gamma . open_in(U(\gamma), \tilde{X})$
 then $open_in(\bigcup_{\gamma\in\Gamma} U(\gamma), \tilde{X})$
 
+Pointer: 'since a union of open sets is open'.
+
 "Intersection of closed sets is closed"
 
 Let $\Gamma$ be a set
 Let $F : \Gamma \to power_set(X)$
 If $\forall \gamma \in \Gamma . closed_in(F(\gamma), \tilde{X})$
 then $closed_in(\bigcap_{\gamma\in\Gamma} F(\gamma), \tilde{X})$ 
+
+Pointer: 'since an intersection of closed sets is closed'.
