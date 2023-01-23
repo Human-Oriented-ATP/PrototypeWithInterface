@@ -14,174 +14,440 @@ I shall also add comments. These are not meant to be part of the library file. T
 General comment: I assume that the format of these entries is closely modelled on Isabelle. I think we need to discuss a bit more what format we want to use. For example, you use words like "If", "Then" and "Let". Maybe this is fine and makes the library more human-readable, and maybe some parser can take results in that kind of format and turn them into more of a tableau format. Maybe that's even what we agreed we would do. An alternative would be to write them in tableau format in the first place, with a line that separates hypotheses and conclusions, and no need for those words. It isn't clear to me what is best.
 
 
-"Definition of set"  (CollectI, CollectD)
+"Subsets defined by comprehension"  (CollectI, CollectD)
 
-$P a ⟷  a \in \{x. P x\}$
+Let $X$ be a set
+Let $P$ be a property on $X$
+Then $\{x: P(x)\}$ is a subset of $X$
+Definition: $a \in \{x: P(x)\}$ ⟷ $P(a)$
+
+Comments: I am taking the definition of a property on $X$ to be something along the lines of a function from $X$ to Bool. I have changed the notation from the Haskell-like P x to the mathematician's P(x). And I have put a colon inside the set notation (replacing the full stop that was there before). In general, the principle here is to stick to mathematical notation unless there is a good reason not to. I have (for now) retained the symbol ⟷ because I think there is something to be said for thinking of this syntactically as "is interchangeable with" rather than semantically as "means the same as". I'm not sure how best to convey the information that $\{x: P(x)\}$ is a subset of $X$, so the above formulation is provisional.
  
 
-"Set equality" (Collect_cong)
+%"Set equality" (Collect_cong)
 
-If  $\forall x. (P x =  Q x)$
-Then $\{x. P x \} = \{x. Q x \}$
+%If  $\forall x (P x \iff  Q x)$
+%Then $\{x: P x \} = \{x: Q x \}$
 
-Comment: Human mathematicians would not express the statement that P and Q are equivalent by writing P x = Q x. Thinking of a proposition as a function to Bool is quite a computery thing to do (even if in some ways it is quite nice). So I would favour writing P x ⟷ Q x or something similar, as I think that is more likely to match what comes up in problem states. (A more minor point is whether we want ⟷ or <=> or maybe even both.) 
-  
-  
- "Set equality by extensionality" (set_eqI, set_eq_iff) 
+"Definition of subset equality" (set_eqI, set_eq_iff) 
 
-Let $A$ be a set
-Let $B$ be a set
-Then $\forall x. (x \in A ⟷ x \in B)$ iff $A = B$
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Definition: $A = B$ ⟷ $\forall x (x \in A \iff x \in B)$ 
 
 Pointer: 'by the definition of set equality'.
 
-Comment: I think we should not have the "if" direction in the library. It is most unlikely we would ever use it, and if we did, it would follow from the more general principle that equal objects can be substituted for each other. (A possible counterargument is that if we explicitly record that we have an equivalence, then the program will know that using this result is guaranteed to be safe. I'm not convinced that that is a strong enough argument, but it's worth bearing in mind.)
+
+"Definition of non-membership"  (***** name needed here *******)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $x$ be an element of $X$
+Definition: $x\notin A$ ⟷ $\neg(x\in A)$
+
+"Definition of the empty subset" (***** name needed *****)
+
+Let $X$ be a set
+Definition: $\emptyset = \{x\in X: FALSE\}$
+
+"Definition of the empty subset" (***** name needed *****)
+
+Let $X$ be a set
+Let $x$ be an element of $X$
+Then $x\notin\emptyset$
+
+"Definition of set inclusion" (***** name needed *****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Definition: $A\subseteq B$ ⟷ $\forall x\in X  x\in A \implies x\in B$
+
+Low-priority pointer: "by the definition of the set inclusion"
+
+"Definition of set inclusion" (***** name needed *****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Suppose $A\subseteq B$
+Suppose $x\in A$
+Then $x\in B$
+
+Low-priority pointer: "by the definition of set inclusion"
+
+"The empty set is contained in everything" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $\emptyset \subseteq A$
+
+
+"Transitivity of set inclusion"
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Suppose $A\subset B$
+Suppose $B\subset C$
+Then $A\subset C$
+
+Low-priority pointer: "by the transitivity of set inclusion"
+  
 
 "Two sets are equal if each is a subset of the other  " (set_eq_subset)
-Let $A$ be a set
-Let $B$ be a set
-Then $A = B$ iff $A \subseteq B \and B \subseteq A$
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$ 
+Then $A = B$ ⟷ $A \subseteq B \wedge B \subseteq A$
 
 Pointer: 'by the definition of set equality'.
 
-Comment: I don't think it matters if we have the same pointer for two different results. Also, again here I think we should keep just the interesting direction, so I would replace "iff" by "if". 
- 
-  "Definition of set intersection"  (Int_def)
+Comment: I am adopting a convention where not only does ⟷ mean "is interchangeable with" but that if one direction feels more like an expansion and the other direction more like a de-expansion, then I'll put the two sides in the expanding direction. So most of the time ⟷ will have the more one-way feel of "can be replaced by". I have also replaced \and (which doesn't give the wedge symbol in LaTeX) by \wedge, which is what most mathematicians would write. But this is making a conscious decision to go with LaTeX rather than pseudo-English. 
 
-Let $A$ be a set
-Let $B$ be a set
-Then $A \intersection B = \{x. x \in A \and x \in B \}$
+"Definition of set complement" (***** name needed *****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Definition: $A^c = \{x\in X: x\notin A\}$
+
+Comment: This is a slightly dangerous definition since it depends on context. I am assuming that $A$ is quite strongly typed as a subset of $X$, so that ambiguity does not arise, but I'm flagging this up, as it could cause problems, in which case we might have to stick with $X\setminus A$. 
+
+"Definition of set complement"
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $x$ be an element of $X$
+Then $x\in A^c$ ⟷ $x\notin A$
+ 
+"Definition of set intersection"  (Int_def)
+
+Let $X$ be a set
+Let $A\subset X$
+Let $B\subset X$
+Definition: $A \cap B = \{x: x \in A \wedge x \in B \}$
 
 Pointer: probably not needed here, but if we had a dial that let the user specify how explicit the write-up should be, then maybe we could have a pointer 'by the definition of set intersection' to be used only in very explicit write-ups. 
 
+Comment: It's actually surprisingly difficult to imagine any situation in which this definition is directly used, so we might even want to comment it out. However, I'll leave it in for the following reason: I have a plan that every library result should be something that the program is capable of proving. The next result is naturally proved by expanding out the definition of $A\cap B$ and using some very simple reasoning, and for that one needs this result. 
+
+Another comment: I briefly toyed with replacing the equality symbol with ⟷ but decided against it because I decided that the equality symbol already has a strong "is interchangeable with" vibe about it, so there was nothing to gain from using ⟷ instead, and some confusion might arise if one did. 
+
 "Definition of set intersection" (Int_Iff and Int_I)
 
-Let $A$ be a set
-Let $B$ be a set
-Then $c \in A \intersection B$  iff  $c \in A \and c \in B$
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x\in X$
+Then $x \in A \cap B$  ⟷  $x \in A \wedge x \in B$
 
 Pointer: same remark as above.
 
                                    
-"Definition of set intersection" (IntD1 )
+%"Definition of set intersection" (IntD1 )
 
-Let $A$ be a set
-Let $B$ be a set
-Let $c \in A \intersection B$ 
-Then $c \in A$      
+%Let $A$ be a set
+%Let $B$ be a set
+%Let $c \in A \intersection B$ 
+%Then $c \in A$      
 
-Comment: My instinct is that this should not be in the library. Also, I don't think it *is* the definition of set intersection, so much as a trivial consequence of the definition. The reason I think it shouldn't be in the library is that if we had the statement $c \in A \intersection B$, then we could obtain the hypothesis $c \in A$ by expanding using the previous result. On the other hand, I would not be against including the following result, which says essentially the same.
+%Comment: My instinct is that this should not be in the library. Also, I don't think it *is* the definition of set intersection, so much as a trivial consequence of the definition. The reason I think it shouldn't be in the library is that if we had the statement $c \in A \intersection B$, then we could obtain the hypothesis $c \in A$ by expanding using the previous result. On the other hand, I would not be against including the following result, which says essentially the same.
 
-Let $A$ be a set
-Let $B$ be a set
-Then $(A \intersection B) \subset A$
+"An intersection of two sets is contained in each set"  (***** name needed *****)
 
-The rationale for including this would be that it would enable the program to engage in high-level reasoning using set-theoretic operations rather than having to expand down and use elements. 
+Let $X$ be a set
+Let $A$ be a subset of $X$ 
+Let $B$ be a subset of $X$
+Then $(A \cap B) \subseteq A$
 
-"Definition of set intersection" (IntD2 )
+Comment: The rationale for including this is that it enables the program to engage in high-level reasoning using set-theoretic operations rather than having to expand down and use elements. 
 
-Let $A$ be a set
-Let $B$ be a set
-Let $c \in A \intersection B $
-Then $c \in B$      
+"An intersection of two sets is contained in each set"  (***** name needed *****)
 
-Comment: Similarly, I would replace this by $(A \intersection B) \subset B$. 
+Let $X$ be a set
+Let $A$ be a subset of $X$ 
+Let $B$ be a subset of $X$
+Then $(A \cap B) \subseteq B$
 
-Comment about next few definitions: My reactions are the same, with obvious modifications, as my reactions to the results about intersections.
+Comment: this is here to save the program having to reason that $A\cap B = B\cap A$ and then use the previous result. But it may be that we will want the program to be good at doing quick bits of reasoning like that, in which case we will not need two results here. (Or another possibility is that at some point we generate simple reformulations of library results automatically rather than typing them all in by hand.) 
+
+
+%"Definition of set intersection" (IntD2 )
+
+%Let $A$ be a set
+%Let $B$ be a set
+%Let $c \in A \cap B $
+%Then $c \in B$      
+
+%Comment: Similarly, I would replace this by $(A \intersection B) \subset B$. 
+
+"Definition of disjointness" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Definition: $A$ and $B$ are disjoint ⟷ $A\cap B = \emptyset$
+
+
+"Definition of disjointness" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Suppose $A$ and $B$ are disjoint
+Suppose $x\in A$
+Then $x\notin B$
+
+Pointer: "since $A$ and $B$ are disjoint"
+
+"Definition of disjointness" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Suppose $A$ and $B$ are disjoint
+Suppose $x\in B$
+Then $x\notin A$
+
+Pointer: "since $A$ and $B$ are disjoint"
+
+
+"Definition of disjointness" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Suppose $A\cap B = \emptyset$
+Suppose $x\in A$
+Then $x\notin B$
+
+Pointer: "since $A$ and $B$ are disjoint"
+
+
+"Definition of disjointness" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Suppose $A\cap B = \emptyset$
+Suppose $x\in B$
+Then $x\notin A$
+
+Pointer: "since $A$ and $B$ are disjoint"
+
+
+"A set and its complement are disjoint" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $A$ and $A^c$ are disjoint
+
+
+"A set and its complement are disjoint" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $A\cap A^c = \emptyset$
 
 
 "Definition of set union"  (Un_def}
  
-Let $A$ be a set
-Let $B$ be a set
-Then  $A \union B = \{x. x \in A \or x \in B \}$
+Let $X$ be a set 
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Definition:  $A \union B = \{x\in X: x \in A \vee x \in B \}$
   
  
- "Definition of set union" (Un_iff [simp])
+"Definition of set union" (Un_iff [simp])
 
-Let $A$ be a set
-Let $B$ be a set
-Then $c \in A \union B$ iff  $c \in A \or c \in B$
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Then $x \in A \cup B$ ⟷ $x \in A \vee c \in B$
 
-"Definition of set union" ( UnI1 [elim?]) 
+%"Definition of set union" ( UnI1 [elim?]) 
 
-Let $A$ be a set
-Let $B$ be a set
-Let $c \in A$
-Then $c \in A \union B$
+%Let $A$ be a set
+%Let $B$ be a set
+%Let $c \in A$
+%Then $c \in A \cup B$
   
-"Definition of set union" ( UnI2 [elim?]) 
+%"Definition of set union" ( UnI2 [elim?]) 
 
-Let $A$ be a set
-Let $B$ be a set
-Let $c \in B$
-Then $c \in A \union B$
+%Let $A$ be a set
+%Let $B$ be a set
+%Let $c \in B$
+%Then $c \in A \cup B$
 
+"A union of two sets contains each set"  (*****)
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\subseteq A\cup B$
 
- "Definition of set difference" (Diff_iff [simp])
+"A union of two sets contains each set"  (*****)
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $B\subseteq A\cup B$
 
-Let $A$ be a set
-Let $B$ be a set
-Then  $c \in A \setminus B$ iff $c \in A \and c \notin B$
+"Definition of set difference" (set_diff_eq)
 
-"Definition of set difference " ( DiffD1 )
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Definition: $A \setminus B = \{x: x \in A \wedge x \notin B \}$
 
-Let $A$ be a set
-Let $B$ be a set
-Let $c \in A \setminus B$
-Then $c \in A$
+"Definition of set difference" (*****)
 
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\setminus B = A\cap B^c$
 
-"Definition of set difference " (set_diff_eq)
+"Definition of set difference" (Diff_iff [simp])
 
-Let $A$ be a set
-Let $B$ be a set
-Then $A \setminus B = \{x. x \in A \and x \notin B \}$
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Then  $x \in A \setminus B$ ⟷ $x \in A \wedge x\notin B$
+
+%"Definition of set difference " ( DiffD1 )
+
+%Let $A$ be a set
+%Let $B$ be a set
+%Let $c \in A \setminus B$
+%Then $c \in A$
+
+"The difference of two sets is contained in the first set" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\setminus B\subseteq A$
+
+"The difference of two sets is disjoint from the second set" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $(A\setminus B)\cap B=\emptyset$
+
+"Definition of the domain of a function" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Definition: $\dom(f) = X$
+
+"Definition of the range of a function" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Definition: $\ran(f) = Y$
+
+"Criterion for two functions to be equal" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $g:X \to Y$
+Then $f=g$ ⟷ $\forall x\in X  f(x) = g(x)$
+
+Pointer: "by the condition for two functions to be equal" 
+
+"Definition of the identity function on a set" (*****)
+
+Let $X$ be a set
+Then $\id_X:X \to X$
+Definition: $\forall x\in X  \id_X(x) = x$
+
+"Definition of the composition of two functions" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $Z$ be a set
+Let $f:X \to Y$
+Let $g:Y \to Z$
+Then $g\circ f:X \to Z$
+Definition: $g\circ f(x) = g(f(x))$
+
+"Identity functions are left identities under composition"  (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $g:Y \to Z$
+Then $g\circ\id_X = g$
+
+"Identity functions are right identities under composition" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Then $\id_Y\circ f = f$
 
 "Definition of image of a set under a function" (image)
 
-Let $A$ be a set
-Let $f$ be a function 
-Define $f ` A := \{y. \exists x \in A. y = f x \}$
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Then $f ` A$ is a subset of $Y$
+Definition: $f ` A = \{y\in Y: \exists x \in A  f(x) = y \}$
 
-Comment: We need to decide on a convention here. Is it necessary/useful to label results explicitly as definitions by using the word "Define" and writing := or can we just stick with =? It isn't clear to me whether it was a carefully considered choice to use "Define" here and not, for example, for the definitions of the set operations above. Another question is whether we want to use the $f ` A$ notation. It certainly has some advantages, as it stops the program having to disambiguate. But for the output that the reader sees, I would prefer to see the more conventional notation $f(A)$. (What appears in the problem states as opposed to the accompanying natural-langage output is a different matter, and I'm not sure what would be best.)
+"Definition of the image of a set under a function "  (image_iff)
 
-Second comment: Do we not need to specify the domain and range of f? I think of this as a definition to be applied when f:X->Y and A is a subset of X. This comment applies to several of the results below as well.
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Let $y$ be an element of $Y$
+Then $y \in f ` A$ ⟷ $\exists x \in X  x\in A \wedge f(x) = z$
+
+Low-priority pointer: 'by the definition of f ` A'.
 
 
- "Definition of image of a set under a function " (imageI)
+"Definition of image of a set under a function " (imageI)
 
-Let $A$ be a set
-Let $f$ be a function 
-Assume $x ∈ A$ 
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Suppose $x \in A$ 
 Then $f x \in  f ` A$
  
 "Basic property of the image of the union of two sets under a function"  (image_Un)
 
-Let $A$ be a set
-Let $B$ be a set
-Let $f$ be a function
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
 Then $f ` (A \cup B) = f ` A \cup f ` B$
 
 Low-priority pointer: 'since taking an image preserves unions'.
 
-"Basic property of the image of a set under a function "  (image_iff)
 
-Let $A$ be a set
-Let $f$ be a function
-Then $z \in f ` A$  iff $\exists x \in A. z = f x$
-
-Low-priority pointer: 'by the definition of f ` A'.
   
-"Basic property of the image of a set under a function " (image_subsetI) 
+%"Basic property of the image of a set under a function " (image_subsetI) 
 
-Let $A$ be a set
-Let $B$ be a set
-Let $f$ be a function
-Assume $ \forall x \in A.  f x \in B$ 
-Then $f ` A \subseteq B$
+%Let $A$ be a set
+%Let $B$ be a set
+%Let $f$ be a function
+%Assume $ \forall x \in A.  f x \in B$ 
+%Then $f ` A \subseteq B$
 
-Comment: This is another result that I think might not be wanted in the library. Suppose, for example, that we found ourselves wanting to prove that $f ' A \subseteq B$. This result would tell us that we could replace the target by $ \forall x \in A. f x \in B$. But we would get that by first expanding, which would replace the target by $y \in f ` A \implies y \in B$ and then by expanding again to get $(\exists x. x \in A \wedge f(x) = y) \implies y \in B$, which after tidying becomes $\forall x. (x \in A \wedge f x = y) \implies y \in B$ and finally after further tidying (to remove the redundant y) $\forall x. x\in A \implies f x \in B$. All these moves would I think be done with no difficulty by the program, so the library result would not be helping, except that it would be doing all these easy steps in one go. But that I think might be a question more about the write-up -- yes, we don't want a write-up that is full of boring tidying steps, but I think we can find ways of judging which steps fall into that category and omitting them from the write-up. Again, I think this is something we will all need to discuss.
+%Comment: This is another result that I think might not be wanted in the library. Suppose, for example, that we found ourselves wanting to prove that $f ' A \subseteq B$. This result would tell us that we could replace the target by $ \forall x \in A. f x \in B$. But we would get that by first expanding, which would replace the target by $y \in f ` A \implies y \in B$ and then by expanding again to get $(\exists x. x \in A \wedge f(x) = y) \implies y \in B$, which after tidying becomes $\forall x. (x \in A \wedge f x = y) \implies y \in B$ and finally after further tidying (to remove the redundant y) $\forall x. x\in A \implies f x \in B$. All these moves would I think be done with no difficulty by the program, so the library result would not be helping, except that it would be doing all these easy steps in one go. But that I think might be a question more about the write-up -- yes, we don't want a write-up that is full of boring tidying steps, but I think we can find ways of judging which steps fall into that category and omitting them from the write-up. Again, I think this is something we will all need to discuss.
 
 
 "Basic property of the image of a set under a function "  (subset_image_iff)
@@ -189,129 +455,228 @@ Comment: This is another result that I think might not be wanted in the library.
 Let $A$ be a set
 Let $B$ be a set
 Let $f$ be a function
-Then $B \subseteq f ` A $ iff $ \exists C \subseteq A. B = f ` C $
+Then $B \subseteq f ` A$ iff $\exists C \subseteq A. B = f ` C$
 
 Comment: This again feels like a result that we might not want. I can't see when it might be used, and if it was needed, it would feel more humanly natural to prove it rather than to quote it. On the other hand, we might want a result
 
-  $B \subset f ` A \implies B = f ` f^{-1}(B)$  
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $Y$  
+Then $B \subseteq f ` A \implies B = f ` f^\leftarrow (B)$  
   
-I'm not sure how we will notate inverse images there. 
+Comment: I found that some people use the notation $f^\leftarrow(A)$ for $f^{-1}(A)$. I find that quite readable and it would solve the contextual parsing problem. 
  
+
 "The image of the empty set under a function is the empty set" (image_empty [simp])
 
-Let $f$ be a function
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
 Then $f ` \emptyset = \emptyset$
 
 
-"The image of a set under a function is the empty set iff the set is the empty set " (image_is_empty [iff])
+"If the image of a set under a function is the empty set then the set is the empty set " (image_is_empty [only if])
 
-Let $f$ be a function
-Let $A$ be a set
-
-Then $f ` A = \emptyset$ iff $A = \emptyset$
-
-Comment: It seems strange to have a library result of the form P => Q and then another one of the form P <=> Q for the same P and Q. I would suggest replacing this one by just the "only if" part. And after that change I would suggest the following pointer.
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Suppose $f ` A = \emptyset$
+Then $A = \emptyset$
 
 Pointer: 'since the image of a non-empty set is non-empty'.
 
 
- "Equal sets under equal functions have equal images"  (image_cong)
+%"Equal sets under equal functions have equal images"  (image_cong)
  
-Let $f$ be a function
-Let $g$ be a function
-Let $A$ be a set
-Let $B$ be a set
+%Let $f$ be a function
+%Let $g$ be a function
+%Let $A$ be a set
+%Let $B$ be a set
 
-Assume $A = B$ 
-Assume $\forall x \in B. f x = g x$
-Then  $f ` A = g ` B$
+%Assume $A = B$ 
+%Assume $\forall x \in B. f x = g x$
+%Then  $f ` A = g ` B$
 
-Comment: This feels like a result we don't obviously want. In particular, I think having two objects and hypothesizing that they are equal shouldn't be necessary -- I would hope that our program could handle equality well enough not to need help from the library of this kind. But if someone can think of a situation where this library result might make it easier for a program to find a proof, I might change my mind, but I can't think of one.
+%Comment: This feels like a result we don't obviously want. In particular, I think having two objects and hypothesizing that they are equal shouldn't be necessary -- I would hope that our program could handle equality well enough not to need help from the library of this kind. But if someone can think of a situation where this library result might make it easier for a program to find a proof, I might change my mind, but I can't think of one.
 
 
-"Basic property of the image of the intersection of two sets under a function" (image_Int_subset)
+"The image of an intersection is contained in the intersection of the images" (image_Int_subset)
 
-Let $f$ be a function
-Let $A$ be a set
-Let $B$ be a set
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
 Then $f ` (A \cap B) \subseteq f ` A \cap f ` B$
 
-Minor comment: I think the name you've given here is a little uninformative, given that the result is slightly non-trivial. Maybe "The image of an intersection is contained in the intersection of the images" would be better. I have a similar minor comment for the next result.
+"The image of a difference contains the difference of the images"      (image_diff_subset)
 
- "Basic property of the set difference of the images of two sets under a function"      (image_diff_subset)
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $f ` A \setminus f ` B \subseteq f ` (A \setminus B)$
 
- Let $f$ be a function
- Let $A$ be a set
- Let $B$ be a set
- Then $f ` A \setminus f ` B \subseteq f ` (A \setminus B)$
+"Definition of an injection" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Definition: $f$ is an injection ⟷ $\forall x\in X  \forall y\in X  f(x) = f(y) \implies x = y$
+
+"Alternative definition of an injection" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Definition: $f$ is an injection ⟷ $\forall x\in X  \forall y\in X  x \ne y \implies f(x) \ne f(y)$
+
+"Definition of a surjection" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Definition: $f$ is a surjection ⟷ $\forall y\in Y  \exists x\in X  f(x) = y$
+
+
+"Definition of a surjection" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Definition: $f$ is a surjection ⟷ $f ` X = Y$
+
+"Definition of a left inverse" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $g:Y \to X$
+Definition: $g$ is a left inverse of $f$ ⟷ $g\circ f = \id_X$
+
+"Definition of a left inverse" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $g:Y \to X$
+Then $g$ is a left inverse of $f$ ⟷ $\forall x\in X  g(f(x))=x$
+
+"Definition of a right inverse" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Let $g:Y\to X$
+Then $g$ is a right inverse of $f$ ⟷ $f\circ g = \id_Y$
+
+
+"Definition of a right inverse" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Let $g:Y\to X$
+Then $g$ is a right inverse of $f$ ⟷ $\forall y\in Y  f(g(y))=y$
+
+
+"Injections and left inverses" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Then $f$ is an injection ⟷ $\exists g:Y\to X$ $g$ is a left inverse of $f$
+
+
+"Injections and right inverses" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Then $f$ is a surjection ⟷ $\exists g:Y\to X$ $g$ is a right inverse of $f$
+
+
+"Strict subset definition " (psubset_eq)
+ 
+Let $X$ be a set 
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Definition: $A \subsetneq B$ iff $A \subseteq B  \and A \neq B$
  
 
- "Strict subset definition " (psubset_eq)
- 
- Let $A$ be a set
- Let $B$ be a set
- Then $A \subset B$ iff $A \subseteq B  \and A \neq B$
- 
- Comment: I favour using \subset for the subset relation and \subsetneq for proper subsets. This is more in accordance with what most mathematicians do in their papers.
+"Strict subsets are subsets"    (psubset_imp_subset)
 
-
- "Strict subset definition "    (psubset_imp_subset)
-
- Let $A$ be a set
- Let $B$ be a set
- Assume $A \subset B$
- Then $A \subseteq B$
+Let $A$ be a set
+Let $B$ be a set
+Suppose $A \subsetneq B$
+Then $A \subseteq B$
  
- Comment: I'm genuinely unclear about whether we would want this result in the library. The argument in favour would be that it helps the program do a step automatically that it would otherwise have to do via a simple argument. The argument against would be that this follows too easily from the definition: we expand the definition of proper subset and obtain two statements, one of which we can just ignore. And suppose we had a target to prove that some set A is a subset of another set B. It would be peculiar to use backwards library reasoning to replace that by the target of proving that A is a proper subset of B.
+Comment: I've left this in because I think it might possibly be convenient to have it sometimes.
  
-"Transitivity of subset relation" (psubset_trans)
+"Transitivity of proper subset relation I" (psubset_trans)
 
- Let $A$ be a set
- Let $B$ be a set
- Let $C$ be a set
- Assume $A \subset B$
- Assume  $B \subset C$
- Then $A \subset C$
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Suppose $A \subsetneq B$
+Suppose $B \subsetneq C$
+Then $A \subsetneq C$
+ 
+"Transitivity of proper subset relation II" (psubset_subset_trans)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Suppose $A \subsetneq B$
+Suppose $B \subseteq C$
+Then $A \subsetneq C$ 
+
+"Transitivity of proper subset relation III" (subset_psubset_trans)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Suppose $A \subseteq B$
+Suppose $B \subsetneq C$
+Then $A \subsetneq C$ 
   
-"Subset definition " (psubsetD)
-
- Let $A$ be a set
- Let $B$ be a set
- Assume $A \subset B$
- Let $c \in A$
- Then $c \in B$
  
- Comment: It's not completely clear to me what your naming convention is. This I would regard as a trivial consequence of the definition but not as the definition itself. But maybe that is why you use this name. Incidentally, this result I definitely do think should belong to the library, since it enables the program to deduce from x \in A and A \subset B that x\in B without the need to expand A \subset B. And that is something that human mathematicians do all the time.
+"Definition of set inclusion specialized to proper subsets" (*****)
 
-
-"Transitivity of subset relation"  (psubset_subset_trans)
- 
- Let $A$ be a set
- Let $B$ be a set
- Let $C$ be a set
- Assume $A \subset B$
- Assume  $B \subseteq C$
- Then $A \subset C$
-
-"Transitivity of subset relation"  (subset_psubset_trans)
-
- Let $A$ be a set
- Let $B$ be a set
- Let $C$ be a set
- Assume $A \subseteq B$
- Assume  $B \subset C$
- Then $A \subset C$
-
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $x$ be an element of $X$
+Suppose $A\subsetneq B$
+Suppose $x\in A$
+Then $x\in B$ 
 
   
 "Definition of strict subset relation and definition of set difference" (psubset_imp_ex_mem)
 
- Let $A$ be a set
- Let $B$ be a set
- Assume $A \subset B$
- Then $\exists b. b \in B \setminus A"
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Suppose $A \subseteq B$
+Then $A\subsetneq B$ ⟷ $\exists x\in X  x \in B \wedge x\notin A$
  
 Pointer: 'since A is a strict subset of B'.
+
+"Alternative definition of strict subset relation and definition of set difference" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Suppose $A \subseteq B$
+Then $A\subsetneq B$ ⟷ $B\setminus A \ne \emptyset$
+ 
+
 
 # Topological spaces (by Bill)
 Note by Angeliki: made minor changes in notation
