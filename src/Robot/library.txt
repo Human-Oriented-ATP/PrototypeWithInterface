@@ -13,6 +13,7 @@ I shall also add comments. These are not meant to be part of the library file. T
 
 General comment: I assume that the format of these entries is closely modelled on Isabelle. I think we need to discuss a bit more what format we want to use. For example, you use words like "If", "Then" and "Let". Maybe this is fine and makes the library more human-readable, and maybe some parser can take results in that kind of format and turn them into more of a tableau format. Maybe that's even what we agreed we would do. An alternative would be to write them in tableau format in the first place, with a line that separates hypotheses and conclusions, and no need for those words. It isn't clear to me what is best.
 
+DEFINING SETS
 
 "Subsets defined by comprehension"  (CollectI, CollectD)
 
@@ -29,6 +30,9 @@ Comments: I am taking the definition of a property on $X$ to be something along 
 %If  $\forall x (P x \iff  Q x)$
 %Then $\{x: P x \} = \{x: Q x \}$
 
+
+EQUALITY OF SETS
+
 "Definition of subset equality" (set_eqI, set_eq_iff) 
 
 Let $X$ be a set
@@ -38,6 +42,7 @@ Definition: $A = B$ ⟷ $\forall x (x \in A \iff x \in B)$
 
 Pointer: 'by the definition of set equality'.
 
+NON-MEMBERSHIP
 
 "Definition of non-membership"  (***** name needed here *******)
 
@@ -45,6 +50,8 @@ Let $X$ be a set
 Let $A$ be a subset of $X$
 Let $x$ be an element of $X$
 Definition: $x\notin A$ ⟷ $\neg(x\in A)$
+
+THE EMPTY SET
 
 "Definition of the empty subset" (***** name needed *****)
 
@@ -56,6 +63,8 @@ Definition: $\emptyset = \{x\in X: FALSE\}$
 Let $X$ be a set
 Let $x$ be an element of $X$
 Then $x\notin\emptyset$
+
+THE SUBSET RELATION
 
 "Definition of set inclusion" (***** name needed *****)
 
@@ -108,6 +117,9 @@ Pointer: 'by the definition of set equality'.
 
 Comment: I am adopting a convention where not only does ⟷ mean "is interchangeable with" but that if one direction feels more like an expansion and the other direction more like a de-expansion, then I'll put the two sides in the expanding direction. So most of the time ⟷ will have the more one-way feel of "can be replaced by". I have also replaced \and (which doesn't give the wedge symbol in LaTeX) by \wedge, which is what most mathematicians would write. But this is making a conscious decision to go with LaTeX rather than pseudo-English. 
 
+
+BASIC SET OPERATIONS: COMPLEMENTS
+
 "Definition of set complement" (***** name needed *****)
 
 Let $X$ be a set
@@ -122,6 +134,9 @@ Let $X$ be a set
 Let $A$ be a subset of $X$
 Let $x$ be an element of $X$
 Then $x\in A^c$ ⟷ $x\notin A$
+
+
+BASIC SET OPERATIONS: INTERSECTIONS
  
 "Definition of set intersection"  (Int_def)
 
@@ -183,6 +198,8 @@ Comment: this is here to save the program having to reason that $A\cap B = B\cap
 %Then $c \in B$      
 
 %Comment: Similarly, I would replace this by $(A \intersection B) \subset B$. 
+
+DISJOINTNESS
 
 "Definition of disjointness" (*****)
 
@@ -257,6 +274,8 @@ Let $A$ be a subset of $X$
 Then $A\cap A^c = \emptyset$
 
 
+BASIC SET OPERATIONS: UNIONS
+
 "Definition of set union"  (Un_def}
  
 Let $X$ be a set 
@@ -298,6 +317,8 @@ Let $X$ be a set
 Let $A$ be a subset of $X$
 Let $B$ be a subset of $X$
 Then $B\subseteq A\cup B$
+
+BASIC SET OPERATIONS: DIFFERENCES
 
 "Definition of set difference" (set_diff_eq)
 
@@ -341,6 +362,32 @@ Let $X$ be a set
 Let $A$ be a subset of $X$
 Let $B$ be a subset of $X$
 Then $(A\setminus B)\cap B=\emptyset$
+
+BASIC SET OPERATIONS: SYMMETRIC DIFFERENCES
+
+"Definition of symmetric difference" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\triangle B$ is a subset of $X$
+Definition: $A\triangle B = (A\setminus B) \cup (B\setminus A)$
+
+"Alternative definition of symmetric difference" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\triangle B = \{x\in X: (x\in A \wedge x\notin B) \vee (x\in B \wedge x\notin A)\}$
+
+"Alternative definition of symmetric difference" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\triangle B = (A\cup B) \setminus (A\cap B)$
+
+BASIC DEFINITIONS CONCERNING FUNCTIONS
 
 "Definition of the domain of a function" (*****)
 
@@ -396,6 +443,8 @@ Let $Y$ be a set
 Let $f:X \to Y$
 Then $\id_Y\circ f = f$
 
+IMAGES 
+
 "Definition of image of a set under a function" (image)
 
 Let $X$ be a set
@@ -425,7 +474,27 @@ Let $f : X \to Y$
 Let $A$ be a subset of $X$
 Suppose $x \in A$ 
 Then $f x \in  f ` A$
- 
+
+INVERSE IMAGES
+
+"Definition of inverse image of a set" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Let $B$ be a subset of $Y$
+Then $f^{-1}(B)$ is a subset of $X$
+Definition: $f^{-1}(B)=\{x\in X: f(x)\in B\}$
+
+"Definition of inverse image of a set" (*****)
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Let $B$ be a subset of $Y$
+Then $x\in f^{-1}(B)$ ⟷ $f(x)\in B$
+
+PROPERTIES OF IMAGES
+
 "Basic property of the image of the union of two sets under a function"  (image_Un)
 
 Let $X$ be a set
@@ -450,24 +519,14 @@ Low-priority pointer: 'since taking an image preserves unions'.
 %Comment: This is another result that I think might not be wanted in the library. Suppose, for example, that we found ourselves wanting to prove that $f ' A \subseteq B$. This result would tell us that we could replace the target by $ \forall x \in A. f x \in B$. But we would get that by first expanding, which would replace the target by $y \in f ` A \implies y \in B$ and then by expanding again to get $(\exists x. x \in A \wedge f(x) = y) \implies y \in B$, which after tidying becomes $\forall x. (x \in A \wedge f x = y) \implies y \in B$ and finally after further tidying (to remove the redundant y) $\forall x. x\in A \implies f x \in B$. All these moves would I think be done with no difficulty by the program, so the library result would not be helping, except that it would be doing all these easy steps in one go. But that I think might be a question more about the write-up -- yes, we don't want a write-up that is full of boring tidying steps, but I think we can find ways of judging which steps fall into that category and omitting them from the write-up. Again, I think this is something we will all need to discuss.
 
 
-"Basic property of the image of a set under a function "  (subset_image_iff)
+%"Basic property of the image of a set under a function "  (subset_image_iff)
 
-Let $A$ be a set
-Let $B$ be a set
-Let $f$ be a function
-Then $B \subseteq f ` A$ iff $\exists C \subseteq A. B = f ` C$
+%Let $A$ be a set
+%Let $B$ be a set
+%Let $f$ be a function
+%Then $B \subseteq f ` A$ iff $\exists C \subseteq A. B = f ` C$
 
-Comment: This again feels like a result that we might not want. I can't see when it might be used, and if it was needed, it would feel more humanly natural to prove it rather than to quote it. On the other hand, we might want a result
-
-Let $X$ be a set
-Let $Y$ be a set
-Let $f : X \to Y$
-Let $A$ be a subset of $X$
-Let $B$ be a subset of $Y$  
-Then $B \subseteq f ` A \implies B = f ` f^\leftarrow (B)$  
-  
-Comment: I found that some people use the notation $f^\leftarrow(A)$ for $f^{-1}(A)$. I find that quite readable and it would solve the contextual parsing problem. 
- 
+%Comment: This again feels like a result that we might not want. I can't see when it might be used, and if it was needed, it would feel more humanly natural to prove it rather than to quote it. 
 
 "The image of the empty set under a function is the empty set" (image_empty [simp])
 
@@ -520,6 +579,93 @@ Let $A$ be a subset of $X$
 Let $B$ be a subset of $X$
 Then $f ` A \setminus f ` B \subseteq f ` (A \setminus B)$
 
+
+PROPERTIES OF INVERSE IMAGES
+
+"The inverse image of the empty set is empty" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Then $f^\leftarrow(\emptyset) = \emptyset$
+
+Comment: I haven't specified that one empty set is the empty subset of $Y$ and the other is the empty subset of $X$. 
+
+"Inverse images preserve unions" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $A$ be a subset of $Y$
+Let $B$ be a subset of $Y$
+Then $f^\leftarrow(A\cup B) = f^\leftarrow(A) \cup f^\leftarrow(B)$
+
+Pointer: "since inverse images preserve unions" 
+
+"Inverse images preserve intersections" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $A$ be a subset of $Y$
+Let $B$ be a subset of $Y$
+Then $f^\leftarrow(A\cap B) = f^\leftarrow(A) \cap f^\leftarrow(B)$
+
+Pointer: "since inverse images preserve intersections" 
+
+"Inverse images preserve complements" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $A$ be a subset of $Y$
+Then $f^\leftarrow(A^c) = (f^\leftarrow(A))^c$
+
+Pointer: "since inverse images preserve complements"
+
+"Inverse images preserve differences" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $A$ be a subset of $Y$
+Let $B$ be a subset of $Y$
+Then $f^\leftarrow(A\setminus B) = f^\leftarrow(A) \setminus f^\leftarrow(B)$
+
+"Inverse images preserve symmetric differences" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Let $A$ be a subset of $Y$
+Let $B$ be a subset of $Y$
+Then $f^\leftarrow(A\triangle B) = f^\leftarrow(A) \triangle f^\leftarrow(B)$
+
+
+PROPERTIES THAT COMBINE IMAGES AND INVERSE IMAGES
+
+"When the image of a set is contained in another set"  (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $Y$  
+Then $A\subset f^\leftarrow(B)$ ⟷ $f(A)\subset B$
+
+"When a set is a subset of an image" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $Y$  
+Then $B \subseteq f ` A \implies B = f ` f^\leftarrow (B)$  
+  
+Comment: I found that some people use the notation $f^\leftarrow(A)$ for $f^{-1}(A)$. I find that quite readable and it would solve the contextual parsing problem. 
+
+INJECTIONS, SURJECTIONS AND BIJECTIONS
+
 "Definition of an injection" (*****)
 
 Let $X$ be a set
@@ -548,6 +694,14 @@ Let $X$ be a set
 Let $Y$ be a set
 Let $f:X \to Y$
 Definition: $f$ is a surjection ⟷ $f ` X = Y$
+
+"Definition of a bijection" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X \to Y$
+Definition: is_bijection($f$) ⟷ is_injection($f$) and is_surjection($f$)
+
 
 "Definition of a left inverse" (*****)
 
