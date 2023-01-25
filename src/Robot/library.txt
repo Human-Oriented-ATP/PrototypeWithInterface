@@ -324,6 +324,91 @@ Let $A$ be a subset of $X$
 Let $B$ be a subset of $X$
 Then $B\subseteq A\cup B$
 
+BASIC LAWS CONCERNING INTERSECTIONS, UNIONS AND COMPLEMENTS
+
+"Intersection is commutative" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\cap B = B\cap A$
+
+
+"Intersection is associative" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Then $A\cap(B\cap C) = (A\cap B)\cap C$
+
+
+"Union is commutative" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $A\cap B = B\cap A$
+
+
+"Union is associative" (*****)
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Then $A\cup (B\cup C) = (A\cup B)\cup C$
+
+
+"De Morgan's law I"  (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $(A\cap B)^c = A^c \cup B^c$
+
+
+"De Morgan's law II"  (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Then $(A\cup B)^c = A^c \cap B^c$
+
+
+"Union left distributes over intersection" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Then $A\cup(B\cap C) = (A\cup B)\cap (A\cup C)$
+
+"Union right distributes over intersection" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Then $(A\cap B)\cup C = (A\cup C)\cap (B\cup C)$
+
+
+"Intersection left distributes over union" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Then $A\cap(B\cup C) = (A\cap B)\cup (A\cap C)$
+
+"Intersection right distributes over union" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Let $B$ be a subset of $X$
+Let $C$ be a subset of $X$
+Then $(A\cup B)\cap C = (A\cap C)\cup (B\cap C)$
+
+
 BASIC SET OPERATIONS: DIFFERENCES
 
 "Definition of set difference" (set_diff_eq)
@@ -858,7 +943,7 @@ Then $A\subsetneq B$ ⟷ $B\setminus A \ne \emptyset$
 
 THE POWER SET
 
-"Type of power set"  (*****)
+"The power set of a set is a set"  (*****)
 
 Let X be a set
 Then power_set(X) is a set
@@ -883,13 +968,15 @@ Let \Gamma be a set
 Let A: \Gamma \to power_set(X)
 Then x\in\bigcap_{\gamma\in\Gamma} A(\gamma) ⟷ \forall \gamma\in\Gamma  x\in A(\gamma)
 
+
+"Basic property of arbitrary intersection" (*****)
+
 Let X be a set
 Let \Gamma be a set
 Let A: \Gamma \to power_set(X)
 Let \delta be an element of \Gamma
-Let x be an element of X
-Suppose x\in\bigcap_{\gamma\in\Gamma} A(\gamma)
-Then x\in A(\gamma)
+Then \bigcap_{\gamma\in\Gamma} A(\gamma) \subseteq A(\delta)
+
 
 "Defining property of arbitrary union" (*****)
 
@@ -899,7 +986,163 @@ Let A: \Gamma \to power_set(X)
 Then x\in\bigcup_{\gamma\in\Gamma} A(\gamma) ⟷ \exists \gamma\in\Gamma  x\in A(\gamma)
 
 
+"Basic property of arbitrary union" (*****)
 
+Let X be a set
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Let \delta be an element of \Gamma
+Then A(\delta) \subseteq \bigcup_{\gamma\in\Gamma} A(\gamma) 
+
+
+"Images preserve arbitrary unions" (*****)
+
+Let X be a set
+Let Y be a set
+Let f:X\to Y
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Then f ` \bigcup_{\gamma\in\Gamma} A(\gamma)  = \bigcup_{\gamma\in\Gamma} f ` A(\gamma)
+
+"The image of an arbitrary intersection is contained in the intersection of the images" (*****)
+
+Let X be a set
+Let Y be a set
+Let f:X\to Y
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Then f ` \bigcap_{\gamma\in\Gamma} A(\gamma) \subseteq \bigcup_{\gamma\in\Gamma} f ` A(\gamma)
+
+"Inverse images preserve arbitrary unions"
+
+Let X be a set
+Let Y be a set
+Let f:X\to Y
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Then f^\leftarrow( \bigcup_{\gamma\in\Gamma} A(\gamma) ) = \bigcup_{\gamma\in\Gamma} f^\leftarrow A(\gamma)
+
+"Inverse images preserve arbitrary intersections"
+
+Let X be a set
+Let Y be a set
+Let f:X\to Y
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Then f^\leftarrow( \bigcap_{\gamma\in\Gamma} A(\gamma) ) = \bigcap_{\gamma\in\Gamma} f^\leftarrow A(\gamma)
+
+
+# Properties of relations
+
+EQUIVALENCE RELATIONS
+
+"Definition of reflexive relation" (*****)
+
+Let X be a set
+Let R be a relation on X
+Definition: is_reflexive(R) ⟷ \forall x\in x  x R x
+
+Comment: I have used infix notation for this, but I do not object if we want to change it to R(x,x).
+
+"Definition of symmetric relation"  (*****)
+
+Let X be a set
+Let R be a relation on X
+Definition: is_symmetric(R) ⟷ \forall x\in X \forall y\in X  x R y \iff y R x
+
+"Definition of transitive relation" (*****)
+
+Let X be a set
+Let R be a relation on X
+Definition: is_transitive(R) ⟷ \forall x\in X \forall y\in X \forall z\in X  x R y \wedge y R z \implies x R z
+
+"Definition of equivalence relation" (*****)
+
+Let X be a set
+Let R be a relation on X
+Definition: equivalence_relation(R) ⟷ is_reflexive(R) \wedge is_symmetric(R) \wedge is_transitive(R)
+
+
+ORDERINGS
+
+"Definition of antisymmetric relation" (*****)
+
+Let X be a set
+Let R be a relation on X
+Definition: is_antisymmetric(R) ⟷ \forall x\in X \forall y\in X  x R y \wedge y R x \implies x = y
+
+"Definition of a partial order" (*****)
+
+Let X be a set
+Let \preceq be a relation on X
+Definition: is_partial_order(\preceq) ⟷ is_reflexive(\preceq) \wedge is_transitive(\preceq) \wedge is_antisymmetric(\preceq)
+
+"Definition of a poset" (*****)
+Let X be a set
+Let \preceq be a relation on X
+Let \tilde{X} = (X, \preceq)
+Definition: is_poset(\tilde{X}) ⟷ is_partial_order(\preceq)
+
+"Definition of a maximal element" (*****)
+
+Let X be a set
+Let \preceq be a relation on X
+Let \tilde{X} = (X, \preceq)
+Let A be a subset of X
+Let x be an element of X
+Suppose is_poset(\tilde{X})
+Suppose x\in A
+Definition: is_maximal(x,A) ⟷ \forall a\in A  x\preceq a \implies a = x
+
+
+"Definition of a minimal element" (*****)
+
+Let X be a set
+Let \preceq be a relation on X
+Let \tilde{X} = (X, \preceq)
+Let A be a subset of X
+Let x be an element of X
+Suppose is_poset(\tilde{X})
+Suppose x\in A
+Definition: is_minimal(x,A) ⟷ \forall a\in A  a\preceq x \implies a = x
+
+
+"Definition of a total order" (*****)
+
+Let X be a set
+Let \preceq be a partial order on X
+Definition: is_total_order(\preceq) ⟷ \forall x\in X \forall y\in X  x\preceq y \vee y\preceq x
+
+"Definition of a toset" (*****)
+
+Let X be a set
+Let \preceq be a relation on X
+Let \tilde{X} = (X, \preceq)
+Definition: is_toset(\tilde{X}) ⟷ is_total_order(\preceq)
+
+
+"Definition of a well ordering" (*****)
+
+Let X be a set
+Let \preceq be a total order on X
+Definition: is_well_ordering(\preceq) ⟷ \forall A\subset X  A\ne\emptyset => \exists x\in X  x\in A \wedge is_minimal(x,A)
+
+"Definition of a woset" (*****)
+
+Let X be a set
+Let \preceq be a relation on X
+Let \tilde{X} = (X, \preceq)
+Definition: is_woset(\tilde{X}) ⟷ is_well_ordering(\preceq)
+
+
+"Well-ordering principle" (*****)
+
+Let X be a set
+Then \exists \preceq  is_woset((X, \preceq))
+
+Comment: For formatting purposes it would be nice if there could be enough type inference for the program to work out that \prec has to be a relation on X, which is pretty clear given the preceding definitions. But without that one could write something like \exists \preceq: relation on X  is_woset((X,\preceq)).
+
+Comment: We might want to tag this as a result that is equivalent to AC, in case a user wants to try to find proofs that avoid AC, or at least we want the program to flag up occasions when it uses AC. 
 
 
 # Topological spaces (by Bill)
