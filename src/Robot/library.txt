@@ -93,6 +93,12 @@ Let $X$ be a set
 Let $A$ be a subset of $X$
 Then $\emptyset \subseteq A$
 
+"A subset of a ground set is contained in the ground set"  (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $A\subseteq X$
+
 
 "Transitivity of set inclusion"
 
@@ -465,6 +471,24 @@ Then $y \in f ` A$ ⟷ $\exists x \in X  x\in A \wedge f(x) = z$
 
 Low-priority pointer: 'by the definition of f ` A'.
 
+"Defining a set as an image"  (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Then $\{f(x): x\in A\}$ is a subset of $Y$
+Definition: $\{f(x): x\in A\} = f ` A$
+
+"Membership of a set defined as an image" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f : X \to Y$
+Let $A$ be a subset of $X$
+Let $y$ be an element of $Y$
+Then $y\in\{f(x): x\in A\}$ ⟷ $\exists x\in X   x\in A \wedge f(x) = y$
+
 
 "Definition of image of a set under a function " (imageI)
 
@@ -671,21 +695,21 @@ INJECTIONS, SURJECTIONS AND BIJECTIONS
 Let $X$ be a set
 Let $Y$ be a set
 Let $f:X \to Y$
-Definition: $f$ is an injection ⟷ $\forall x\in X  \forall y\in X  f(x) = f(y) \implies x = y$
+Definition: is_injection($f$) ⟷ $\forall x\in X  \forall y\in X  f(x) = f(y) \implies x = y$
 
 "Alternative definition of an injection" (*****)
 
 Let $X$ be a set
 Let $Y$ be a set
 Let $f:X \to Y$
-Definition: $f$ is an injection ⟷ $\forall x\in X  \forall y\in X  x \ne y \implies f(x) \ne f(y)$
+Definition: is_injection($f$) ⟷ $\forall x\in X  \forall y\in X  x \ne y \implies f(x) \ne f(y)$
 
 "Definition of a surjection" (*****)
 
 Let $X$ be a set
 Let $Y$ be a set
 Let $f:X \to Y$
-Definition: $f$ is a surjection ⟷ $\forall y\in Y  \exists x\in X  f(x) = y$
+Definition: is_surjection($f$) ⟷ $\forall y\in Y  \exists x\in X  f(x) = y$
 
 
 "Definition of a surjection" (*****)
@@ -693,7 +717,7 @@ Definition: $f$ is a surjection ⟷ $\forall y\in Y  \exists x\in X  f(x) = y$
 Let $X$ be a set
 Let $Y$ be a set
 Let $f:X \to Y$
-Definition: $f$ is a surjection ⟷ $f ` X = Y$
+Definition: is_surjection($f$) ⟷ $f ` X = Y$
 
 "Definition of a bijection" (*****)
 
@@ -709,7 +733,7 @@ Let $X$ be a set
 Let $Y$ be a set
 Let $f:X \to Y$
 Let $g:Y \to X$
-Definition: $g$ is a left inverse of $f$ ⟷ $g\circ f = \id_X$
+Definition: is_left_inverse($(g,f)$) ⟷ $g\circ f = \id_X$
 
 "Definition of a left inverse" (*****)
 
@@ -717,7 +741,7 @@ Let $X$ be a set
 Let $Y$ be a set
 Let $f:X \to Y$
 Let $g:Y \to X$
-Then $g$ is a left inverse of $f$ ⟷ $\forall x\in X  g(f(x))=x$
+Then is_left_inverse($g,f$) ⟷ $\forall x\in X  g(f(x))=x$
 
 "Definition of a right inverse" (*****)
 
@@ -725,7 +749,7 @@ Let $X$ be a set
 Let $Y$ be a set
 Let $f:X\to Y$
 Let $g:Y\to X$
-Then $g$ is a right inverse of $f$ ⟷ $f\circ g = \id_Y$
+Then is_right_inverse($g,f$) ⟷ $f\circ g = \id_Y$
 
 
 "Definition of a right inverse" (*****)
@@ -734,7 +758,7 @@ Let $X$ be a set
 Let $Y$ be a set
 Let $f:X\to Y$
 Let $g:Y\to X$
-Then $g$ is a right inverse of $f$ ⟷ $\forall y\in Y  f(g(y))=y$
+Then is_right_inverse($g,f$) ⟷ $\forall y\in Y  f(g(y))=y$
 
 
 "Injections and left inverses" (*****)
@@ -742,7 +766,7 @@ Then $g$ is a right inverse of $f$ ⟷ $\forall y\in Y  f(g(y))=y$
 Let $X$ be a set
 Let $Y$ be a set
 Let $f:X\to Y$
-Then $f$ is an injection ⟷ $\exists g:Y\to X$ $g$ is a left inverse of $f$
+Then is_injection($f$) ⟷ $\exists g:Y\to X$ is_left_inverse($g,f$)
 
 
 "Injections and right inverses" (*****)
@@ -750,8 +774,10 @@ Then $f$ is an injection ⟷ $\exists g:Y\to X$ $g$ is a left inverse of $f$
 Let $X$ be a set
 Let $Y$ be a set
 Let $f:X\to Y$
-Then $f$ is a surjection ⟷ $\exists g:Y\to X$ $g$ is a right inverse of $f$
+Then is_surjection($f$) ⟷ $\exists g:Y\to X$ is_right_inverse($g,f$)
 
+
+PROPER SUBSETS
 
 "Strict subset definition " (psubset_eq)
  
@@ -829,7 +855,51 @@ Let $A$ be a subset of $X$
 Let $B$ be a subset of $X$
 Suppose $A \subseteq B$
 Then $A\subsetneq B$ ⟷ $B\setminus A \ne \emptyset$
- 
+
+THE POWER SET
+
+"Type of power set"  (*****)
+
+Let X be a set
+Then power_set(X) is a set
+
+"Defining property of power set" (*****)
+
+Let X be a set
+Then A\in power_set(X) ⟷ A\subset X
+
+"Power set of a subset"  (*****)
+
+Let X be a set
+Let A be a subset of X
+Then power_set(A) = \{B\subset X: B\subset A\}
+
+USE OF INDEX SETS
+
+"Defining property of arbitrary intersection" (*****)
+
+Let X be a set
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Then x\in\bigcap_{\gamma\in\Gamma} A(\gamma) ⟷ \forall \gamma\in\Gamma  x\in A(\gamma)
+
+Let X be a set
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Let \delta be an element of \Gamma
+Let x be an element of X
+Suppose x\in\bigcap_{\gamma\in\Gamma} A(\gamma)
+Then x\in A(\gamma)
+
+"Defining property of arbitrary union" (*****)
+
+Let X be a set
+Let \Gamma be a set
+Let A: \Gamma \to power_set(X)
+Then x\in\bigcup_{\gamma\in\Gamma} A(\gamma) ⟷ \exists \gamma\in\Gamma  x\in A(\gamma)
+
+
+
 
 
 # Topological spaces (by Bill)
