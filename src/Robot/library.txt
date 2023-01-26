@@ -1031,6 +1031,132 @@ Let \Gamma be a set
 Let A: \Gamma \to power_set(X)
 Then f^\leftarrow( \bigcap_{\gamma\in\Gamma} A(\gamma) ) = \bigcap_{\gamma\in\Gamma} f^\leftarrow A(\gamma)
 
+ORDERED PAIRS, TUPLES, AND CARTESIAN PRODUCTS
+
+"Defining property of ordered pairs"  (*****)
+
+Let X be a set
+Let Y be a set
+Let x be an element of X
+Let x' be an element of X
+Let y be an element of Y
+Let y' be an element of Y
+Then (x,y) = (x',y') ⟷ x = x' \wedge y = y'
+
+Comment: I don't know how happy the parser will be with primed variables. I'm happy to have separate letters instead or to use x_1 and x_2 etc. if that is deemed to be more convenient.
+
+"Definition of Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Then X \times Y is a set
+Definition: X \times Y = \{(x,y) : x \in X \wedge y\in Y\}
+
+Comment: There are other ways one might imagine doing this.
+
+"Definition of projection map I" (*****)
+
+Let X be a set
+Let Y be a set
+Then \pi_1:X\times Y\to X
+Definition: \forall(x,y)\in X\times Y  \pi_1:(x,y)\mapsto x
+
+Comment: This chooses once and for all a notation for the projection map, which we might not always want to do. We might, for instance, prefer to say that a function from X\times Y to X is the projection map to the first coordinate if it always maps (x,y) to x. 
+
+"Definition of projection map II" (*****)
+
+Let X be a set
+Let Y be a set
+Then \pi_2:X\times Y\to X
+Definition: \forall(x,y)\in X\times Y  \pi_1:(x,y)\mapsto y
+
+"Universal property of Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let A be a set
+Let f:A \to X
+Let g:A \to Y
+Then \exists h:A\to X\times Y  \forall a\in A  f(a) = \pi_1(h(a)) \wedge g(a) = \pi_2(h(a))
+
+Comment: We can easily deduce from this that h(a) = (f(a), g(a)). Indeed, we know it's some (x,y) and we immediately get that f(a) = x and g(a) = y. The question arises whether we should nevertheless store this in the library. At the moment I incline towards not doing so, as that would give the program a slight nudge in the direction of using universal properties rather than getting grubby with elements.
+
+"Defining property of ordered triples" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Let x be an element of X
+Let x' be an element of X
+Let y be an element of Y
+Let y' be an element of Y
+Let z be an element of Z
+Let z' be an element of Z
+Then (x,y,z) = (x',y',z') ⟷ x = x' \wedge y = y' \wedge z = z'
+
+Comment: I am going for a one, two, three, many ... approach here.
+
+
+"Definition of threefold Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Then X \times Y \times Z is a set
+Definition: X \times Y \times Z = \{(x,y,z) : x \in X \wedge y\in Y \wedge z\in Z\}
+
+Comment: There are other ways one might imagine doing this.
+
+"Definition of threefold projection map I" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Then \pi_1:X\times Y\times Z \to X
+Definition: \forall(x,y,z)\in X\times Y\times Z  \pi_1:(x,y,z)\mapsto x
+
+Comment: This chooses once and for all a notation for the projection map, which we might not always want to do. We might, for instance, prefer to say that a function from X\times Y to X is the projection map to the first coordinate if it always maps (x,y) to x. 
+
+"Definition of threefold projection map II" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Then \pi_2:X\times Y\times Z \to X
+Definition: \forall(x,y,z)\in X\times Y  \pi_1:(x,y)\mapsto y
+
+"Definition of threefold projection map III" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Then \pi_2:X\times Y\times Z \to X
+Definition: \forall(x,y,z)\in X\times Y  \pi_1:(x,y,z)\mapsto z
+
+
+"Universal property of threefold Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Let A be a set
+Let f:A \to X
+Let g:A \to Y
+Let h:A \to Z
+Then \exists k:A\to X\times Y  \forall a\in A  f(a) = \pi_1(k(a)) \wedge g(a) = \pi_2(k(a)) \wedge h(a) = \pi_3(k(a))
+
+
+"Associativity of Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Let \phi: X\times (Y\times Z) \to (X\times Y) \times Z
+Let \phi: (x, (y,z)) \mapsto ((x,y), z)
+Then is_bijection(\phi)
+
+Comment: I want to say much more than that. I want to say that both sides satisfy the universal property for Cartesian products. I need to think how best to do that.
+
 
 # Properties of relations
 
