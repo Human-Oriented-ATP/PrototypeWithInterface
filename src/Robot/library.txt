@@ -861,6 +861,21 @@ Let $Y$ be a set
 Let $f:X\to Y$
 Then is_surjection($f$) ⟷ $\exists g:Y\to X$ is_right_inverse($g,f$)
 
+"Definition of an inverse" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Let $g:Y\to X$
+Definition: is_inverse($g,f$) ⟷ is_left_inverse($g,f$) \wedge is_right_inverse($g,f$)
+
+"Bijections and inverses" (*****)
+
+Let $X$ be a set
+Let $Y$ be a set
+Let $f:X\to Y$
+Then $\exists g:Y\to X$ is_inverse($g,f$) ⟷ is_bijection($f$)
+
 
 PROPER SUBSETS
 
@@ -1081,6 +1096,32 @@ Then \exists h:A\to X\times Y  \forall a\in A  f(a) = \pi_1(h(a)) \wedge g(a) = 
 
 Comment: We can easily deduce from this that h(a) = (f(a), g(a)). Indeed, we know it's some (x,y) and we immediately get that f(a) = x and g(a) = y. The question arises whether we should nevertheless store this in the library. At the moment I incline towards not doing so, as that would give the program a slight nudge in the direction of using universal properties rather than getting grubby with elements.
 
+
+"Abstract definition of Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let W be a set
+Let \pi_1:W\to X
+Let \pi_2:W\to Y
+Definition: is_abstract_Cartesian_product(W,\pi_1,\pi_2,X,Y) ⟷ \forall A:set  \forall f:A\to X  \forall g:A\to Y  \exists h:A\to W  f = \pi_1\circ h \wedge g = \pi_2\circ h
+
+
+"Uniqueness property of abstract Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let W be a set
+Let \pi_1:W\to X
+Let \pi_2:W\to Y
+Let V be a set
+Let \rho_1:V\to X
+Let \rho_2:V\to Y
+Suppose is_abstract_Cartesian_product(W,\pi_1,\pi_2,X,Y)
+Suppose is_abstract_Cartesian_product(V,\rho_1,\rho_2,X,Y)
+Then \exists \theta:W\to V is_bijection(\theta) \wedge \pi_1 = \rho_1\circ\theta \wedge \pi_2 = \rho_2\circ\theta
+
+
 "Defining property of ordered triples" (*****)
 
 Let X be a set
@@ -1144,6 +1185,35 @@ Let f:A \to X
 Let g:A \to Y
 Let h:A \to Z
 Then \exists k:A\to X\times Y  \forall a\in A  f(a) = \pi_1(k(a)) \wedge g(a) = \pi_2(k(a)) \wedge h(a) = \pi_3(k(a))
+
+"Abstract definition of threefold Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Let W be a set
+Let \pi_1:W\to X
+Let \pi_2:W\to Y
+Let \pi_3:W\to Z
+Definition: is_abstract_Cartesian_product(W,\pi_1,\pi_2,\pi_3,X,Y,Z) ⟷ \forall A:set  \forall f:A\to X  \forall g:A\to Y \forall h:A\to Z \exists k:A\to W  f = \pi_1\circ k \wedge g = \pi_2\circ k \wedge h = \pi_3\circ k
+
+
+"Uniqueness property of abstract Cartesian product" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Let W be a set
+Let \pi_1:W\to X
+Let \pi_2:W\to Y
+Let \pi_3:W\to Z
+Let V be a set
+Let \rho_1:V\to X
+Let \rho_2:V\to Y
+Let \rho_3:V\to Z
+Suppose is_abstract_Cartesian_product(W,\pi_1,\pi_2,\pi_3,X,Y,Z)
+Suppose is_abstract_Cartesian_product(V,\rho_1,\rho_2,\rho_3,X,Y,Z)
+Then \exists \theta:W\to V is_bijection(\theta) \wedge \pi_1 = \rho_1\circ\theta \wedge \pi_2 = \rho_2\circ\theta \wedge \pi_3 = \rho_3\circ\theta
 
 
 "Associativity of Cartesian product" (*****)
