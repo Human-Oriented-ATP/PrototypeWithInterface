@@ -195,6 +195,33 @@ Then $(A \cap B) \subseteq B$
 
 Comment: this is here to save the program having to reason that $A\cap B = B\cap A$ and then use the previous result. But it may be that we will want the program to be good at doing quick bits of reasoning like that, in which case we will not need two results here. (Or another possibility is that at some point we generate simple reformulations of library results automatically rather than typing them all in by hand.) 
 
+"The intersection with the empty set is empty" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $A\cap\emptyset = \emptyset$
+Then $\emptyset\cap A = \emptyset$
+
+"The empty set is an identity for union" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $A\cup\emptyset = A$
+Then $\emptyset\cup A = A$
+
+"The ground set is an identity for intersection" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $A\cap X = A$
+Then $X\cap A = A$
+
+"The union of a set with the ground set is the ground set" (*****)
+
+Let $X$ be a set
+Let $A$ be a subset of $X$
+Then $A\cup X = X$
+Then $X\cup A = X$
 
 %"Definition of set intersection" (IntD2 )
 
@@ -1682,6 +1709,47 @@ Let z be an element of X
 Suppose distributes_over(\circ,\square)
 Then x\circ(y\square z) = (x\circ y)\square(x\circ z)
 Then (y\square z)\circ x = (y\circ x)\square(z\circ x)
+
+
+PROPERTIES OF SET-THEORETIC BINARY OPERATIONS
+
+"Intersection is commutative -- higher level" (*****)
+
+Then is_commutative(\cap)
+
+Comment: I'm assuming that in any given context type inference will understand that \cap is a binary operation on the power set of some suitable set X. I haven't given the context here, because in order to do so I would have to say that commutativity is a property of \cap and the power set of X, but I feel that it should be a property just of binary operations, since the set on which an operation operates is already part of the definition of the operation.
+
+"Intersection is associative -- higher level" (*****)
+
+Then is_associative(\cap)
+
+"The ground set is an identity for intersection -- higher level" (*****)
+
+Let X be a set
+Then is_identity(X,\cap)
+
+
+"Union is commutative -- higher level" (*****)
+
+Then is_commutative(\cup)
+
+"Union is associative -- higher level" (*****)
+
+Then is_associative(\cup)
+
+"The empty set is an identity for union -- higher level" (*****)
+
+Then is_identity(\emptyset,\cup)
+
+
+"Intersection distributes over union" (*****)
+
+Then distributes_over(\cap,\cup)
+
+"Union distributes over intersection" (*****)
+
+Then distributes_over(\cup,\cap)
+
 
 
 # Topological spaces (by Bill)
