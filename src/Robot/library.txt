@@ -974,6 +974,40 @@ Let X be a set
 Let A be a subset of X
 Then power_set(A) = \{B\subset X: B\subset A\}
 
+SET FAMILIES AND THEIR INTERSECTIONS AND UNIONS
+
+"The intersection of a family of sets" (*****)
+
+Let X be a set
+Let \mathcal{A} be a subset of power_set(X)
+Then \bigcap(\mathcal{A}) is a subset of X
+Definition: \bigcap(\mathcal{A}) = \{x\in X: \forall A\in\mathcal{A}  x\in A\}
+
+"The intersection of a family of sets" (*****)
+
+Let X be a set
+Let \mathcal{A} be a subset of power_set(X)
+Let A be a subset of X
+Let x\in X
+Suppose A\in\mathcal{A}
+Suppose x\in\bigcap(\mathcal{A})
+Then x\in A
+
+"The union of a family of sets" (*****)
+
+Let X be a set
+Let \mathcal{A} be a subset of power_set(X)
+Then \bigcup(\mathcal{A}) is a subset of X
+Definition: \bigcup(\mathcal{A}) = \{x\in X: \exists A\in\mathcal{A}  x\in A\}
+
+"The union of a family of sets" (*****)
+
+Let X be a set
+Let \mathcal{A} be a subset of power_set(X)
+Let x\in X
+Suppose x\in\bigcup(\mathcal{A})
+Then \exists A\subset X  A\in\mathcal{A} \wedge x\in A
+
 USE OF INDEX SETS
 
 "Defining property of arbitrary intersection" (*****)
@@ -1073,8 +1107,8 @@ Comment: There are other ways one might imagine doing this.
 
 Let X be a set
 Let Y be a set
-Then \pi_1:X\times Y\to X
-Definition: \forall(x,y)\in X\times Y  \pi_1:(x,y)\mapsto x
+Then \pi_X:X\times Y\to X
+Definition: \forall(x,y)\in X\times Y  \pi_X:(x,y)\mapsto x
 
 Comment: This chooses once and for all a notation for the projection map, which we might not always want to do. We might, for instance, prefer to say that a function from X\times Y to X is the projection map to the first coordinate if it always maps (x,y) to x. 
 
@@ -1082,7 +1116,7 @@ Comment: This chooses once and for all a notation for the projection map, which 
 
 Let X be a set
 Let Y be a set
-Then \pi_2:X\times Y\to X
+Then \pi_Y:X\times Y\to Y
 Definition: \forall(x,y)\in X\times Y  \pi_1:(x,y)\mapsto y
 
 "Universal property of Cartesian product" (*****)
@@ -1092,7 +1126,7 @@ Let Y be a set
 Let A be a set
 Let f:A \to X
 Let g:A \to Y
-Then \exists h:A\to X\times Y  \forall a\in A  f(a) = \pi_1(h(a)) \wedge g(a) = \pi_2(h(a))
+Then \exists h:A\to X\times Y  \forall a\in A  f(a) = \pi_X(h(a)) \wedge g(a) = \pi_Y(h(a))
 
 Comment: We can easily deduce from this that h(a) = (f(a), g(a)). Indeed, we know it's some (x,y) and we immediately get that f(a) = x and g(a) = y. The question arises whether we should nevertheless store this in the library. At the moment I incline towards not doing so, as that would give the program a slight nudge in the direction of using universal properties rather than getting grubby with elements.
 
@@ -1102,9 +1136,9 @@ Comment: We can easily deduce from this that h(a) = (f(a), g(a)). Indeed, we kno
 Let X be a set
 Let Y be a set
 Let W be a set
-Let \pi_1:W\to X
-Let \pi_2:W\to Y
-Definition: is_abstract_Cartesian_product(W,\pi_1,\pi_2,X,Y) ⟷ \forall A:set  \forall f:A\to X  \forall g:A\to Y  \exists h:A\to W  f = \pi_1\circ h \wedge g = \pi_2\circ h
+Let \pi_X:W\to X
+Let \pi_Y:W\to Y
+Definition: is_abstract_Cartesian_product(W,\pi_X,\pi_Y,X,Y) ⟷ \forall A:set  \forall f:A\to X  \forall g:A\to Y  \exists h:A\to W  f = \pi_X\circ h \wedge g = \pi_Y\circ h
 
 
 "Uniqueness property of abstract Cartesian product" (*****)
@@ -1112,14 +1146,14 @@ Definition: is_abstract_Cartesian_product(W,\pi_1,\pi_2,X,Y) ⟷ \forall A:set  
 Let X be a set
 Let Y be a set
 Let W be a set
-Let \pi_1:W\to X
-Let \pi_2:W\to Y
+Let \pi_X:W\to X
+Let \pi_Y:W\to Y
 Let V be a set
-Let \rho_1:V\to X
-Let \rho_2:V\to Y
-Suppose is_abstract_Cartesian_product(W,\pi_1,\pi_2,X,Y)
-Suppose is_abstract_Cartesian_product(V,\rho_1,\rho_2,X,Y)
-Then \exists \theta:W\to V is_bijection(\theta) \wedge \pi_1 = \rho_1\circ\theta \wedge \pi_2 = \rho_2\circ\theta
+Let \rho_X:V\to X
+Let \rho_Y:V\to Y
+Suppose is_abstract_Cartesian_product(W,\pi_X,\pi_Y,X,Y)
+Suppose is_abstract_Cartesian_product(V,\rho_X,\rho_Y,X,Y)
+Then \exists \theta:W\to V is_bijection(\theta) \wedge \pi_X = \rho_X\circ\theta \wedge \pi_Y = \rho_Y\circ\theta
 
 
 "Defining property of ordered triples" (*****)
@@ -1153,26 +1187,25 @@ Comment: There are other ways one might imagine doing this.
 Let X be a set
 Let Y be a set
 Let Z be a set
-Then \pi_1:X\times Y\times Z \to X
-Definition: \forall(x,y,z)\in X\times Y\times Z  \pi_1:(x,y,z)\mapsto x
+Then \pi_X:X\times Y\times Z \to X
+Definition: \forall(x,y,z)\in X\times Y\times Z  \pi_X:(x,y,z)\mapsto x
 
-Comment: This chooses once and for all a notation for the projection map, which we might not always want to do. We might, for instance, prefer to say that a function from X\times Y to X is the projection map to the first coordinate if it always maps (x,y) to x. 
 
 "Definition of threefold projection map II" (*****)
 
 Let X be a set
 Let Y be a set
 Let Z be a set
-Then \pi_2:X\times Y\times Z \to X
-Definition: \forall(x,y,z)\in X\times Y  \pi_1:(x,y)\mapsto y
+Then \pi_Y:X\times Y\times Z \to Y
+Definition: \forall(x,y,z)\in X\times Y\times Z  \pi_Y:(x,y,z)\mapsto y
 
 "Definition of threefold projection map III" (*****)
 
 Let X be a set
 Let Y be a set
 Let Z be a set
-Then \pi_2:X\times Y\times Z \to X
-Definition: \forall(x,y,z)\in X\times Y  \pi_1:(x,y,z)\mapsto z
+Then \pi_Z:X\times Y\times Z \to Z
+Definition: \forall(x,y,z)\in X\times Y\times Z  \pi_Z:(x,y,z)\mapsto z
 
 
 "Universal property of threefold Cartesian product" (*****)
@@ -1184,7 +1217,7 @@ Let A be a set
 Let f:A \to X
 Let g:A \to Y
 Let h:A \to Z
-Then \exists k:A\to X\times Y  \forall a\in A  f(a) = \pi_1(k(a)) \wedge g(a) = \pi_2(k(a)) \wedge h(a) = \pi_3(k(a))
+Then \exists k:A\to X\times Y\times Z  \forall a\in A  f(a) = \pi_X(k(a)) \wedge g(a) = \pi_Y(k(a)) \wedge h(a) = \pi_Z(k(a))
 
 "Abstract definition of threefold Cartesian product" (*****)
 
@@ -1192,10 +1225,10 @@ Let X be a set
 Let Y be a set
 Let Z be a set
 Let W be a set
-Let \pi_1:W\to X
-Let \pi_2:W\to Y
-Let \pi_3:W\to Z
-Definition: is_abstract_Cartesian_product(W,\pi_1,\pi_2,\pi_3,X,Y,Z) ⟷ \forall A:set  \forall f:A\to X  \forall g:A\to Y \forall h:A\to Z \exists k:A\to W  f = \pi_1\circ k \wedge g = \pi_2\circ k \wedge h = \pi_3\circ k
+Let \pi_X:W\to X
+Let \pi_Y:W\to Y
+Let \pi_Z:W\to Z
+Definition: is_abstract_Cartesian_product(W,\pi_X,\pi_Y,\pi_Z,X,Y,Z) ⟷ \forall A:set  \forall f:A\to X  \forall g:A\to Y \forall h:A\to Z \exists k:A\to W  f = \pi_X\circ k \wedge g = \pi_Y\circ k \wedge h = \pi_Z\circ k
 
 
 "Uniqueness property of abstract Cartesian product" (*****)
@@ -1204,31 +1237,58 @@ Let X be a set
 Let Y be a set
 Let Z be a set
 Let W be a set
-Let \pi_1:W\to X
-Let \pi_2:W\to Y
-Let \pi_3:W\to Z
+Let \pi_X:W\to X
+Let \pi_Y:W\to Y
+Let \pi_Z:W\to Z
 Let V be a set
-Let \rho_1:V\to X
-Let \rho_2:V\to Y
-Let \rho_3:V\to Z
-Suppose is_abstract_Cartesian_product(W,\pi_1,\pi_2,\pi_3,X,Y,Z)
-Suppose is_abstract_Cartesian_product(V,\rho_1,\rho_2,\rho_3,X,Y,Z)
-Then \exists \theta:W\to V is_bijection(\theta) \wedge \pi_1 = \rho_1\circ\theta \wedge \pi_2 = \rho_2\circ\theta \wedge \pi_3 = \rho_3\circ\theta
+Let \rho_X:V\to X
+Let \rho_Y:V\to Y
+Let \rho_Z:V\to Z
+Suppose is_abstract_Cartesian_product(W,\pi_X,\pi_Y,\pi_Z,X,Y,Z)
+Suppose is_abstract_Cartesian_product(V,\rho_X,\rho_Y,\rho_Z,X,Y,Z)
+Then \exists \theta:W\to V is_bijection(\theta) \wedge \pi_X = \rho_X\circ\theta \wedge \pi_Y = \rho_Y\circ\theta \wedge \pi_Z = \rho_Z\circ\theta
 
-
-"Associativity of Cartesian product" (*****)
+"The Cartesian product is an abstract Cartesian product" (*****)
 
 Let X be a set
 Let Y be a set
 Let Z be a set
-Let \phi: X\times (Y\times Z) \to (X\times Y) \times Z
-Let \phi: (x, (y,z)) \mapsto ((x,y), z)
-Then is_bijection(\phi)
+Then is_abstract_Cartesian_product(X\times Y\times Z,\pi_X,\pi_Y,\pi_Z,X,Y,Z)
 
-Comment: I want to say much more than that. I want to say that both sides satisfy the universal property for Cartesian products. I need to think how best to do that.
+Comment: This follows very obviously from earlier results so it's questionable whether it's worth including.
 
 
-# Properties of relations
+"Associativity of Cartesian product I" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Then is_abstract_Cartesian_product(X\times(Y\times Z),\pi_X,\pi_Y\circ\pi_{Y\times Z},\pi_Z\circ\pi_{Y\times Z},X,Y,Z)
+
+Comment: This is my attempt to put in the fact that X\times(Y\times Z) basically means the same as X\times Y\times Z.
+
+"Associativity of Cartesian product II" (*****)
+
+Let X be a set
+Let Y be a set
+Let Z be a set
+Then is_abstract_Cartesian_product((X\timesY)\times Z,\pi_X\circ\pi_{X\times Y},\pi_Y\circ\pi_{X\times Y},\pi_Z,X,Y,Z)
+
+Comment: From the last few results we get that X\times(Y\times Z) is isomorphic in an appropriate sense to (X\times Y)\times Z. But it may well be that all this can be done in a much better way.
+
+
+# Relations and their properties
+
+SET-THEORETIC DEFINITION OF RELATIONS
+
+Let X be a set
+Let A be a subset of X\times X
+Let R be a relation on X
+Definition: associated_relation(R,A) ⟷  \forall x\in X  \forall y\in X  x R y \iff (x,y)\in A
+Definition: associated_subset(A,R) ⟷ associated_relation(R,A)
+
+Comment: I have used infix notation in this section, but I do not object if we want to change x R y to R(x,y).
+
 
 EQUIVALENCE RELATIONS
 
@@ -1238,7 +1298,6 @@ Let X be a set
 Let R be a relation on X
 Definition: is_reflexive(R) ⟷ \forall x\in x  x R x
 
-Comment: I have used infix notation for this, but I do not object if we want to change it to R(x,x).
 
 "Definition of symmetric relation"  (*****)
 
@@ -1257,6 +1316,45 @@ Definition: is_transitive(R) ⟷ \forall x\in X \forall y\in X \forall z\in X  x
 Let X be a set
 Let R be a relation on X
 Definition: equivalence_relation(R) ⟷ is_reflexive(R) \wedge is_symmetric(R) \wedge is_transitive(R)
+
+"Definition of equivalence class" (*****)
+
+Let X be a set
+Let R be a relation on X
+Let x\in X
+Suppose equivalence_relation(R)
+Definition: equivalence_class(x) = \{y\in X: x R y\}
+
+"Definition of partition" (*****)
+
+Let X be a set
+Let \mathcal{P} be a subset of power_set(X)
+Definition: is_partition(\mathcal{P},X) ⟷  X = \bigcup(\mathcal{P}) \wedge \forall A\in\mathcal{P} \forall B\in\mathcal{P} A = B \vee are_disjoint(A,B)
+
+"Alternative definition of partition" (*****)
+
+Let X be a set
+Let \mathcal{P} be a subset of power_set(X)
+Then is_partition(\mathcal{P}, X) ⟷ \forall x\in X  ( \exists A\subset X  A\in\mathcal{P} \wedge x\in A ) \wedge ( \forall A\subset X \forall B\subset X A\in\mathcal{P} \wedge B\in\mathcal{P} \wedge x\in A \wedge x\in B \implies A = B )
+
+Comment: I would prefer just to be able to say that there exists a unique A\in\mathcal{P} such that x\in A, but it's not clear to me how we would handle \exists ! x  P(x). Should that be defined in the library somehow, or hard-wired into the program in the same way that the quantifiers themselves are, or what? A discussion is needed.
+
+"Equivalence classes form a partition" (*****)
+
+Let X be a set
+Let R be a relation on X
+Then is_partition( \{equivalence_class(x): x\in X\}, X )
+
+Comment: Here some type inference seems important, as the definition of the set \{equivalence_class(x): x\in X\} makes sense (given earlier results in the library) only if it is understood that equivalence_class is a function from X to power_set(X). 
+
+"A partition defines an equivalence relation" (*****)
+
+Let X be a set
+Let \mathcal{P} be a subset of power_set(X)
+Let R be a relation on X
+Suppose is_partition(\mathcal{P},X)
+Suppose \forall x \forall y  x R y \iff \exists A\subset X  A\in\mathcal{P} \wedge x\in A \wedge y\in A
+Then equivalence_relation(R)
 
 
 ORDERINGS
@@ -1339,6 +1437,251 @@ Then \exists \preceq  is_woset((X, \preceq))
 Comment: For formatting purposes it would be nice if there could be enough type inference for the program to work out that \prec has to be a relation on X, which is pretty clear given the preceding definitions. But without that one could write something like \exists \preceq: relation on X  is_woset((X,\preceq)).
 
 Comment: We might want to tag this as a result that is equivalent to AC, in case a user wants to try to find proofs that avoid AC, or at least we want the program to flag up occasions when it uses AC. 
+
+
+BINARY OPERATIONS AND THEIR PROPERTIES
+
+Comment: I have treated the notion of binary operation as a primitive. 
+
+"Associating functions with binary operations" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let f:X\times X \to X
+Then associated_function(f,\circ) ⟷ \forall x\in X \forall y\in X  f(x,y) = x\circ y
+
+"Associating binary operations with functions" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let f:X\times X \to X
+Then associated_binary_operation(\circ,f) ⟷ associated_function(f,\circ)
+
+
+"Definition of commutativity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Definition: is_commutative(\circ) ⟷ \forall x\in X \forall y\in X  x\circ y = y\circ x
+
+"Definition of commutativity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Suppose is_commutative(\circ)
+Then x\circ y = y\circ x
+
+
+"Definition of associativity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Definition: is_associative(\circ) ⟷ \forall x\in X \forall y\in X \forall z\in X  x\circ(y\circ z) = (x\circ y)\circ z
+
+"Definition of associativity" (*****)
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let z be an element of X
+Suppose is_associative(\circ)
+Then x\circ(y\circ z) = (x\circ y)\circ z
+
+
+"Definition of left identity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let e be an element of X
+Definition: is_left_identity(e,\circ) ⟷ \forall x\in X  e\circ x = x
+
+"Definition of left identity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let e be an element of X
+Let x be an element of X
+Suppose is_left_identity(e,\circ)
+Then e\circ x = x
+
+"Definition of right identity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let e be an element of X
+Definition: is_right_identity(e,\circ) ⟷ \forall x\in X  x\circ e = x
+
+"Definition of right identity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let e be an element of X
+Let x be an element of X
+Suppose is_right_identity(e,\circ)
+Then x\circ e = x
+
+"Definition of two-sided identity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let e be an element of X
+Definition: is_identity(e,\circ) ⟷ \forall x\in X  e\circ x = x \wedge x\circ e = x
+
+"Higher-level definition of two-sided identity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let e be an element of X
+Then is_identity(e,\circ) ⟷ is_left_identity(e,\circ) \wedge is_right_identity(e,\circ)
+
+"Definition of two-sided identity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let e be an element of X
+Let x be an element of X
+Suppose is_identity(e,\circ)
+Then e\circ x = x
+Then x\circ e = x
+
+
+"Definition of left inverse" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let e be an element of X
+Suppose is_identity(e,\circ)
+Definition: is_left_inverse(y,x,\circ) ⟷ y\circ x = e
+
+"Definition of left inverse" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let e be an element of X
+Suppose is_identity(e,\circ)
+Suppose is_left_inverse(y,x,\circ)
+Then y\circ x = e
+
+"Definition of right inverse" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let e be an element of X
+Suppose is_identity(e,\circ)
+Definition: is_right_inverse(y,x,\circ) ⟷ x\circ y = e
+
+"Definition of right inverse" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let e be an element of X
+Suppose is_identity(e,\circ)
+Suppose is_right_inverse(y,x,\circ)
+Then x\circ y = e
+
+"Definition of two-sided inverse" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let e be an element of X
+Suppose is_identity(e,\circ)
+Definition: is_inverse(y,x,\circ,e) ⟷ y\circ x = e \wedge x\circ y = e
+
+"Higher-level definition of two-sided inverse" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let e be an element of X
+Suppose is_identity(e,\circ)
+Then is_inverse(y,x,\circ,e) ⟷ is_left_inverse(y,x,\circ,e) \wedge is_right_inverse(y,x,\circ,e)
+
+"Definition of two-sided inverse" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let e be an element of X
+Suppose is_identity(e,\circ)
+Suppose is_inverse(y,x,\circ,e)
+Then y\circ x = e
+Then x\circ y = e
+
+"Definition of left distributivity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let \square be a binary operation on X
+Definition: left_distributes_over(\circ,\square) ⟷ \forall x\in X \forall y\in X \forall z\in X  x\circ(y\square z) = (x\circ y)\square(x\circ z)
+
+"Definition of left distributivity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let \square be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let z be an element of X
+Suppose left_distributes_over(\circ,\square)
+Then x\circ(y\square z) = (x\circ y)\square(x\circ z)
+
+"Definition of right distributivity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let \square be a binary operation on X
+Definition: right_distributes_over(\circ,\square) ⟷ \forall x\in X \forall y\in X \forall z\in X  (x\square y)\circ z = (x\circ z)\square(y\circ z)
+
+"Definition of right distributivity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let \square be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let z be an element of X
+Suppose right_distributes_over(\circ,\square)
+Then (x\square y)\circ z = (x\circ z)\square(y\circ z)
+
+"Definition of two-sided distributivity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let \square be a binary operation on X
+Definition: distributes_over(\circ,\square) ⟷ \forall x\in X \forall y\in X \forall z\in X  x\circ(y\square z) = (x\circ y)\square(x\circ z) \wedge (y\square z)\circ x = (y\circ x)\square(z\circ x)
+
+"Higher-level definition of two-sided distributivity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let \square be a binary operation on X
+Definition: distributes_over(\circ,\square) ⟷ left_distributes_over(\circ,\square) \wedge right_distributes_over(\circ,\square)
+
+"Definition of two-sided distributivity" (*****)
+
+Let X be a set
+Let \circ be a binary operation on X
+Let \square be a binary operation on X
+Let x be an element of X
+Let y be an element of X
+Let z be an element of X
+Suppose distributes_over(\circ,\square)
+Then x\circ(y\square z) = (x\circ y)\square(x\circ z)
+Then (y\square z)\circ x = (y\circ x)\square(z\circ x)
 
 
 # Topological spaces (by Bill)
