@@ -1,0 +1,79 @@
+The library file has become quite large, so for convenience I am starting a new one. The previous file contains basics about sets, functions, relations, and binary operations. This one will focus more on the natural numbers, but it will include some material about sets that cannot be done without the natural numbers, such as giving a meaning to an ordered n-tuple or the intersection of n sets. I am thinking of these two files as being an attempt to teach the program much of the content of Cambridge's IA Numbers and Sets course.
+
+Comment: I don't want to keep typing \mathbb{N}, so I'm going to type \N. We can always do a global search and replace later if we want to, but actually I think it would be good to define \N to mean the natural numbers.
+
+Comment: At the risk of infuriating half the world, I'm going to take the natural numbers to be the set \{1,2,3,...\}
+
+Comment: I am no longer going to write (*****) to indicate that a name is needed, since that will be universally true for the moment.
+
+NATURAL NUMBER BASICS -- PEANO AXIOMS
+
+"1 is a natural number"
+
+Then 1 \in \N
+
+
+"Every natural number has a successor" 
+
+Then \forall n\in\N  \sigma(n)\in\N
+
+
+"Every natural number has a successor -- higher level" 
+
+Then \sigma:\N\to\N
+
+
+"The successor function is injective"
+
+Then \forall m\in\N \forall n\in\N  \sigma(m) = \sigma(n) \implies m = n
+
+
+"The successor function is almost surjective"
+
+Then n \ne 0 \implies \exists m  \sigma(m) = n
+
+
+"1 is not a successor"
+
+Then n\in\N \implies \sigma(n) \ne 1
+
+
+"Principle of induction"  
+
+Let A be a subset of \N
+Suppose 1\in A
+Suppose \forall n\in\N  n\in A \implies \sigma(n)\in A
+Then \forall n\in N  n\in A
+Then A = \N
+
+Comment: I gave two conclusions here, one a low-level one and the other a high-level one.
+
+Comment: If we actually want to do Peano arithmetic, then we need A to be a set of the form \{n\in\N : P(n)\} where P is a first-order formula. However, I am seeing this as more like a "mathematician's induction", which will not be very sensitive to the kind of set. If we don't do this, then the program will have a much harder job checking that the conditions for inductive arguments apply, when usually they will. We might want to add in the first-order-induction statement and flag up this much stronger one whenever it is used.
+
+
+"Principle of induction for statements"
+
+Let P be a property on \N
+Suppose P(1)
+Suppose \forall n\in\N  P(n) \implies P(n+1)
+Then \forall n\in\N P(n)
+
+Comment: Again, I have not specified that P has to be a first-order property. 
+
+
+"Definition of adding 1"
+
+Let n\in\N
+Definition: n + 1 = \sigma(n)
+
+"Inductive definition of adding a successor"
+
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose m = \sigma(r)
+Definition: n + m = \sigma(n+r)
+
+Comment: I am trying to make this as convenient as possible for a program to use. So if (unusually I hope!) it decided it wanted to expand the definition of n + m, it would see that it couldn't use this definition unless there exists r such that \sigma(r) = m. It would then be able to use the previous Peano axioms and backwards reasoning to reduce that condition to m \ne 1. So it would naturally split into two case, and the previous definition would take care of the case m = 1. Initially I wrote  n + \sigma(m) = \sigma(n+m), which is a bit more standard, but that would be harder for the program to match with a term a + b. The program would need to convert a + b into an expression of the form a + \sigma(r), which it could certainly do, but it would have to have decided first that the "wrong" match of a + b with n + \sigma(m) was close enough for there to be hope that b could be converted into the appropriate form somehow, which seems hard to achieve in a suitably general way.
+
+
