@@ -397,15 +397,25 @@ Then
 "The equivalence relation on \N \times \N used to define \Z" (equivrel_pairs_nat)
 
 Let \sim be a relation on \N\times\N
-Suppose (a,b) \sim (c,d) \iff a + d = b + c
+Suppose \forall a\in\N \forall b\in\N \forall c\in\N \forall d\in\N (a,b) \sim (c,d) \iff a + d = b + c
 Then equivalence_relation(\sim)
 
-"Construction of \Z from \N"  (integers_def)
+"Construction of \Z from \N"  (int_def)
 
 Let \sim be a relation on \N\times\N
-Suppose (a,b) \sim (c,d) \iff a + d = b + c
+Suppose \forall a\in\N \forall b\in\N \forall c\in\N \forall d\in\N (a,b) \sim (c,d) \iff a + d = b + c
 Definition: \Z = (\N \times \N)/\sim
 
+"Definition of addition on \Z" (add_int)
+
+Let \sim be a relation on \N\times\N
+Suppose \forall a\in\N \forall b\in\N \forall c\in\N \forall d\in\N(a,b) \sim (c,d) \iff a + d = b + c
+Let q = quotientmap(\N\times\N, \sim)
+Let x\in\N
+Let y\in\N
+Let z\in\N
+Let w\in\N
+Definition: equivalence_class((x,y),\sim) + equivalence_class((z,w),\sim) = equivalence_class((x+z,y+w),\sim)
 
 
 DIVISIBILITY
