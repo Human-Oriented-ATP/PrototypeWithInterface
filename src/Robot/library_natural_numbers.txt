@@ -6,39 +6,43 @@ Comment: At the risk of infuriating half the world, I'm going to take the natura
 
 Comment: I am no longer going to write (*****) to indicate that a name is needed, since that will be universally true for the moment.
 
+As far as possible, I am adopting the following conventions when giving a name to a result. (1) I use abbreviations that are as obvious as I can make them, such as "comm" for "commutative" etc. (2) I join a small number of such abbreviations with underscores. (3) I put the abbreviations I use in the following order: the object that's being talked about, any "decorations" that might accompany it, what property it has, what the context is, and any tags I might want to say what type of entry we have. For example, the statement that < on the natural numbers is named (lessthan_trans_nat) because it's about the relation <, the property it is said to have is transitivity, and the context is the natural numbers. The definition of the relation \leq on the natural numbers is named (leq_nat_def). The statement that the natural numbers with \leq is a woset is (nat_leq_woset) because here \leq is a "decoration" of the set of natural numbers. 
+
+
+
 NATURAL NUMBER BASICS -- PEANO AXIOMS
 
-"1 is a natural number"  [nat_1]
+"1 is a natural number"  (1_nat)
 
 Then 1 \in \N
 
 
-"Every natural number has a successor"  [nat_succ]
+"Every natural number has a successor"  (nat_succ)
 
 Then \forall n\in\N  \sigma(n)\in\N
 
 
-"Every natural number has a successor -- higher level"  [succ_fn]
+"Every natural number has a successor -- higher level"  (succ_fn)
 
 Then \sigma:\N\to\N
 
 
-"The successor function is injective"  [succ_inj]
+"The successor function is injective"  (succ_inj)
 
 Then \forall m\in\N \forall n\in\N  \sigma(m) = \sigma(n) \implies m = n
 
 
-"The successor function is almost surjective"  [nat_prec]
+"Every natural number apart from 1 has a predecessor"  (nat_predec)
 
 Then n \ne 1 \implies \exists m  \sigma(m) = n
 
 
-"1 is not a successor"  [1_no_prec]
+"1 does not have a predecessor"  (1_no_predec)
 
 Then n\in\N \implies \sigma(n) \ne 1
 
 
-"Principle of induction"  [set_induction]
+"Principle of induction"  (induction_set)
 
 Let A be a subset of \N
 Suppose 1\in A
@@ -51,7 +55,7 @@ Comment: I gave two conclusions here, one a low-level one and the other a high-l
 Comment: If we actually want to do Peano arithmetic, then we need A to be a set of the form \{n\in\N : P(n)\} where P is a first-order formula. However, I am seeing this as more like a "mathematician's induction", which will not be very sensitive to the kind of set. If we don't do this, then the program will have a much harder job checking that the conditions for inductive arguments apply, when usually they will. We might want to add in the first-order-induction statement and flag up this much stronger one whenever it is used.
 
 
-"Principle of induction for statements"  [prop_induction]
+"Principle of induction for statements"  (induction_prop)
 
 Let P be a property on \N
 Suppose P(1)
@@ -61,7 +65,7 @@ Then \forall n\in\N P(n)
 Comment: Again, I have not specified that P has to be a first-order property. 
 
 
-"Inductive definition of a function defined on \N"  [inductive_def]
+"Inductive definition of a function defined on \N"  (induction_fn_nat_def)
 
 Let X be a set
 Let g:\N\times X\to X
@@ -71,12 +75,12 @@ Then \existsunique f:\N\to X  f(1) = x \wedge \forall n\in\N  f(\sigma(n)) = g(n
 
 DEFINITION AND BASIC PROPERTIES OF ADDITION
 
-"Definition of adding 1"  [add_1]
+"Definition of adding 1"  (add_1_def)
 
 Let n\in\N
 Definition: n + 1 = \sigma(n)
 
-"Defining property of adding a successor"  [add_succ]
+"Defining property of adding a successor"  (add_succ_def)
 
 Let n\in\N
 Let m\in\N
@@ -84,15 +88,15 @@ Then n + \sigma(m) = \sigma(n+m)
 
 Comment: I am trying to make this as convenient as possible for a program to use. It might seem as though this formulation is inconvenient because it makes it difficult to expand the definition of n + m, but I think we don't usually want to do that. Typically we use all sorts of basic facts about addition, and on the rare occasions when we want to go back to the definition we typically use inductive arguments, so it's OK if it's not so easy to match n + m, since we'll in fact want to match n + \sigma(m). 
 
-"Addition is associative"  [add_assoc_nat]
+"Addition is associative"  (add_assoc_nat)
 
 Then is_associative(+,\N)
 
-"Addition is commutative"  [add_comm_nat]
+"Addition is commutative"  (add_comm_nat)
 
 Then is_commutative(+,\N)
 
-"The cancellation law for addition"  [add_cancel_nat]
+"The cancellation law for addition"  (add_cancel_nat)
 
 Let a\in\N
 Let b\in\N
@@ -104,18 +108,23 @@ Comment: I thought about putting only the forward direction here, but we do some
 
 THE ORDER RELATION ON \N AND ITS BASIC PROPERTIES
 
-"Less than relation on \N"  [def_lessthan_nat]
+"Less than relation on \N"  (lessthan_nat_def)
 
 Let n\in\N
 Let m\in\N
 Definition: n < m ⟷ \exists r\in\N  m = n + r
+
+"Less than or equal to relation on \N"  (leq_nat_def)
+
+Let n\in\N
+Let m\in\N
 Definition: n \leq m ⟷ n < m \vee n = m
 
-"Less than relation makes \N a woset"  [nat_woset]
+"Less than or equal to relation makes \N a woset"  (nat_leq_woset)
 
-Then is_woset((\N,<))
+Then is_woset((\N,\leq))
 
-"Less than or equal to relation on \N is transitive"  [trans_leq_nat]
+"Less than or equal to relation on \N is transitive"  (leq_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -124,7 +133,7 @@ Suppose n \leq m
 Suppose m \leq r
 Then n \leq r
 
-"Less than relation on \N is transitive"  [trans_lessthan_nat]
+"Less than relation on \N is transitive"  (lessthan_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -133,7 +142,7 @@ Suppose n < m
 Suppose m < r
 Then n < r
 
-"Mixed transitivity for less than on \N, strict first"  [trans_lessthan_leq_nat]
+"Mixed transitivity for less than on \N, strict first"  (lessthan_leq_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -142,7 +151,7 @@ Suppose n < m
 Suppose m \leq r
 Then n < r
 
-"Mixed transitivity for less than on \N, strict second"  [trans_leq_lessthan_nat]
+"Mixed transitivity for less than on \N, strict second"  (leq_lessthan_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -151,7 +160,7 @@ Suppose n \leq m
 Suppose m < r
 Then n < r
 
-"Definition of greater than" [greater_nat_def]
+"Definition of greater than or equal to on \N" (geq_nat_def)
 
 Let n\in\N
 Let m\in\N
@@ -159,7 +168,7 @@ Definition: n > m ⟷ m < n
 Definition: n > m ⟷ \exists r\in\N n = m + r
 Definition: n\geq m ⟷ n > m \vee n = m
 
-"Greater than or equal to on \N is transitive"  [trans_geq_nat]
+"Greater than or equal to on \N is transitive"  (geq_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -168,7 +177,7 @@ Suppose n \geq m
 Suppose m \geq r
 Then n \geq r
 
-"The greater than relation on \N is transitive"  [trans_greaterthan_nat]
+"The greater than relation on \N is transitive"  (greaterthan_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -177,7 +186,7 @@ Suppose n > m
 Suppose m > r
 Then n > r
 
-"Mixed transitivity for greater than on \N, strict first"  [trans_greaterthan_geq_nat]
+"Mixed transitivity for greater than on \N, strict first"  (greaterthan_geq_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -186,7 +195,7 @@ Suppose n > m
 Suppose m \geq r
 Then n > r
 
-"Mixed transitivity for greater than on \N, strict second"  [trans_geq_greaterthan_nat]
+"Mixed transitivity for greater than on \N, strict second"  (geq_greaterthan_trans_nat)
 
 Let n\in\N
 Let m\in\N
@@ -195,14 +204,14 @@ Suppose n \geq m
 Suppose m > r
 Then n > r
 
-"Less than or equal to on \N is antisymmetric" [antisymm_leq_nat]
+"Less than or equal to on \N is antisymmetric" (leq_antisymm_nat)
 
 Let n\in\N
 Let m\in\N
 Suppose n\leq m \wedge m\leq n
 Then n = m
 
-"Greater than or equal to on \N is antisymmetric"  [antisymm_geq_nat]
+"Greater than or equal to on \N is antisymmetric"  (geq_antisymm_nat)
 
 Let n\in\N
 Let m\in\N
@@ -211,56 +220,56 @@ Then n = m
 
 INTERACTION BETWEEN ADDITION AND ORDER
 
-"Less than or equal to on \N preserved by right addition"  [leq_add_right_nat]
+"Less than or equal to on \N preserved by right addition"  (leq_add_right_nat)
 
 Let a\in\N
 Let b\in\N
 Let c\in\N
 Then a\leq b ⟷ a + c \leq b + c
 
-"Less than on \N preserved by right addition"  [lessthan_add_right_nat]
+"Less than on \N preserved by right addition"  (lessthan_add_right_nat)
 
 Let a\in\N
 Let b\in\N
 Let c\in\N
 Then a < b ⟷ a + c < b + c
 
-"Greater than or equal to on \N preserved by right addition"  [geq_add_right_nat]
+"Greater than or equal to on \N preserved by right addition"  (geq_add_right_nat)
 
 Let a\in\N
 Let b\in\N
 Let c\in\N
 Then a\geq b ⟷ a + c \geq b + c
 
-"Greater than on \N preserved by right addition"  [greaterthan_add_right_nat]
+"Greater than on \N preserved by right addition"  (greaterthan_add_right_nat)
 
 Let a\in\N
 Let b\in\N
 Let c\in\N
 Then a > b ⟷ a + c > b + c
 
-"Less than or equal to on \N preserved by left addition"  [leq_add_left_nat]
+"Less than or equal to on \N preserved by left addition"  (leq_add_left_nat)
 
 Let a\in\N
 Let b\in\N
 Let c\in\N
 Then b\leq c ⟷ a + b \leq a + c
 
-"Less than on \N preserved by left addition"  [lessthan_add_left_nat]
+"Less than on \N preserved by left addition"  (lessthan_add_left_nat)
 
 Let a\in\N
 Let b\in\N
 Let c\in\N
 Then b < c ⟷ a + b < a + c
 
-"Greater than or equal to on \N preserved by left addition"  [geq_add_left_nat]
+"Greater than or equal to on \N preserved by left addition"  (geq_add_left_nat)
 
 Let a\in\N
 Let b\in\N
 Let c\in\N
 Then b\geq c ⟷ a + b \geq a + c
 
-"Greater than on \N preserved by left addition"  [greaterthan_add_left_nat]
+"Greater than on \N preserved by left addition"  (greaterthan_add_left_nat)
 
 Let a\in\N
 Let b\in\N
