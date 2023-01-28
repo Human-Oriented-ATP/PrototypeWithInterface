@@ -84,13 +84,25 @@ Then n + \sigma(m) = \sigma(n+m)
 
 Comment: I am trying to make this as convenient as possible for a program to use. It might seem as though this formulation is inconvenient because it makes it difficult to expand the definition of n + m, but I think we don't usually want to do that. Typically we use all sorts of basic facts about addition, and on the rare occasions when we want to go back to the definition we typically use inductive arguments, so it's OK if it's not so easy to match n + m, since we'll in fact want to match n + \sigma(m). 
 
-"Addition is associative"  [add_assoc]
+"Addition is associative"  [add_assoc_nat]
 
 Then is_associative(+,\N)
 
-"Addition is commutative"
+"Addition is commutative"  [add_comm_nat]
 
 Then is_commutative(+,\N)
+
+"The cancellation law for addition"  [add_cancel_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a + c = b + c ⟷ a = b
+
+Comment: I thought about putting only the forward direction here, but we do sometimes use the backward direction, and it's not quite clear to me to what extent we want to build in how the program handles equality. 
+
+
+THE ORDER RELATION ON \N AND ITS BASIC PROPERTIES
 
 "Less than relation on \N"  [def_lessthan_nat]
 
@@ -183,17 +195,76 @@ Suppose n \geq m
 Suppose m > r
 Then n > r
 
-"Less than or equal to on \N is antisymmetric" [leq_nat_antisymm]
+"Less than or equal to on \N is antisymmetric" [antisymm_leq_nat]
 
 Let n\in\N
 Let m\in\N
 Suppose n\leq m \wedge m\leq n
 Then n = m
 
-"Greater than or equal to on \N is antisymmetric"  [geq_nat_antisymm]
+"Greater than or equal to on \N is antisymmetric"  [antisymm_geq_nat]
 
 Let n\in\N
 Let m\in\N
 Suppose n\geq m \wedge m\geq n
 Then n = m
+
+INTERACTION BETWEEN ADDITION AND ORDER
+
+"Less than or equal to on \N preserved by right addition"  [leq_add_right_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a\leq b ⟷ a + c \leq b + c
+
+"Less than on \N preserved by right addition"  [lessthan_add_right_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a < b ⟷ a + c < b + c
+
+"Greater than or equal to on \N preserved by right addition"  [geq_add_right_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a\geq b ⟷ a + c \geq b + c
+
+"Greater than on \N preserved by right addition"  [greaterthan_add_right_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a > b ⟷ a + c > b + c
+
+"Less than or equal to on \N preserved by left addition"  [leq_add_left_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b\leq c ⟷ a + b \leq a + c
+
+"Less than on \N preserved by left addition"  [lessthan_add_left_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b < c ⟷ a + b < a + c
+
+"Greater than or equal to on \N preserved by left addition"  [geq_add_left_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b\geq c ⟷ a + b \geq a + c
+
+"Greater than on \N preserved by left addition"  [greaterthan_add_left_nat]
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b > c ⟷ a + b > a + c
+
 
