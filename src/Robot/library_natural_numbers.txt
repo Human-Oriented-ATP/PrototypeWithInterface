@@ -277,3 +277,141 @@ Let c\in\N
 Then b > c ⟷ a + b > a + c
 
 
+DEFINITION AND BASIC PROPERTIES OF MULTIPLICATION
+
+"Multiplication by 1 in \N" (mult_1_nat_def)
+
+Let a\in\N
+Then a*1 = a
+
+"Multiplication by a successor in \N" (mult_succ_nat_def)
+
+Let a\in\N
+Let b\in\N
+Then a*\sigma(b) = a*b + b
+
+Comment: I am going to assume that it's hard-wired into the program that multiplication takes precedence over addition.
+
+"Multiplication on \N is associative" (mult_assoc_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a*(b*c) = (a*b)*c
+
+"Multiplication on \N is commutative" (mult_comm_nat)
+
+Let a\in\N
+Let b\in\N
+Then a*b = b*a
+
+INTERACTION BETWEEN MULTIPLICATION AND ADDITION
+
+"Multiplication left-distributes over addition on \N" (mult_add_leftdistr_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a*(b+c) = a*b + a*c
+
+"Multiplication right-distributes over addition on \N" (mult_add_rightdistr_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then (a+b)*c = a*c + b*c
+
+
+INTERACTION BETWEEN MULTIPLICATION AND ORDER
+
+"Less than or equal to on \N preserved by right multiplication"  (leq_mult_right_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a\leq b ⟷ a * c \leq b * c
+
+"Less than on \N preserved by right multiplication"  (lessthan_mult_right_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a < b ⟷ a * c < b * c
+
+"Greater than or equal to on \N preserved by right multiplication"  (geq_mult_right_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a\geq b ⟷ a * c \geq b * c
+
+"Greater than on \N preserved by right multiplication"  (greaterthan_mult_right_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then a > b ⟷ a * c > b * c
+
+"Less than or equal to on \N preserved by left multiplication"  (leq_mult_left_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b\leq c ⟷ a * b \leq a * c
+
+"Less than on \N preserved by left multiplication"  (lessthan_mult_left_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b < c ⟷ a * b < a * c
+
+"Greater than or equal to on \N preserved by left multiplication"  (geq_mult_left_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b\geq c ⟷ a * b \geq a * c
+
+"Greater than on \N preserved by left multiplication"  (greaterthan_mult_left_nat)
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Then b > c ⟷ a * b > a * c
+
+
+CONSTRUCTION AND BASIC PROPERTIES OF THE INTEGERS
+
+Comment: I don't expect the construction of \Z from \N to be used by the program, except in proofs of the basic properties.
+
+Let a\in\N
+Let b\in\N
+Let c\in\N
+Let d\in\N
+Let e\in\N
+Lef f\in\N
+Suppose a + d = b + c
+Then 
+
+"The equivalence relation on \N \times \N used to define \Z" (equivrel_pairs_nat)
+
+Let \sim be a relation on \N\times\N
+Suppose (a,b) \sim (c,d) \iff a + d = b + c
+Then equivalence_relation(\sim)
+
+"Construction of \Z from \N"  (integers_def)
+
+Let \sim be a relation on \N\times\N
+Suppose (a,b) \sim (c,d) \iff a + d = b + c
+Definition: \Z = (\N \times \N)/\sim
+
+
+
+DIVISIBILITY
+
+"Definition of divisor relation" (divides_def)
+
+Let a\in\N
+Let b\in\N
+Definition: a | b ⟷ \exists m\in\N  b = m * a
