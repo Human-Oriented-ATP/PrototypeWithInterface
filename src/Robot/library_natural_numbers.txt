@@ -8,37 +8,37 @@ Comment: I am no longer going to write (*****) to indicate that a name is needed
 
 NATURAL NUMBER BASICS -- PEANO AXIOMS
 
-"1 is a natural number"
+"1 is a natural number"  [nat_1]
 
 Then 1 \in \N
 
 
-"Every natural number has a successor" 
+"Every natural number has a successor"  [nat_succ]
 
 Then \forall n\in\N  \sigma(n)\in\N
 
 
-"Every natural number has a successor -- higher level" 
+"Every natural number has a successor -- higher level"  [succ_fn]
 
 Then \sigma:\N\to\N
 
 
-"The successor function is injective"
+"The successor function is injective"  [succ_inj]
 
 Then \forall m\in\N \forall n\in\N  \sigma(m) = \sigma(n) \implies m = n
 
 
-"The successor function is almost surjective"
+"The successor function is almost surjective"  [nat_prec]
 
-Then n \ne 0 \implies \exists m  \sigma(m) = n
+Then n \ne 1 \implies \exists m  \sigma(m) = n
 
 
-"1 is not a successor"
+"1 is not a successor"  [1_no_prec]
 
 Then n\in\N \implies \sigma(n) \ne 1
 
 
-"Principle of induction"  
+"Principle of induction"  [set_induction]
 
 Let A be a subset of \N
 Suppose 1\in A
@@ -51,7 +51,7 @@ Comment: I gave two conclusions here, one a low-level one and the other a high-l
 Comment: If we actually want to do Peano arithmetic, then we need A to be a set of the form \{n\in\N : P(n)\} where P is a first-order formula. However, I am seeing this as more like a "mathematician's induction", which will not be very sensitive to the kind of set. If we don't do this, then the program will have a much harder job checking that the conditions for inductive arguments apply, when usually they will. We might want to add in the first-order-induction statement and flag up this much stronger one whenever it is used.
 
 
-"Principle of induction for statements"
+"Principle of induction for statements"  [prop_induction]
 
 Let P be a property on \N
 Suppose P(1)
@@ -61,19 +61,139 @@ Then \forall n\in\N P(n)
 Comment: Again, I have not specified that P has to be a first-order property. 
 
 
-"Definition of adding 1"
+"Inductive definition of a function defined on \N"  [inductive_def]
+
+Let X be a set
+Let g:\N\times X\to X
+Let x\in X
+Then \existsunique f:\N\to X  f(1) = x \wedge \forall n\in\N  f(\sigma(n)) = g(n, f(n))
+
+
+DEFINITION AND BASIC PROPERTIES OF ADDITION
+
+"Definition of adding 1"  [add_1]
 
 Let n\in\N
 Definition: n + 1 = \sigma(n)
 
-"Inductive definition of adding a successor"
+"Defining property of adding a successor"  [add_succ]
+
+Let n\in\N
+Let m\in\N
+Then n + \sigma(m) = \sigma(n+m)
+
+Comment: I am trying to make this as convenient as possible for a program to use. It might seem as though this formulation is inconvenient because it makes it difficult to expand the definition of n + m, but I think we don't usually want to do that. Typically we use all sorts of basic facts about addition, and on the rare occasions when we want to go back to the definition we typically use inductive arguments, so it's OK if it's not so easy to match n + m, since we'll in fact want to match n + \sigma(m). 
+
+"Addition is associative"  [add_assoc]
+
+Then is_associative(+,\N)
+
+"Addition is commutative"
+
+Then is_commutative(+,\N)
+
+"Less than relation on \N"  [def_lessthan_nat]
+
+Let n\in\N
+Let m\in\N
+Definition: n < m ⟷ \exists r\in\N  m = n + r
+Definition: n \leq m ⟷ n < m \vee n = m
+
+"Less than relation makes \N a woset"  [nat_woset]
+
+Then is_woset((\N,<))
+
+"Less than or equal to relation on \N is transitive"  [trans_leq_nat]
 
 Let n\in\N
 Let m\in\N
 Let r\in\N
-Suppose m = \sigma(r)
-Definition: n + m = \sigma(n+r)
+Suppose n \leq m
+Suppose m \leq r
+Then n \leq r
 
-Comment: I am trying to make this as convenient as possible for a program to use. So if (unusually I hope!) it decided it wanted to expand the definition of n + m, it would see that it couldn't use this definition unless there exists r such that \sigma(r) = m. It would then be able to use the previous Peano axioms and backwards reasoning to reduce that condition to m \ne 1. So it would naturally split into two case, and the previous definition would take care of the case m = 1. Initially I wrote  n + \sigma(m) = \sigma(n+m), which is a bit more standard, but that would be harder for the program to match with a term a + b. The program would need to convert a + b into an expression of the form a + \sigma(r), which it could certainly do, but it would have to have decided first that the "wrong" match of a + b with n + \sigma(m) was close enough for there to be hope that b could be converted into the appropriate form somehow, which seems hard to achieve in a suitably general way.
+"Less than relation on \N is transitive"  [trans_lessthan_nat]
 
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose n < m
+Suppose m < r
+Then n < r
+
+"Mixed transitivity for less than on \N, strict first"  [trans_lessthan_leq_nat]
+
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose n < m
+Suppose m \leq r
+Then n < r
+
+"Mixed transitivity for less than on \N, strict second"  [trans_leq_lessthan_nat]
+
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose n \leq m
+Suppose m < r
+Then n < r
+
+"Definition of greater than" [greater_nat_def]
+
+Let n\in\N
+Let m\in\N
+Definition: n > m ⟷ m < n
+Definition: n > m ⟷ \exists r\in\N n = m + r
+Definition: n\geq m ⟷ n > m \vee n = m
+
+"Greater than or equal to on \N is transitive"  [trans_geq_nat]
+
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose n \geq m
+Suppose m \geq r
+Then n \geq r
+
+"The greater than relation on \N is transitive"  [trans_greaterthan_nat]
+
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose n > m
+Suppose m > r
+Then n > r
+
+"Mixed transitivity for greater than on \N, strict first"  [trans_greaterthan_geq_nat]
+
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose n > m
+Suppose m \geq r
+Then n > r
+
+"Mixed transitivity for greater than on \N, strict second"  [trans_geq_greaterthan_nat]
+
+Let n\in\N
+Let m\in\N
+Let r\in\N
+Suppose n \geq m
+Suppose m > r
+Then n > r
+
+"Less than or equal to on \N is antisymmetric" [leq_nat_antisymm]
+
+Let n\in\N
+Let m\in\N
+Suppose n\leq m \wedge m\leq n
+Then n = m
+
+"Greater than or equal to on \N is antisymmetric"  [geq_nat_antisymm]
+
+Let n\in\N
+Let m\in\N
+Suppose n\geq m \wedge m\geq n
+Then n = m
 
