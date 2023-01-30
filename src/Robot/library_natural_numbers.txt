@@ -381,6 +381,158 @@ Let c\in\N
 Then b > c ⟷ a * b > a * c
 
 
+# Cardinality
+
+FINITENESS 
+
+"Direct definition of set of first n integers"  (initseg_nat_def)
+
+Let n\in\N
+Definition: [n] = \{x\in\N: x\leq n\}
+
+"Inductive definition of set of first n integers" (initseg_nat_induct_def)
+
+Then [1]=\{1\}
+Then \forall n\in\N [\sigma(n)] = [n]\cup\{\sigma(n)}
+
+"Strict order relations between initial segments"  (initseg_order_strict)
+
+Let m\in\N
+Let n\in\N
+Suppose m < n
+Then [m]\subsetneq [n]
+
+"Non-strict order relations between initial segments" (initseg_order_nonstrict)
+
+Let m\in\N
+Let n\in\N
+Suppose m \leq n
+Then [m]\subseteq [n]
+
+"Definition of finiteness" (set_finite_def)
+
+Let X be a set
+Definition: is_finite(X) ⟷ \exists n\in\N \exists f:X\to[n]  is_bijection(f)
+
+"Definition of finiteness using injection" (set_finite_inj_def)
+
+Let X be a set
+Then is_finite(X) ⟷ \exists f:X\to[n]  is_injection(f)
+
+"Definition of finiteness using surjection"  (set_finite_surj_def)
+
+Let X be a set
+Then is_finite(X) ⟷ \exists f:[n]\to X  is_surjection(f)
+
+"A subset of a finite set is finite"  (subset_finite)
+
+Let A be a set
+Let B be a set
+Suppose is_finite(A)
+Suppose B\subset A
+Then is_finite(B)
+
+Comment: normally I like my sets to be subsets of some ground set, but for this result that does not feel natural.
+
+"A set that injects into a finite set is finite"  (set_finite_inj_finite)
+
+Let A be a set
+Let B be a set
+Let f:A\to B
+Suppose is_finite(B)
+Suppose is_injection(f)
+Then is_finite(A)
+
+"An image of a finite set is finite" (image_finite_finite)
+
+Let X be a set
+Let Y be a set
+Let A be a subset of X
+Let f:X\to Y
+Suppose is_finite(A)
+Then is_finite(f ` A)
+
+"A union of two finite sets is finite" (union_finite_finite)
+
+Let A be a set
+Let B be a set
+Suppose is_finite(A)
+Suppose is_finite(B)
+Then is_finite(A\cup B)
+
+"A union of a finite sequence of finite sets is finite" (union_finiteseq_finite_finite)
+
+Let X be a set
+Let n\in\N
+Let A:[n]\to power_set(X)
+Then is_finite( \bigcup\{A(m): m\in [n]\} )
+
+"A union of finitely many finite sets is finite" (union_finite_finite_finite)
+
+Let X be a set
+Let F be a set
+Suppose is_finite(\Gamma)
+Let A:\Gamma\to power_set(X)
+Then is_finite( \bigcup\{A(\gamma): \gamma\in\Gamma\} )
+
+
+INFINITE SETS
+
+"Definition of infinite set"  (set_infinite_def)
+
+Let X be a set
+Definition: is_infinite(X) ⟷ \neg (is_finite(X))
+
+"Definition of infinite set via injection"  (set_infinite_inj_def)
+
+Let X be a set
+Then is_infinite(X) ⟷ \exists f:\N\to X  is_injection(f)
+
+Comment: This uses a form of choice. I think it probably uses dependent choice. Maybe we want to tag it accordingly.
+
+"Definition of infinite set via surjection"  (set_infinite_surj_def)
+
+Let X be a set
+Then is_infinite(X)  ⟷  \exists f:X\to\N  is_surjection(f)
+
+Comment: See previous comment.
+
+
+COUNTABLE AND UNCOUNTABLE SETS
+
+"Definition of countable set"  (set_countable_def)
+
+Let X be a set
+Definition: is_countable(X) ⟷ \exists f:X\to\N  is_bijection(f)
+
+"Definition of countable set via injection"  (set_countable_inj_def)
+
+Let X be a set
+Then is_countable(X) ⟷ \exists f:X\to\N  is_injection(f)
+
+"Definition of countable set via surjection"  (set_countable_surj_def)
+
+Let X be a set
+Then is_countable(X) ⟷ \exists f:\N\to X  is_surjection(f)
+
+"A union of countably many countable sets is countable" (union_count_count_count)
+
+Let X be a set
+Let A:\N\to power_set(X)
+Suppose \forall n\in\N  is_countable(A(n))
+Then is_countable(\bigcup\{A(n): n\in\N\})
+
+"There is no surjection from a set to its power set"  (cardinality_powerset_greater)
+
+Let X be a set
+Let f:X\to power_set(X)
+Then \neg(is_surjection(f))
+
+
+
+
+
+
 CONSTRUCTION AND BASIC PROPERTIES OF THE INTEGERS
 
 Comment: I don't expect the construction of \Z from \N to be used by the program, except in proofs of the basic properties.
