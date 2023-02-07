@@ -1751,6 +1751,93 @@ Then distributes_over(\cap,\cup)
 Then distributes_over(\cup,\cap)
 
 
+# Real Inner Product
+
+(Comments by Angeliki: 
+
+Comment 1: Need to return to add prerequisites like vector spaces and norm
+
+Comment 2: Adding the real inner product for now, but would like to generalise for any field at some point.
+Perhaps something to discuss.
+
+Comment 3: I am not satisfied with my definition below, given that we are lacking a type system. Something to revisit.
+
+Comment 4: symbols for different products such as \cdot and * perhaps to revisit
+
+Comment 5: I assume we already have the norm defined and denoted by  \|  \|
+
+Comment 6: shall we write the zero vector with different notation instead of just 0? I write it as \vec{0})
+
+“Definition of real inner product” (real_inner_product_def)
+
+Let V be a real vector space 
+Let u be an element of V
+Let v be an element of V
+Let w be an element of V
+Let a be a real number 
+
+Define \< . , . \> to be a map from V \times V to the real field \R
+so that
+\<u , v \> = \< v, u \>  \and
+ \<u, u \> \geq 0  \and
+ \<u, u \> = 0 \iff u =0  \and
+  \<a \cdot u, w \> = a * \<u, w \>  \and 
+\<u + v, w\> = \<u, w \> + \<v, w \> \and
+\| u \| = \sqrt{ \< u, u \>}
+
+
+
+“The real inner product of any vector with the zero vector is zero”    (inner_zero_left)
+
+Let V be a real vector space 
+Let u be an element of V
+Let \vec{0} be the zero vector of V
+
+Then \< \vec{0} , u  \>= 0
+  
+“Summation in the first component of inner product” (inner_sum_left)
+
+Let A be a set
+Let V be a real vector space
+Let f be a function from A to V
+Let y be an element of V
+
+Then  \< (\Sum. x \in A. f (x)),  y  \> = \Sum. x \in A.  \< f (x),  y \>
+ 
+“Linearity in the second argument”  (inner_add_right,  inner_scaleR_right)
+
+Let V be a real vector space 
+Let u be an element of V
+Let v be an element of V
+Let w be an element of V 
+Let a be a real number 
+
+Then \< u,  v+ w\> = \<u, v \> + \<u, w \>  \and
+
+\<u, a \cdot w\> =  a * \<  u, w \>
+  
+        “Cauchy-Schwarz Inequality”  (Cauchy_Schwarz_ineq)
+
+Let V be a real vector space 
+Let u be an element of V
+Let v be an element of V
+  
+Then \<u, v \>^2 \leq  \<u, u \>* <\ v, v \>“
+
+ “Cauchy-Schwarz Inequality considering norms” (Cauchy_Schwarz_ineq2)
+  
+Let V be a real vector space 
+Let u be an element of V
+Let v be an element of V
+ 
+Then \<u, v\> \leq \| u \|* \| v\|
+
+
+
+
+
+
+
 
 # Topological spaces (by Bill)
 Note by Angeliki: made minor changes in notation
